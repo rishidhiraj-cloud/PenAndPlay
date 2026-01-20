@@ -1,0 +1,129 @@
+/* History Page Specific Styles */
+
+.back-link {
+    margin-bottom: 20px;
+}
+
+.back-link a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.back-link a:hover {
+    text-decoration: underline;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    font-size: 16px;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.history-item {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+}
+
+.history-date {
+    font-size: 18px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 12px;
+}
+
+.history-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    font-size: 14px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-label {
+    color: #666;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #333;
+    font-weight: 600;
+}
+
+.history-total {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 2px solid #667eea;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-total .detail-label {
+    font-size: 16px;
+    color: #667eea;
+}
+
+.history-total .detail-value {
+    font-size: 20px;
+    color: #667eea;
+}
+
+.no-entries {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.no-entries p {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.delete-btn {
+    margin-top: 12px;
+    padding: 8px 16px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 480px) {
+    .history-details {
+        grid-template-columns: 1fr;
+    }
+}

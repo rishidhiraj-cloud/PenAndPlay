@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History - Daily Cash Register</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="history-style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>Entry History</h1>
+                    <p class="subtitle">View past entries</p>
+                </div>
+                <div class="header-logo">
+                    <img src="logo.png" alt="Shop Logo" id="shopLogo">
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="back-link">
+                <a href="index.html">&larr; Back to Entry Form</a>
+                <a href="dashboard.html" style="margin-left: 10px;">📊 Dashboard</a>
+            </div>
+
+            <div id="historyContainer">
+                <div class="loading-spinner">Loading entries...</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="history.js"></script>
+</body>
+</html>

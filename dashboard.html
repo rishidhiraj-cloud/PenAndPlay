@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Daily Cash Register</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard-style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>Dashboard</h1>
+                    <p class="subtitle">Income analytics & trends</p>
+                </div>
+                <div class="header-logo">
+                    <img src="logo.png" alt="Shop Logo" id="shopLogo">
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Navigation -->
+            <div class="nav-links">
+                <a href="index.html">➕ New Entry</a>
+                <a href="history.html">📋 History</a>
+            </div>
+
+            <!-- Month Selector -->
+            <div class="month-selector">
+                <button id="prevMonth" class="month-btn">◀</button>
+                <div id="currentMonthDisplay" class="month-display">Loading...</div>
+                <button id="nextMonth" class="month-btn">▶</button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon">💰</div>
+                    <div class="card-content">
+                        <div class="card-label">Total Income This Month</div>
+                        <div class="card-value" id="totalIncomeThisMonth">₹0.00</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-content">
+                        <div class="card-label">Till Date Income Last Month</div>
+                        <div class="card-value" id="tillDateLastMonth">₹0.00</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-icon">📈</div>
+                    <div class="card-content">
+                        <div class="card-label">Till Date Income 2 Months Before</div>
+                        <div class="card-value" id="tillDate2MonthsBefore">₹0.00</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-content">
+                        <div class="card-label">Growth vs Last Month</div>
+                        <div class="card-value" id="vsLastMonth">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="chart-container">
+                <h2>Daily Income Comparison</h2>
+                <p class="chart-subtitle">Current month vs Previous month</p>
+                <canvas id="comparisonChart"></canvas>
+            </div>
+
+            <!-- Current Month Details -->
+            <div class="details-section">
+                <h2>This Month's Daily Breakdown</h2>
+                <div id="dailyBreakdown" class="daily-breakdown">
+                    <div class="loading-spinner">Loading data...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>
