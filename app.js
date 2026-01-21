@@ -20,10 +20,15 @@ const pettyCashAmountInput = document.getElementById('pettyCashAmount');
 const totalIncomeInput = document.getElementById('totalIncome');
 const submitBtn = document.getElementById('submitBtn');
 const statusMessage = document.getElementById('statusMessage');
+const darkModeToggle = document.getElementById('darkModeToggle');
 
 // Initialize App
 function init() {
     console.log('🚀 Initializing app...');
+
+    // Dark mode
+    initDarkMode();
+    darkModeToggle.addEventListener('click', toggleDarkMode);
 
     // Set today's date as default
     const today = new Date().toISOString().split('T')[0];
@@ -272,6 +277,22 @@ function showStatusMessage(message, type) {
 function hideStatusMessage() {
     statusMessage.className = 'status-message';
     statusMessage.textContent = '';
+}
+
+// Dark Mode
+function initDarkMode() {
+    const isDark = localStorage.getItem('darkMode') === 'true';
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.textContent = '☀️';
+    }
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDark);
+    darkModeToggle.textContent = isDark ? '☀️' : '🌙';
 }
 
 // Initialize on Page Load

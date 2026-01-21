@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expenses - Pen & Play Club</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="expense-style.css">
+</head>
+<body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-logo-left">
+                    <img src="logo.png" alt="Shop Logo">
+                </div>
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Expense Tracker</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="logo.png" alt="Shop Logo">
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Navigation Links -->
+            <div class="nav-links">
+                <a href="entry.html">➕ New Entry</a>
+                <a href="index.html">📊 Dashboard</a>
+                <a href="history.html">📋 History</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙</button>
+            </div>
+
+            <!-- Month Indicator -->
+            <div style="background: white; border-radius: 8px; padding: 12px 20px; margin-bottom: 20px; text-align: center; border: 2px solid #667eea;">
+                <span style="font-weight: 600; color: #667eea;">Viewing Month: </span>
+                <span id="currentMonthLabel" style="font-weight: 700; color: #333;">Loading...</span>
+            </div>
+
+            <!-- Expense Entry Form -->
+            <div class="form-section">
+                <h2>Add Expense</h2>
+                <form id="expenseForm">
+                    <!-- Expense Date -->
+                    <div class="form-group">
+                        <label for="expenseDate">Expense Date</label>
+                        <input type="date"
+                               id="expenseDate"
+                               name="expenseDate"
+                               required>
+                    </div>
+
+                    <!-- Expense By -->
+                    <div class="form-group">
+                        <label for="expenseBy">Expense By</label>
+                        <select id="expenseBy"
+                                name="expenseBy"
+                                required>
+                            <option value="">Select Person</option>
+                            <option value="Abhishek">Abhishek</option>
+                            <option value="Neha">Neha</option>
+                            <option value="Priyanka">Priyanka</option>
+                            <option value="Dhiraj">Dhiraj</option>
+                        </select>
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="form-group">
+                        <label for="amount">Amount</label>
+                        <input type="number"
+                               id="amount"
+                               name="amount"
+                               placeholder="0.00"
+                               step="0.01"
+                               min="0"
+                               inputmode="decimal"
+                               required>
+                    </div>
+
+                    <!-- Paid From -->
+                    <div class="form-group">
+                        <label>Paid From</label>
+                        <div class="radio-group">
+                            <label class="radio-label radio-label-bank">
+                                <input type="radio"
+                                       name="paidFrom"
+                                       value="Bank"
+                                       required>
+                                <span>Bank</span>
+                            </label>
+                            <label class="radio-label radio-label-ap-cash">
+                                <input type="radio"
+                                       name="paidFrom"
+                                       value="AP Cash">
+                                <span>AP Cash</span>
+                            </label>
+                            <label class="radio-label radio-label-self">
+                                <input type="radio"
+                                       name="paidFrom"
+                                       value="Self">
+                                <span>Self</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description"
+                                  name="description"
+                                  rows="3"
+                                  placeholder="Enter expense details..."></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        Save Expense
+                    </button>
+                </form>
+
+                <!-- Status Message -->
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+
+            <!-- Expense History -->
+            <div class="history-section">
+                <h2>Expense History</h2>
+                <div id="expenseHistory" class="expense-list">
+                    <div class="loading-spinner">Loading expenses...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="expense.js"></script>
+</body>
+</html>

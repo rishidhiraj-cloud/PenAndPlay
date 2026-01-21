@@ -8,23 +8,39 @@
     <link rel="stylesheet" href="history-style.css">
 </head>
 <body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
     <div class="container">
         <header>
             <div class="header-content">
-                <div class="header-text">
-                    <h1>Entry History</h1>
-                    <p class="subtitle">View past entries</p>
+                <div class="header-logo-left">
+                    <img src="logo.png" alt="Shop Logo">
                 </div>
-                <div class="header-logo">
-                    <img src="logo.png" alt="Shop Logo" id="shopLogo">
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Entry History</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="logo.png" alt="Shop Logo">
                 </div>
             </div>
         </header>
 
         <main>
             <div class="back-link">
-                <a href="index.html">&larr; Back to Entry Form</a>
-                <a href="dashboard.html" style="margin-left: 10px;">📊 Dashboard</a>
+                <a href="entry.html">Back</a>
+                <a href="index.html">📊 Dashboard</a>
+                <a href="expense.html">💸 Expense</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙</button>
+            </div>
+
+            <!-- Month Indicator -->
+            <div style="background: white; border-radius: 8px; padding: 12px 20px; margin-bottom: 20px; text-align: center; border: 2px solid #667eea;">
+                <span style="font-weight: 600; color: #667eea;">Viewing Month: </span>
+                <span id="currentMonthLabel" style="font-weight: 700; color: #333;">Loading...</span>
             </div>
 
             <div id="historyContainer">

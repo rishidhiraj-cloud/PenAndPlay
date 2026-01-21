@@ -35,6 +35,8 @@
                 <a href="entry.html">➕ New Entry</a>
                 <a href="history.html">📋 History</a>
                 <a href="expense.html">💸 Expense</a>
+                <button id="settingsBtn" class="settings-btn">⚙️</button>
+                <button id="darkModeToggle" class="dark-mode-toggle">🌙</button>
             </div>
 
             <!-- Month Selector -->
@@ -86,14 +88,53 @@
                 <canvas id="comparisonChart"></canvas>
             </div>
 
+            <!-- Peak Business Days -->
+            <div class="details-section peak-days-section" id="peakDaysWidget">
+                <h2>🏆 Peak Business Days</h2>
+                <div id="peakDays" class="peak-days">
+                    <div class="loading-spinner">Loading data...</div>
+                </div>
+            </div>
+
             <!-- Current Month Details -->
-            <div class="details-section">
+            <div class="details-section" id="dailyBreakdownWidget">
                 <h2>This Month's Daily Breakdown</h2>
                 <div id="dailyBreakdown" class="daily-breakdown">
                     <div class="loading-spinner">Loading data...</div>
                 </div>
             </div>
         </main>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Dashboard Settings</h2>
+                    <button class="close-modal" id="closeSettings">✕</button>
+                </div>
+                <div class="modal-body">
+                    <h3>Show/Hide Widgets</h3>
+                    <div class="widget-toggles">
+                        <label class="toggle-item">
+                            <input type="checkbox" id="toggleSummaryCards" checked>
+                            <span>Summary Cards</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="toggleChart" checked>
+                            <span>Income Comparison Chart</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="togglePeakDays" checked>
+                            <span>Peak Business Days</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="toggleDailyBreakdown" checked>
+                            <span>Daily Breakdown</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Supabase SDK -->

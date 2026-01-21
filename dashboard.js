@@ -11,6 +11,20 @@ console.log('✅ Dashboard.js loaded successfully');
 let currentMonth = new Date();
 let chartInstance = null;
 
+// Get selected month from localStorage or use current month
+function getSelectedMonth() {
+    const savedMonth = localStorage.getItem('selectedMonth');
+    if (savedMonth) {
+        return new Date(savedMonth);
+    }
+    return new Date();
+}
+
+// Save selected month to localStorage
+function saveSelectedMonth(month) {
+    localStorage.setItem('selectedMonth', month.toISOString());
+}
+
 // DOM Elements
 const prevMonthBtn = document.getElementById('prevMonth');
 const nextMonthBtn = document.getElementById('nextMonth');
@@ -19,15 +33,40 @@ const totalIncomeThisMonthEl = document.getElementById('totalIncomeThisMonth');
 const tillDateLastMonthEl = document.getElementById('tillDateLastMonth');
 const tillDate2MonthsBeforeEl = document.getElementById('tillDate2MonthsBefore');
 const vsLastMonthEl = document.getElementById('vsLastMonth');
+const lastMonthLabelEl = document.getElementById('lastMonthLabel');
+const twoMonthsBeforeLabelEl = document.getElementById('twoMonthsBeforeLabel');
 const dailyBreakdownEl = document.getElementById('dailyBreakdown');
+const pageLoader = document.getElementById('pageLoader');
+const peakDaysEl = document.getElementById('peakDays');
+const darkModeToggle = document.getElementById('darkModeToggle');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsModal = document.getElementById('settingsModal');
+const closeSettings = document.getElementById('closeSettings');
 
 // Initialize Dashboard
 async function init() {
     console.log('🚀 Initializing dashboard...');
 
+    // Load selected month from localStorage
+    currentMonth = getSelectedMonth();
+
     // Setup event listeners
     prevMonthBtn.addEventListener('click', () => changeMonth(-1));
     nextMonthBtn.addEventListener('click', () => changeMonth(1));
+
+    // Dark mode
+    initDarkMode();
+    darkModeToggle.addEventListener('click', toggleDarkMode);
+
+    // Settings
+    settingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
+    closeSettings.addEventListener('click', () => settingsModal.classList.add('hidden'));
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) settingsModal.classList.add('hidden');
+    });
+
+    // Widget toggles
+    initWidgetToggles();
 
     // Load current month data
     await loadDashboard();
@@ -35,15 +74,66 @@ async function init() {
     console.log('✅ Dashboard initialized');
 }
 
+// Dark Mode
+function initDarkMode() {
+    const isDark = localStorage.getItem('darkMode') === 'true';
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.textContent = '☀️';
+    }
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDark);
+    darkModeToggle.textContent = isDark ? '☀️' : '🌙';
+}
+
+// Widget Toggles
+function initWidgetToggles() {
+    const widgets = [
+        { id: 'toggleSummaryCards', target: 'summary-cards', class: 'summary-cards' },
+        { id: 'toggleChart', target: 'chart-container', class: 'chart-container' },
+        { id: 'togglePeakDays', target: 'peakDaysWidget', class: 'details-section' },
+        { id: 'toggleDailyBreakdown', target: 'dailyBreakdownWidget', class: 'details-section' }
+    ];
+
+    widgets.forEach(widget => {
+        const toggle = document.getElementById(widget.id);
+        const savedState = localStorage.getItem(widget.id);
+
+        if (savedState === 'false') {
+            toggle.checked = false;
+            const element = document.getElementById(widget.target) || document.querySelector(`.${widget.class}`);
+            if (element) element.classList.add('widget-hidden');
+        }
+
+        toggle.addEventListener('change', (e) => {
+            const element = document.getElementById(widget.target) || document.querySelector(`.${widget.class}`);
+            if (element) {
+                if (e.target.checked) {
+                    element.classList.remove('widget-hidden');
+                } else {
+                    element.classList.add('widget-hidden');
+                }
+            }
+            localStorage.setItem(widget.id, e.target.checked);
+        });
+    });
+}
+
 // Change Month
 function changeMonth(delta) {
     currentMonth.setMonth(currentMonth.getMonth() + delta);
+    saveSelectedMonth(currentMonth);
     loadDashboard();
 }
 
 // Load Dashboard Data
 async function loadDashboard() {
     try {
+        pageLoader.classList.remove('hidden');
         console.log('📊 Loading dashboard for:', currentMonth.toISOString().substring(0, 7));
 
         // Update month display
@@ -60,6 +150,9 @@ async function loadDashboard() {
         twoMonthsBefore.setMonth(twoMonthsBefore.getMonth() - 2);
         const twoMonthsBeforeData = await fetchMonthData(twoMonthsBefore);
 
+        // Update month labels
+        updateMonthLabels(previousMonth, twoMonthsBefore);
+
         console.log('Current month data:', currentMonthData.length, 'entries');
         console.log('Previous month data:', previousMonthData.length, 'entries');
         console.log('2 months before data:', twoMonthsBeforeData.length, 'entries');
@@ -70,10 +163,13 @@ async function loadDashboard() {
         // Update UI
         updateSummaryCards(stats);
         updateChart(currentMonthData, previousMonthData);
+        updatePeakDays(currentMonthData);
         updateDailyBreakdown(currentMonthData);
 
     } catch (err) {
         console.error('❌ Error loading dashboard:', err);
+    } finally {
+        pageLoader.classList.add('hidden');
     }
 }
 
@@ -90,6 +186,18 @@ function updateMonthDisplay() {
     const isCurrentOrFuture = currentMonth.getFullYear() >= now.getFullYear() &&
                               currentMonth.getMonth() >= now.getMonth();
     nextMonthBtn.disabled = isCurrentOrFuture;
+}
+
+// Update Month Labels
+function updateMonthLabels(previousMonth, twoMonthsBefore) {
+    // Format as "Feb'25"
+    const lastMonthLabel = previousMonth.toLocaleDateString('en-US', { month: 'short' }) +
+                          "'" + previousMonth.getFullYear().toString().slice(-2);
+    const twoMonthsLabel = twoMonthsBefore.toLocaleDateString('en-US', { month: 'short' }) +
+                          "'" + twoMonthsBefore.getFullYear().toString().slice(-2);
+
+    lastMonthLabelEl.textContent = `(${lastMonthLabel})`;
+    twoMonthsBeforeLabelEl.textContent = `(${twoMonthsLabel})`;
 }
 
 // Fetch Month Data
@@ -237,32 +345,54 @@ function updateChart(currentData, previousData) {
                     data: currentMonthValues,
                     backgroundColor: '#ff9f43',
                     borderColor: '#ff9f43',
-                    borderWidth: 1,
-                    borderRadius: 6,
-                    barPercentage: 0.8
+                    borderWidth: 0,
+                    borderRadius: 8,
+                    barPercentage: 0.85,
+                    categoryPercentage: 0.85
                 },
                 {
                     label: prevMonthName,
                     data: previousMonthValues,
                     backgroundColor: '#74b9ff',
                     borderColor: '#74b9ff',
-                    borderWidth: 1,
-                    borderRadius: 6,
-                    barPercentage: 0.8
+                    borderWidth: 0,
+                    borderRadius: 8,
+                    barPercentage: 0.85,
+                    categoryPercentage: 0.85
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: true,
+            aspectRatio: 1.5,
             plugins: {
                 legend: {
                     display: true,
-                    position: 'top'
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 14,
+                            weight: 600
+                        },
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'rectRounded'
+                    }
                 },
                 tooltip: {
                     mode: 'index',
                     intersect: false,
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyFont: {
+                        size: 13
+                    },
+                    padding: 12,
+                    boxPadding: 6,
                     callbacks: {
                         label: function(context) {
                             let label = context.dataset.label || '';
@@ -281,23 +411,39 @@ function updateChart(currentData, previousData) {
                 x: {
                     title: {
                         display: true,
-                        text: 'Day of Month'
+                        text: 'Day of Month',
+                        font: {
+                            size: 14,
+                            weight: 600
+                        }
                     },
                     grid: {
                         display: false
+                    },
+                    ticks: {
+                        font: {
+                            size: 12
+                        }
                     },
                     stacked: false
                 },
                 y: {
                     title: {
                         display: true,
-                        text: 'Income (₹)'
+                        text: 'Income (₹)',
+                        font: {
+                            size: 14,
+                            weight: 600
+                        }
                     },
                     beginAtZero: true,
                     grid: {
                         color: 'rgba(0, 0, 0, 0.05)'
                     },
                     ticks: {
+                        font: {
+                            size: 12
+                        },
                         callback: function(value) {
                             return '₹' + value;
                         }
@@ -313,6 +459,48 @@ function updateChart(currentData, previousData) {
     });
 }
 
+// Update Peak Days
+function updatePeakDays(data) {
+    if (data.length === 0) {
+        peakDaysEl.innerHTML = `
+            <div class="empty-state">
+                <p>No data available for peak days analysis.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Sort by total_income and get top 5
+    const sortedData = [...data]
+        .sort((a, b) => parseFloat(b.total_income) - parseFloat(a.total_income))
+        .slice(0, 5);
+
+    const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+
+    const html = sortedData.map((entry, index) => {
+        const date = new Date(entry.date);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
+
+        return `
+            <div class="peak-day-item">
+                <div class="peak-day-rank">${medals[index]}</div>
+                <div class="peak-day-info">
+                    <div class="peak-day-date">${formattedDate}</div>
+                    <div class="peak-day-weekday">${weekday}</div>
+                </div>
+                <div class="peak-day-amount">₹${parseFloat(entry.total_income).toFixed(2)}</div>
+            </div>
+        `;
+    }).join('');
+
+    peakDaysEl.innerHTML = html;
+}
+
 // Update Daily Breakdown
 function updateDailyBreakdown(data) {
     if (data.length === 0) {
@@ -320,7 +508,7 @@ function updateDailyBreakdown(data) {
             <div class="empty-state">
                 <h3>No Data Available</h3>
                 <p>No entries recorded for this month.</p>
-                <a href="index.html" style="color: #667eea; text-decoration: none; font-weight: 600;">Add Entry</a>
+                <a href="entry.html" style="color: #667eea; text-decoration: none; font-weight: 600;">Add Entry</a>
             </div>
         `;
         return;
@@ -339,12 +527,11 @@ function updateDailyBreakdown(data) {
         return `
             <div class="daily-item">
                 <div>
-                    <div class="daily-date">${date}</div>
+                    <div class="daily-header">
+                        <span class="daily-date">${date}</span>
+                        <span class="daily-total">₹${parseFloat(entry.total_income).toFixed(2)}</span>
+                    </div>
                     <div class="daily-details">
-                        <div class="daily-detail-item">
-                            <span class="daily-detail-label">Cash on Hand</span>
-                            <span>₹${parseFloat(entry.cash_amount).toFixed(2)}</span>
-                        </div>
                         <div class="daily-detail-item">
                             <span class="daily-detail-label">Cash on Day</span>
                             <span>₹${parseFloat(entry.cash_total || 0).toFixed(2)}</span>
@@ -361,13 +548,8 @@ function updateDailyBreakdown(data) {
                             <span class="daily-detail-label">AP Cash</span>
                             <span>₹${parseFloat(entry.ap_cash || 0).toFixed(2)}</span>
                         </div>
-                        <div class="daily-detail-item">
-                            <span class="daily-detail-label">Petty Cash</span>
-                            <span>₹${parseFloat(entry.petty_cash).toFixed(2)}</span>
-                        </div>
                     </div>
                 </div>
-                <div class="daily-amount">₹${parseFloat(entry.total_income).toFixed(2)}</div>
             </div>
         `;
     }).join('');
