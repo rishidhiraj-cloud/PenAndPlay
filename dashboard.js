@@ -150,15 +150,16 @@ async function loadDashboard() {
         twoMonthsBefore.setMonth(twoMonthsBefore.getMonth() - 2);
         const twoMonthsBeforeData = await fetchMonthData(twoMonthsBefore);
 
-        // Update month labels
-        updateMonthLabels(previousMonth, twoMonthsBefore);
-
         console.log('Current month data:', currentMonthData.length, 'entries');
         console.log('Previous month data:', previousMonthData.length, 'entries');
         console.log('2 months before data:', twoMonthsBeforeData.length, 'entries');
 
         // Calculate statistics
         const stats = calculateStats(currentMonthData, previousMonthData, twoMonthsBeforeData);
+
+        // Update month labels with current/past month context
+        updateMonthLabels(previousMonth, twoMonthsBefore, stats.isCurrentMonth);
+        updateCardLabels(previousMonth, twoMonthsBefore, stats.isCurrentMonth);
 
         // Update UI
         updateSummaryCards(stats);
@@ -189,7 +190,7 @@ function updateMonthDisplay() {
 }
 
 // Update Month Labels
-function updateMonthLabels(previousMonth, twoMonthsBefore) {
+function updateMonthLabels(previousMonth, twoMonthsBefore, isCurrentMonth) {
     // Format as "Feb'25"
     const lastMonthLabel = previousMonth.toLocaleDateString('en-US', { month: 'short' }) +
                           "'" + previousMonth.getFullYear().toString().slice(-2);
@@ -198,6 +199,29 @@ function updateMonthLabels(previousMonth, twoMonthsBefore) {
 
     lastMonthLabelEl.textContent = `(${lastMonthLabel})`;
     twoMonthsBeforeLabelEl.textContent = `(${twoMonthsLabel})`;
+}
+
+// Update Card Labels based on current/past month
+function updateCardLabels(previousMonth, twoMonthsBefore, isCurrentMonth) {
+    const lastMonthLabel = previousMonth.toLocaleDateString('en-US', { month: 'short' }) +
+                          "'" + previousMonth.getFullYear().toString().slice(-2);
+    const twoMonthsLabel = twoMonthsBefore.toLocaleDateString('en-US', { month: 'short' }) +
+                          "'" + twoMonthsBefore.getFullYear().toString().slice(-2);
+
+    // Get the card label elements
+    const tillDateLastMonthLabel = document.querySelector('#tillDateLastMonth').closest('.summary-card').querySelector('.card-label');
+    const tillDate2MonthsBeforeLabel = document.querySelector('#tillDate2MonthsBefore').closest('.summary-card').querySelector('.card-label');
+    const vsLastMonthLabel = document.querySelector('#vsLastMonth').closest('.summary-card').querySelector('.card-label');
+
+    if (isCurrentMonth) {
+        tillDateLastMonthLabel.innerHTML = `Till Date Income Last Month <span id="lastMonthLabel">(${lastMonthLabel})</span>`;
+        tillDate2MonthsBeforeLabel.innerHTML = `Till Date Income 2 Months Before <span id="twoMonthsBeforeLabel">(${twoMonthsLabel})</span>`;
+        vsLastMonthLabel.textContent = 'Growth vs Last Month';
+    } else {
+        tillDateLastMonthLabel.innerHTML = `Income Last Month <span id="lastMonthLabel">(${lastMonthLabel})</span>`;
+        tillDate2MonthsBeforeLabel.innerHTML = `Income 2 Months Before <span id="twoMonthsBeforeLabel">(${twoMonthsLabel})</span>`;
+        vsLastMonthLabel.textContent = 'Growth vs Last Month';
+    }
 }
 
 // Fetch Month Data
@@ -229,29 +253,39 @@ async function fetchMonthData(month) {
 
 // Calculate Statistics
 function calculateStats(currentData, previousData, twoMonthsBeforeData) {
+    // Check if viewing current month
+    const today = new Date();
+    const isCurrentMonth = currentMonth.getFullYear() === today.getFullYear() &&
+                           currentMonth.getMonth() === today.getMonth();
+
     // Current month stats
     const totalIncome = currentData.reduce((sum, entry) => sum + parseFloat(entry.total_income), 0);
     const daysRecorded = currentData.length;
 
-    // Get the current day of month to calculate "till date" for previous months
-    const today = new Date();
-    const currentDayOfMonth = today.getDate();
+    let tillDateLastMonth, tillDate2MonthsBefore;
 
-    // Calculate till-date income for last month (up to same day number)
-    const tillDateLastMonth = previousData
-        .filter(entry => {
-            const entryDay = new Date(entry.date).getDate();
-            return entryDay <= currentDayOfMonth;
-        })
-        .reduce((sum, entry) => sum + parseFloat(entry.total_income), 0);
+    if (isCurrentMonth) {
+        // For current month: use today-1 for comparisons
+        const compareDay = today.getDate() - 1;
 
-    // Calculate till-date income for 2 months before (up to same day number)
-    const tillDate2MonthsBefore = twoMonthsBeforeData
-        .filter(entry => {
-            const entryDay = new Date(entry.date).getDate();
-            return entryDay <= currentDayOfMonth;
-        })
-        .reduce((sum, entry) => sum + parseFloat(entry.total_income), 0);
+        tillDateLastMonth = previousData
+            .filter(entry => {
+                const entryDay = new Date(entry.date).getDate();
+                return entryDay <= compareDay;
+            })
+            .reduce((sum, entry) => sum + parseFloat(entry.total_income), 0);
+
+        tillDate2MonthsBefore = twoMonthsBeforeData
+            .filter(entry => {
+                const entryDay = new Date(entry.date).getDate();
+                return entryDay <= compareDay;
+            })
+            .reduce((sum, entry) => sum + parseFloat(entry.total_income), 0);
+    } else {
+        // For past months: use full month data
+        tillDateLastMonth = previousData.reduce((sum, entry) => sum + parseFloat(entry.total_income), 0);
+        tillDate2MonthsBefore = twoMonthsBeforeData.reduce((sum, entry) => sum + parseFloat(entry.total_income), 0);
+    }
 
     // Calculate percentage growth/decline vs last month
     let comparison = 0;
@@ -271,7 +305,8 @@ function calculateStats(currentData, previousData, twoMonthsBeforeData) {
         tillDateLastMonth,
         tillDate2MonthsBefore,
         comparison,
-        comparisonText
+        comparisonText,
+        isCurrentMonth
     };
 }
 

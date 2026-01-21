@@ -74,9 +74,20 @@ body.dark-mode .nav-links a:hover {
     display: flex;
     gap: 10px;
     margin-bottom: 24px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
     align-items: center;
+}
+
+@media (max-width: 480px) {
+    .nav-links {
+        gap: 8px;
+    }
+
+    .nav-links a {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
 }
 
 .nav-links a {
@@ -104,25 +115,40 @@ body.dark-mode .nav-links a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 8px;
     margin-bottom: 32px;
     background: white;
-    padding: 18px 24px;
+    padding: 12px 16px;
     border-radius: 18px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+@media (min-width: 768px) {
+    .month-selector {
+        gap: 20px;
+        padding: 18px 24px;
+    }
 }
 
 .month-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    font-size: 18px;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+@media (min-width: 768px) {
+    .month-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+    }
 }
 
 .month-btn:hover {
@@ -142,12 +168,19 @@ body.dark-mode .nav-links a:hover {
 }
 
 .month-display {
-    font-size: 20px;
+    font-size: 14px;
     font-weight: 800;
     color: #1a202c;
-    min-width: 200px;
+    min-width: 140px;
     text-align: center;
     letter-spacing: -0.3px;
+}
+
+@media (min-width: 768px) {
+    .month-display {
+        font-size: 20px;
+        min-width: 200px;
+    }
 }
 
 /* Summary Cards */
@@ -220,11 +253,18 @@ body.dark-mode .nav-links a:hover {
 .chart-container {
     background: white;
     border-radius: 20px;
-    padding: 36px 32px 40px;
+    padding: 20px 16px 16px;
     margin-bottom: 32px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.06);
     border: 1px solid rgba(102, 126, 234, 0.08);
-    min-height: 450px;
+    min-height: 300px;
+}
+
+@media (min-width: 768px) {
+    .chart-container {
+        padding: 36px 32px 40px;
+        min-height: 450px;
+    }
 }
 
 .chart-container h2 {
@@ -361,18 +401,8 @@ body.dark-mode .nav-links a:hover {
         grid-template-columns: 1fr;
     }
 
-    .month-display {
-        font-size: 17px;
-        min-width: 160px;
-    }
-
     .card-value {
         font-size: 22px;
-    }
-
-    .chart-container {
-        padding: 28px 18px 32px;
-        min-height: 400px;
     }
 
     .details-section {

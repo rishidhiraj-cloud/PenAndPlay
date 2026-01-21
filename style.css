@@ -87,13 +87,19 @@ body.dark-mode .history-link a:hover {
 
 /* Container */
 .container {
-    max-width: 500px;
+    max-width: 100%;
     margin: 0 auto;
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
     border-radius: 24px;
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25), 0 0 1px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 500px;
+    }
 }
 
 /* Header */
@@ -114,14 +120,14 @@ header {
 }
 
 header h1 {
-    font-size: 32px;
+    font-size: 20px;
     font-weight: 800;
     margin-bottom: 6px;
     letter-spacing: -0.5px;
 }
 
 .subtitle {
-    font-size: 15px;
+    font-size: 12px;
     opacity: 0.95;
     font-weight: 500;
 }
@@ -131,8 +137,8 @@ header h1 {
 .header-logo-right {
     position: absolute;
     top: -15px;
-    width: 90px;
-    height: 90px;
+    width: 50px;
+    height: 50px;
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
@@ -142,6 +148,14 @@ header h1 {
 
 .header-logo-right {
     right: 0;
+}
+
+@media (min-width: 768px) {
+    .header-logo-left,
+    .header-logo-right {
+        width: 90px;
+        height: 90px;
+    }
 }
 
 .header-logo-left img,
@@ -325,6 +339,26 @@ main {
     box-shadow: 0 8px 16px rgba(102, 126, 234, 0.25);
 }
 
+/* Date inputs - mobile calendar icon fix */
+input[type="date"] {
+    max-width: 85%;
+}
+
+/* Hide dark mode and settings buttons on mobile */
+.dark-mode-toggle-btn,
+.settings-btn,
+.dark-mode-toggle {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .dark-mode-toggle-btn,
+    .settings-btn,
+    .dark-mode-toggle {
+        display: inline-block;
+    }
+}
+
 /* Tablet and Desktop */
 @media (min-width: 768px) {
     body {
@@ -345,6 +379,10 @@ main {
 
     main {
         padding: 40px 32px;
+    }
+
+    input[type="date"] {
+        max-width: 100%;
     }
 }
 
