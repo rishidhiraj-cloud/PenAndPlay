@@ -3,134 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Cash Register</title>
+    <title>Dashboard - Daily Cash Register</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard-style.css">
 </head>
 <body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
     <div class="container">
         <header>
             <div class="header-content">
-                <div class="header-text">
-                    <h1>Daily Cash Register</h1>
-                    <p class="subtitle">Track your daily income</p>
+                <div class="header-logo-left">
+                    <img src="logo.png" alt="Shop Logo">
                 </div>
-                <div class="header-logo">
-                    <img src="logo.png" alt="Shop Logo" id="shopLogo">
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Dashboard</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="logo.png" alt="Shop Logo">
                 </div>
             </div>
         </header>
 
         <main>
-            <form id="cashRegisterForm">
-                <!-- Date Field -->
-                <div class="form-group">
-                    <label for="date">Date</label>
-                    <input type="date" id="date" name="date" required>
+            <!-- Navigation -->
+            <div class="nav-links">
+                <a href="entry.html">➕ New Entry</a>
+                <a href="history.html">📋 History</a>
+                <a href="expense.html">💸 Expense</a>
+            </div>
+
+            <!-- Month Selector -->
+            <div class="month-selector">
+                <button id="prevMonth" class="month-btn">◀</button>
+                <div id="currentMonthDisplay" class="month-display">Loading...</div>
+                <button id="nextMonth" class="month-btn">▶</button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon">💰</div>
+                    <div class="card-content">
+                        <div class="card-label">Total Income This Month</div>
+                        <div class="card-value" id="totalIncomeThisMonth">₹0.00</div>
+                    </div>
                 </div>
 
-                <!-- Cash on Hand -->
-                <div class="form-group">
-                    <label for="cashAmount">Cash on Hand</label>
-                    <input type="number"
-                           id="cashAmount"
-                           name="cashAmount"
-                           placeholder="0.00"
-                           step="0.01"
-                           min="0"
-                           inputmode="decimal">
+                <div class="summary-card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-content">
+                        <div class="card-label">Till Date Income Last Month <span id="lastMonthLabel"></span></div>
+                        <div class="card-value" id="tillDateLastMonth">₹0.00</div>
+                    </div>
                 </div>
 
-                <!-- Yesterday's Petty Cash (Read-only) -->
-                <div class="form-group readonly-group">
-                    <label for="yesterdayPettyCash">Yesterday's Petty Cash</label>
-                    <input type="text"
-                           id="yesterdayPettyCash"
-                           readonly
-                           value="0.00">
+                <div class="summary-card">
+                    <div class="card-icon">📈</div>
+                    <div class="card-content">
+                        <div class="card-label">Till Date Income 2 Months Before <span id="twoMonthsBeforeLabel"></span></div>
+                        <div class="card-value" id="tillDate2MonthsBefore">₹0.00</div>
+                    </div>
                 </div>
 
-                <!-- Cash on Day (Auto-calculated, Read-only) -->
-                <div class="form-group readonly-group">
-                    <label for="cashTotal">Cash on Day</label>
-                    <input type="text"
-                           id="cashTotal"
-                           readonly
-                           value="0.00">
+                <div class="summary-card">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-content">
+                        <div class="card-label">Growth vs Last Month</div>
+                        <div class="card-value" id="vsLastMonth">-</div>
+                    </div>
                 </div>
+            </div>
 
-                <!-- UPI Amount -->
-                <div class="form-group">
-                    <label for="upiAmount">UPI Amount</label>
-                    <input type="number"
-                           id="upiAmount"
-                           name="upiAmount"
-                           placeholder="0.00"
-                           step="0.01"
-                           min="0"
-                           inputmode="decimal">
+            <!-- Chart Section -->
+            <div class="chart-container">
+                <h2>Daily Income Comparison</h2>
+                <p class="chart-subtitle">Current month vs Previous month</p>
+                <canvas id="comparisonChart"></canvas>
+            </div>
+
+            <!-- Current Month Details -->
+            <div class="details-section">
+                <h2>This Month's Daily Breakdown</h2>
+                <div id="dailyBreakdown" class="daily-breakdown">
+                    <div class="loading-spinner">Loading data...</div>
                 </div>
-
-                <!-- Card Amount -->
-                <div class="form-group">
-                    <label for="cardAmount">Card Amount</label>
-                    <input type="number"
-                           id="cardAmount"
-                           name="cardAmount"
-                           placeholder="0.00"
-                           step="0.01"
-                           min="0"
-                           inputmode="decimal">
-                </div>
-
-                <!-- AP Cash -->
-                <div class="form-group">
-                    <label for="apCash">AP Cash</label>
-                    <input type="number"
-                           id="apCash"
-                           name="apCash"
-                           placeholder="0.00"
-                           step="0.01"
-                           min="0"
-                           inputmode="decimal">
-                </div>
-
-                <!-- Petty Cash Amount (Auto-calculated, Read-only) -->
-                <div class="form-group readonly-group">
-                    <label for="pettyCashAmount">Petty Cash Amount</label>
-                    <input type="text"
-                           id="pettyCashAmount"
-                           readonly
-                           value="0.00">
-                </div>
-
-                <!-- Total Income (Auto-calculated) -->
-                <div class="form-group total-group">
-                    <label for="totalIncome">Total Income</label>
-                    <input type="text"
-                           id="totalIncome"
-                           readonly
-                           value="0.00">
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" class="btn-primary" id="submitBtn">
-                    Save Entry
-                </button>
-            </form>
-
-            <!-- Status Message -->
-            <div id="statusMessage" class="status-message"></div>
-
-            <!-- Navigation Links -->
-            <div class="history-link">
-                <a href="dashboard.html">📊 Dashboard</a>
-                <a href="history.html">📋 View History</a>
             </div>
         </main>
     </div>
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js"></script>
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="dashboard.js"></script>
 </body>
 </html>
