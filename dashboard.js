@@ -265,8 +265,16 @@ function calculateStats(currentData, previousData, twoMonthsBeforeData) {
     let tillDateLastMonth, tillDate2MonthsBefore;
 
     if (isCurrentMonth) {
-        // For current month: use today-1 for comparisons
-        const compareDay = today.getDate() - 1;
+        // For current month: use the last entry date
+        let compareDay = today.getDate();
+        if (currentData.length > 0) {
+            const lastEntry = currentData.reduce((latest, entry) => {
+                const entryDate = new Date(entry.date);
+                const latestDate = new Date(latest.date);
+                return entryDate > latestDate ? entry : latest;
+            });
+            compareDay = new Date(lastEntry.date).getDate();
+        }
 
         tillDateLastMonth = previousData
             .filter(entry => {

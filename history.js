@@ -246,9 +246,17 @@ Description: ${expense.description || 'N/A'}`;
     message += '\n\nFor Detailed data, Visit https://pen-and-play.vercel.app/index.html';
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
 
-    window.open(whatsappUrl, '_blank');
+    // Detect mobile device
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+        // Use whatsapp:// protocol for mobile devices (works better with Safari)
+        window.location.href = `whatsapp://send?text=${encodedMessage}`;
+    } else {
+        // Use web URL for desktop
+        window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+    }
 }
 
 // Dark Mode
