@@ -7,6 +7,24 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 console.log('✅ App.js loaded successfully');
 
+// Format number in Indian style
+function formatIndianNumber(num) {
+    const n = parseFloat(num).toFixed(2);
+    const parts = n.split('.');
+    const integerPart = parts[0];
+    const decimalPart = parts[1];
+
+    let lastThree = integerPart.substring(integerPart.length - 3);
+    const otherNumbers = integerPart.substring(0, integerPart.length - 3);
+
+    if (otherNumbers !== '') {
+        lastThree = ',' + lastThree;
+    }
+
+    const formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+    return formatted + '.' + decimalPart;
+}
+
 // DOM Elements
 const form = document.getElementById('cashRegisterForm');
 const dateInput = document.getElementById('date');
@@ -69,15 +87,15 @@ async function fetchYesterdayPettyCash(currentDate) {
             .single();
 
         if (error) {
-            yesterdayPettyCashInput.value = '0.00';
+            yesterdayPettyCashInput.value = formatIndianNumber(0);
         } else {
-            yesterdayPettyCashInput.value = parseFloat(data.petty_cash).toFixed(2);
+            yesterdayPettyCashInput.value = formatIndianNumber(data.petty_cash);
         }
 
         calculateAllFields();
     } catch (err) {
         console.error('Error fetching yesterday petty cash:', err);
-        yesterdayPettyCashInput.value = '0.00';
+        yesterdayPettyCashInput.value = formatIndianNumber(0);
         calculateAllFields();
     }
 }
@@ -92,15 +110,15 @@ function calculateAllFields() {
 
     // Calculate Cash Total = Cash Amount - Yesterday's Petty Cash
     const cashTotal = cash - yesterdayPettyCash;
-    cashTotalInput.value = cashTotal.toFixed(2);
+    cashTotalInput.value = formatIndianNumber(cashTotal);
 
     // Calculate Petty Cash Amount = Cash Amount - AP Cash
     const pettyCash = cash - apCash;
-    pettyCashAmountInput.value = pettyCash.toFixed(2);
+    pettyCashAmountInput.value = formatIndianNumber(pettyCash);
 
     // Calculate Total Income = Cash Amount + UPI Amount + Card Amount - Yesterday's Petty Cash
     const totalIncome = cash + upi + card - yesterdayPettyCash;
-    totalIncomeInput.value = totalIncome.toFixed(2);
+    totalIncomeInput.value = formatIndianNumber(totalIncome);
 }
 
 // Handle Date Change
@@ -134,9 +152,9 @@ async function checkExistingEntry(date) {
             upiAmountInput.value = '';
             cardAmountInput.value = '';
             apCashInput.value = '';
-            cashTotalInput.value = '0.00';
-            pettyCashAmountInput.value = '0.00';
-            totalIncomeInput.value = '0.00';
+            cashTotalInput.value = formatIndianNumber(0);
+            pettyCashAmountInput.value = formatIndianNumber(0);
+            totalIncomeInput.value = formatIndianNumber(0);
 
             submitBtn.textContent = 'Save Entry';
         }

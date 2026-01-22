@@ -7,6 +7,24 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 console.log('✅ History.js loaded successfully');
 
+// Format number in Indian style
+function formatIndianNumber(num) {
+    const n = parseFloat(num).toFixed(2);
+    const parts = n.split('.');
+    const integerPart = parts[0];
+    const decimalPart = parts[1];
+
+    let lastThree = integerPart.substring(integerPart.length - 3);
+    const otherNumbers = integerPart.substring(0, integerPart.length - 3);
+
+    if (otherNumbers !== '') {
+        lastThree = ',' + lastThree;
+    }
+
+    const formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+    return formatted + '.' + decimalPart;
+}
+
 // DOM Elements
 const historyContainer = document.getElementById('historyContainer');
 const currentMonthLabelEl = document.getElementById('currentMonthLabel');
@@ -112,32 +130,32 @@ function displayHistory(entries) {
                 <div class="history-details">
                     <div class="detail-item">
                         <span class="detail-label">Cash on Hand:</span>
-                        <span class="detail-value">₹${parseFloat(entry.cash_amount).toFixed(2)}</span>
+                        <span class="detail-value">₹${formatIndianNumber(entry.cash_amount)}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Cash on Day:</span>
-                        <span class="detail-value">₹${parseFloat(entry.cash_total || 0).toFixed(2)}</span>
+                        <span class="detail-value">₹${formatIndianNumber(entry.cash_total || 0)}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">UPI:</span>
-                        <span class="detail-value">₹${parseFloat(entry.upi_amount).toFixed(2)}</span>
+                        <span class="detail-value">₹${formatIndianNumber(entry.upi_amount)}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Card:</span>
-                        <span class="detail-value">₹${parseFloat(entry.card_amount).toFixed(2)}</span>
+                        <span class="detail-value">₹${formatIndianNumber(entry.card_amount)}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">AP Cash:</span>
-                        <span class="detail-value">₹${parseFloat(entry.ap_cash || 0).toFixed(2)}</span>
+                        <span class="detail-value">₹${formatIndianNumber(entry.ap_cash || 0)}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Petty Cash:</span>
-                        <span class="detail-value">₹${parseFloat(entry.petty_cash).toFixed(2)}</span>
+                        <span class="detail-value">₹${formatIndianNumber(entry.petty_cash)}</span>
                     </div>
                 </div>
                 <div class="history-total">
                     <span class="detail-label">Total Income:</span>
-                    <span class="detail-value">₹${parseFloat(entry.total_income).toFixed(2)}</span>
+                    <span class="detail-value">₹${formatIndianNumber(entry.total_income)}</span>
                 </div>
                 <div class="action-buttons">
                     <button class="delete-btn" onclick="deleteEntry('${entry.date}')">Delete</button>
@@ -200,14 +218,14 @@ async function sendWhatsApp(entry) {
 
     let message = `*Pen & Play Cash Register - ${formattedDate}*
 
-Cash on Hand: ₹${parseFloat(entry.cash_amount).toFixed(2)}
-Cash on Day: ₹${parseFloat(entry.cash_total || 0).toFixed(2)}
-UPI: ₹${parseFloat(entry.upi_amount).toFixed(2)}
-Card: ₹${parseFloat(entry.card_amount).toFixed(2)}
-AP Cash: ₹${parseFloat(entry.ap_cash || 0).toFixed(2)}
-Petty Cash: ₹${parseFloat(entry.petty_cash).toFixed(2)}
+Cash on Hand: ₹${formatIndianNumber(entry.cash_amount)}
+Cash on Day: ₹${formatIndianNumber(entry.cash_total || 0)}
+UPI: ₹${formatIndianNumber(entry.upi_amount)}
+Card: ₹${formatIndianNumber(entry.card_amount)}
+AP Cash: ₹${formatIndianNumber(entry.ap_cash || 0)}
+Petty Cash: ₹${formatIndianNumber(entry.petty_cash)}
 
-*TOTAL INCOME : ₹${parseFloat(entry.total_income).toFixed(2)}*`;
+*TOTAL INCOME : ₹${formatIndianNumber(entry.total_income)}*`;
 
     // Fetch expenses for this date based on created_at
     try {
@@ -230,7 +248,7 @@ Petty Cash: ₹${parseFloat(entry.petty_cash).toFixed(2)}
 
                 message += `\nExpense Date: ${expFormattedDate}
 Expense By: ${expense.expense_by}
-Amount: ₹${parseFloat(expense.amount).toFixed(2)}
+Amount: ₹${formatIndianNumber(expense.amount)}
 Paid From: ${expense.paid_from}
 Description: ${expense.description || 'N/A'}`;
 

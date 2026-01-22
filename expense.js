@@ -7,6 +7,24 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 console.log('✅ Expense.js loaded successfully');
 
+// Format number in Indian style
+function formatIndianNumber(num) {
+    const n = parseFloat(num).toFixed(2);
+    const parts = n.split('.');
+    const integerPart = parts[0];
+    const decimalPart = parts[1];
+
+    let lastThree = integerPart.substring(integerPart.length - 3);
+    const otherNumbers = integerPart.substring(0, integerPart.length - 3);
+
+    if (otherNumbers !== '') {
+        lastThree = ',' + lastThree;
+    }
+
+    const formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+    return formatted + '.' + decimalPart;
+}
+
 // DOM Elements
 const form = document.getElementById('expenseForm');
 const expenseDateInput = document.getElementById('expenseDate');
@@ -224,7 +242,7 @@ function displayExpenses(expenses) {
             <div class="expense-item">
                 <div class="expense-header">
                     <div class="expense-date">${date}</div>
-                    <div class="expense-amount">₹${parseFloat(expense.amount).toFixed(2)}</div>
+                    <div class="expense-amount">₹${formatIndianNumber(expense.amount)}</div>
                 </div>
                 <div class="expense-details">
                     <div class="expense-detail-row">

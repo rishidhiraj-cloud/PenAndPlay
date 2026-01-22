@@ -7,6 +7,24 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 
 console.log('✅ Dashboard.js loaded successfully');
 
+// Format number in Indian style
+function formatIndianNumber(num) {
+    const n = parseFloat(num).toFixed(2);
+    const parts = n.split('.');
+    const integerPart = parts[0];
+    const decimalPart = parts[1];
+
+    let lastThree = integerPart.substring(integerPart.length - 3);
+    const otherNumbers = integerPart.substring(0, integerPart.length - 3);
+
+    if (otherNumbers !== '') {
+        lastThree = ',' + lastThree;
+    }
+
+    const formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+    return formatted + '.' + decimalPart;
+}
+
 // Global variables
 let currentMonth = new Date();
 let chartInstance = null;
@@ -320,9 +338,9 @@ function calculateStats(currentData, previousData, twoMonthsBeforeData) {
 
 // Update Summary Cards
 function updateSummaryCards(stats) {
-    totalIncomeThisMonthEl.textContent = `₹${stats.totalIncome.toFixed(2)}`;
-    tillDateLastMonthEl.textContent = `₹${stats.tillDateLastMonth.toFixed(2)}`;
-    tillDate2MonthsBeforeEl.textContent = `₹${stats.tillDate2MonthsBefore.toFixed(2)}`;
+    totalIncomeThisMonthEl.textContent = `₹${formatIndianNumber(stats.totalIncome)}`;
+    tillDateLastMonthEl.textContent = `₹${formatIndianNumber(stats.tillDateLastMonth)}`;
+    tillDate2MonthsBeforeEl.textContent = `₹${formatIndianNumber(stats.tillDate2MonthsBefore)}`;
 
     // Update comparison with color coding
     vsLastMonthEl.textContent = stats.comparisonText;
@@ -443,7 +461,7 @@ function updateChart(currentData, previousData) {
                                 label += ': ';
                             }
                             if (context.parsed.y !== null) {
-                                label += '₹' + context.parsed.y.toFixed(2);
+                                label += '₹' + formatIndianNumber(context.parsed.y);
                             }
                             return label;
                         }
@@ -488,7 +506,7 @@ function updateChart(currentData, previousData) {
                             size: 12
                         },
                         callback: function(value) {
-                            return '₹' + value;
+                            return '₹' + formatIndianNumber(value);
                         }
                     },
                     stacked: false
@@ -536,7 +554,7 @@ function updatePeakDays(data) {
                     <div class="peak-day-date">${formattedDate}</div>
                     <div class="peak-day-weekday">${weekday}</div>
                 </div>
-                <div class="peak-day-amount">₹${parseFloat(entry.total_income).toFixed(2)}</div>
+                <div class="peak-day-amount">₹${formatIndianNumber(entry.total_income)}</div>
             </div>
         `;
     }).join('');
@@ -572,24 +590,24 @@ function updateDailyBreakdown(data) {
                 <div>
                     <div class="daily-header">
                         <span class="daily-date">${date}</span>
-                        <span class="daily-total">₹${parseFloat(entry.total_income).toFixed(2)}</span>
+                        <span class="daily-total">₹${formatIndianNumber(entry.total_income)}</span>
                     </div>
                     <div class="daily-details">
                         <div class="daily-detail-item">
                             <span class="daily-detail-label">Cash on Day</span>
-                            <span>₹${parseFloat(entry.cash_total || 0).toFixed(2)}</span>
+                            <span>₹${formatIndianNumber(entry.cash_total || 0)}</span>
                         </div>
                         <div class="daily-detail-item">
                             <span class="daily-detail-label">UPI</span>
-                            <span>₹${parseFloat(entry.upi_amount).toFixed(2)}</span>
+                            <span>₹${formatIndianNumber(entry.upi_amount)}</span>
                         </div>
                         <div class="daily-detail-item">
                             <span class="daily-detail-label">Card</span>
-                            <span>₹${parseFloat(entry.card_amount).toFixed(2)}</span>
+                            <span>₹${formatIndianNumber(entry.card_amount)}</span>
                         </div>
                         <div class="daily-detail-item">
                             <span class="daily-detail-label">AP Cash</span>
-                            <span>₹${parseFloat(entry.ap_cash || 0).toFixed(2)}</span>
+                            <span>₹${formatIndianNumber(entry.ap_cash || 0)}</span>
                         </div>
                     </div>
                 </div>
