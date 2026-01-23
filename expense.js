@@ -90,7 +90,7 @@ async function handleSubmit(e) {
     try {
         const expenseDate = expenseDateInput.value;
         const expenseBy = expenseByInput.value;
-        const amount = parseFloat(amountInput.value) || 0;
+        const amount = parseFloat(amountInput.value.replace(/,/g, '')) || 0;
         const paidFrom = document.querySelector('input[name="paidFrom"]:checked')?.value;
         const description = descriptionInput.value.trim();
 
@@ -260,7 +260,6 @@ function displayExpenses(expenses) {
                     </div>
                     ` : ''}
                 </div>
-                <button class="delete-btn" onclick="deleteExpense('${expense.id}')">Delete</button>
             </div>
         `;
     }).join('');
@@ -278,35 +277,6 @@ function displayNoExpenses() {
     `;
 }
 
-// Delete Expense
-async function deleteExpense(id) {
-    if (!confirm('Are you sure you want to delete this expense?')) {
-        return;
-    }
-
-    console.log('🗑️ Deleting expense:', id);
-
-    try {
-        const { error } = await supabaseClient
-            .from('expenses')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            console.error('❌ Delete error:', error);
-            throw error;
-        }
-
-        console.log('✅ Expense deleted successfully');
-        showStatusMessage('Expense deleted successfully!', 'success');
-
-        // Reload history
-        await loadExpenseHistory();
-    } catch (err) {
-        console.error('❌ Error deleting expense:', err);
-        showStatusMessage('Error deleting expense: ' + err.message, 'error');
-    }
-}
 
 // Show Status Message
 function showStatusMessage(message, type) {
@@ -332,7 +302,7 @@ function initDarkMode() {
     const isDark = localStorage.getItem('darkMode') === 'true';
     if (isDark) {
         document.body.classList.add('dark-mode');
-        darkModeToggle.textContent = '☀️';
+        darkModeToggle.textContent = '☀️ Light Mode';
     }
 }
 
@@ -340,8 +310,30 @@ function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     const isDark = document.body.classList.contains('dark-mode');
     localStorage.setItem('darkMode', isDark);
-    darkModeToggle.textContent = isDark ? '☀️' : '🌙';
+    darkModeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+// Burger Menu
+function initBurgerMenu() {
+    const burgerIcon = document.getElementById('burgerIcon');
+    const burgerMenu = document.getElementById('burgerMenu');
+    const burgerOverlay = document.getElementById('burgerOverlay');
+
+    if (burgerIcon && burgerMenu && burgerOverlay) {
+        burgerIcon.addEventListener('click', () => {
+            burgerMenu.classList.toggle('active');
+            burgerOverlay.classList.toggle('active');
+        });
+
+        burgerOverlay.addEventListener('click', () => {
+            burgerMenu.classList.remove('active');
+            burgerOverlay.classList.remove('active');
+        });
+    }
 }
 
 // Initialize on Page Load
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    initBurgerMenu();
+    init();
+});

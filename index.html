@@ -19,8 +19,12 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <div class="header-logo-left">
-                    <img src="logo.png" alt="Shop Logo">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </div>
                 <div class="header-text">
                     <h1>Pen & Play Club</h1>
@@ -32,15 +36,19 @@
             </div>
         </header>
 
-        <main>
-            <!-- Navigation -->
-            <div class="nav-links">
-                <a href="entry.html">➕ New</a>
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html">➕ New Entry</a>
                 <a href="history.html">📋 History</a>
-                <a href="expense.html">💸 Expense</a>
-                <button id="settingsBtn" class="settings-btn">⚙️</button>
-                <button id="darkModeToggle" class="dark-mode-toggle">🌙</button>
-            </div>
+                <a href="expense.html">💸 Expenses</a>
+                <a href="storage.html">📦 Manage Storage</a>
+                <button id="settingsBtn" class="settings-btn">⚙️ Settings</button>
+                <button id="darkModeToggle" class="dark-mode-toggle">🌙 Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
 
             <!-- Month Selector -->
             <div class="month-selector">

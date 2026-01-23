@@ -13,8 +13,12 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <div class="header-logo-left">
-                    <img src="logo.png" alt="Shop Logo">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </div>
                 <div class="header-text">
                     <h1>Pen & Play Club</h1>
@@ -26,13 +30,20 @@
             </div>
         </header>
 
-        <main>
-            <!-- Navigation Links -->
-            <div class="history-link">
-                <a href="index.html">📊 Dashboard</a>
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html">➕ New Entry</a>
                 <a href="history.html">📋 History</a>
-                <a href="expense.html">💸 Expense</a>
-                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙</button>
+                <a href="expense.html">💸 Expenses</a>
+                <a href="storage.html">📦 Manage Storage</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙 Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
+            <div class="back-to-dashboard">
+                <a href="index.html">« Back To Dashboard</a>
             </div>
 
             <form id="cashRegisterForm">
@@ -42,9 +53,9 @@
                     <input type="date" id="date" name="date" required>
                 </div>
 
-                <!-- Cash on Hand -->
+                <!-- Drawer Cash -->
                 <div class="form-group">
-                    <label for="cashAmount">Cash on Hand</label>
+                    <label for="cashAmount">Drawer Cash</label>
                     <input type="number"
                            id="cashAmount"
                            name="cashAmount"

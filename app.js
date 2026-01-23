@@ -87,38 +87,38 @@ async function fetchYesterdayPettyCash(currentDate) {
             .single();
 
         if (error) {
-            yesterdayPettyCashInput.value = formatIndianNumber(0);
+            yesterdayPettyCashInput.value = '0.00';
         } else {
-            yesterdayPettyCashInput.value = formatIndianNumber(data.petty_cash);
+            yesterdayPettyCashInput.value = parseFloat(data.petty_cash).toFixed(2);
         }
 
         calculateAllFields();
     } catch (err) {
         console.error('Error fetching yesterday petty cash:', err);
-        yesterdayPettyCashInput.value = formatIndianNumber(0);
+        yesterdayPettyCashInput.value = '0.00';
         calculateAllFields();
     }
 }
 
 // Calculate All Fields
 function calculateAllFields() {
-    const cash = parseFloat(cashAmountInput.value) || 0;
-    const upi = parseFloat(upiAmountInput.value) || 0;
-    const card = parseFloat(cardAmountInput.value) || 0;
-    const apCash = parseFloat(apCashInput.value) || 0;
-    const yesterdayPettyCash = parseFloat(yesterdayPettyCashInput.value) || 0;
+    const cash = parseFloat(cashAmountInput.value.replace(/,/g, '')) || 0;
+    const upi = parseFloat(upiAmountInput.value.replace(/,/g, '')) || 0;
+    const card = parseFloat(cardAmountInput.value.replace(/,/g, '')) || 0;
+    const apCash = parseFloat(apCashInput.value.replace(/,/g, '')) || 0;
+    const yesterdayPettyCash = parseFloat(yesterdayPettyCashInput.value.replace(/,/g, '')) || 0;
 
     // Calculate Cash Total = Cash Amount - Yesterday's Petty Cash
     const cashTotal = cash - yesterdayPettyCash;
-    cashTotalInput.value = formatIndianNumber(cashTotal);
+    cashTotalInput.value = cashTotal.toFixed(2);
 
     // Calculate Petty Cash Amount = Cash Amount - AP Cash
     const pettyCash = cash - apCash;
-    pettyCashAmountInput.value = formatIndianNumber(pettyCash);
+    pettyCashAmountInput.value = pettyCash.toFixed(2);
 
     // Calculate Total Income = Cash Amount + UPI Amount + Card Amount - Yesterday's Petty Cash
     const totalIncome = cash + upi + card - yesterdayPettyCash;
-    totalIncomeInput.value = formatIndianNumber(totalIncome);
+    totalIncomeInput.value = totalIncome.toFixed(2);
 }
 
 // Handle Date Change
@@ -152,9 +152,9 @@ async function checkExistingEntry(date) {
             upiAmountInput.value = '';
             cardAmountInput.value = '';
             apCashInput.value = '';
-            cashTotalInput.value = formatIndianNumber(0);
-            pettyCashAmountInput.value = formatIndianNumber(0);
-            totalIncomeInput.value = formatIndianNumber(0);
+            cashTotalInput.value = '0.00';
+            pettyCashAmountInput.value = '0.00';
+            totalIncomeInput.value = '0.00';
 
             submitBtn.textContent = 'Save Entry';
         }
@@ -177,13 +177,13 @@ async function handleSubmit(e) {
     try {
         const date = dateInput.value;
         // Treat empty fields as 0
-        const cashAmount = parseFloat(cashAmountInput.value) || 0;
-        const upiAmount = parseFloat(upiAmountInput.value) || 0;
-        const cardAmount = parseFloat(cardAmountInput.value) || 0;
-        const apCash = parseFloat(apCashInput.value) || 0;
-        const cashTotal = parseFloat(cashTotalInput.value) || 0;
-        const pettyCash = parseFloat(pettyCashAmountInput.value) || 0;
-        const totalIncome = parseFloat(totalIncomeInput.value) || 0;
+        const cashAmount = parseFloat(cashAmountInput.value.replace(/,/g, '')) || 0;
+        const upiAmount = parseFloat(upiAmountInput.value.replace(/,/g, '')) || 0;
+        const cardAmount = parseFloat(cardAmountInput.value.replace(/,/g, '')) || 0;
+        const apCash = parseFloat(apCashInput.value.replace(/,/g, '')) || 0;
+        const cashTotal = parseFloat(cashTotalInput.value.replace(/,/g, '')) || 0;
+        const pettyCash = parseFloat(pettyCashAmountInput.value.replace(/,/g, '')) || 0;
+        const totalIncome = parseFloat(totalIncomeInput.value.replace(/,/g, '')) || 0;
 
         console.log('📊 Data to save:', {
             date,
@@ -302,7 +302,7 @@ function initDarkMode() {
     const isDark = localStorage.getItem('darkMode') === 'true';
     if (isDark) {
         document.body.classList.add('dark-mode');
-        darkModeToggle.textContent = '☀️';
+        darkModeToggle.textContent = '☀️ Light Mode';
     }
 }
 
@@ -310,8 +310,30 @@ function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     const isDark = document.body.classList.contains('dark-mode');
     localStorage.setItem('darkMode', isDark);
-    darkModeToggle.textContent = isDark ? '☀️' : '🌙';
+    darkModeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+// Burger Menu
+function initBurgerMenu() {
+    const burgerIcon = document.getElementById('burgerIcon');
+    const burgerMenu = document.getElementById('burgerMenu');
+    const burgerOverlay = document.getElementById('burgerOverlay');
+
+    if (burgerIcon && burgerMenu && burgerOverlay) {
+        burgerIcon.addEventListener('click', () => {
+            burgerMenu.classList.toggle('active');
+            burgerOverlay.classList.toggle('active');
+        });
+
+        burgerOverlay.addEventListener('click', () => {
+            burgerMenu.classList.remove('active');
+            burgerOverlay.classList.remove('active');
+        });
+    }
 }
 
 // Initialize on Page Load
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    initBurgerMenu();
+    init();
+});

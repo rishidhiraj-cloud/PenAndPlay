@@ -129,7 +129,7 @@ function displayHistory(entries) {
                 <div class="history-date">${date}</div>
                 <div class="history-details">
                     <div class="detail-item">
-                        <span class="detail-label">Cash on Hand:</span>
+                        <span class="detail-label">Drawer Cash:</span>
                         <span class="detail-value">₹${formatIndianNumber(entry.cash_amount)}</span>
                     </div>
                     <div class="detail-item">
@@ -218,7 +218,7 @@ async function sendWhatsApp(entry) {
 
     let message = `*Pen & Play Cash Register - ${formattedDate}*
 
-Cash on Hand: ₹${formatIndianNumber(entry.cash_amount)}
+Drawer Cash: ₹${formatIndianNumber(entry.cash_amount)}
 Cash on Day: ₹${formatIndianNumber(entry.cash_total || 0)}
 UPI: ₹${formatIndianNumber(entry.upi_amount)}
 Card: ₹${formatIndianNumber(entry.card_amount)}
@@ -282,7 +282,7 @@ function initDarkMode() {
     const isDark = localStorage.getItem('darkMode') === 'true';
     if (isDark) {
         document.body.classList.add('dark-mode');
-        darkModeToggle.textContent = '☀️';
+        darkModeToggle.textContent = '☀️ Light Mode';
     }
 }
 
@@ -290,8 +290,30 @@ function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
     const isDark = document.body.classList.contains('dark-mode');
     localStorage.setItem('darkMode', isDark);
-    darkModeToggle.textContent = isDark ? '☀️' : '🌙';
+    darkModeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+// Burger Menu
+function initBurgerMenu() {
+    const burgerIcon = document.getElementById('burgerIcon');
+    const burgerMenu = document.getElementById('burgerMenu');
+    const burgerOverlay = document.getElementById('burgerOverlay');
+
+    if (burgerIcon && burgerMenu && burgerOverlay) {
+        burgerIcon.addEventListener('click', () => {
+            burgerMenu.classList.toggle('active');
+            burgerOverlay.classList.toggle('active');
+        });
+
+        burgerOverlay.addEventListener('click', () => {
+            burgerMenu.classList.remove('active');
+            burgerOverlay.classList.remove('active');
+        });
+    }
 }
 
 // Initialize on Page Load
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    initBurgerMenu();
+    init();
+});

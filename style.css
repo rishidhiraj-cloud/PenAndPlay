@@ -133,32 +133,22 @@ header h1 {
 }
 
 /* Logo */
-.header-logo-left,
 .header-logo-right {
     position: absolute;
     top: -15px;
+    right: 0;
     width: 50px;
     height: 50px;
     filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
 }
 
-.header-logo-left {
-    left: 0;
-}
-
-.header-logo-right {
-    right: 0;
-}
-
 @media (min-width: 768px) {
-    .header-logo-left,
     .header-logo-right {
         width: 90px;
         height: 90px;
     }
 }
 
-.header-logo-left img,
 .header-logo-right img {
     width: 100%;
     height: 100%;
@@ -167,6 +157,177 @@ header h1 {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     padding: 8px;
+}
+
+/* Burger Menu */
+.burger-menu-container {
+    position: absolute;
+    top: -15px;
+    left: 0;
+    width: 50px;
+    height: 50px;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+@media (min-width: 768px) {
+    .burger-menu-container {
+        width: 90px;
+        height: 90px;
+    }
+}
+
+.burger-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 8px;
+    transition: all 0.3s ease;
+}
+
+.burger-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.burger-icon span {
+    display: block;
+    width: 60%;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .burger-icon span {
+        height: 4px;
+    }
+}
+
+.burger-menu {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 2px 0 24px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    padding: 80px 20px 20px;
+}
+
+.burger-menu.active {
+    left: 0;
+}
+
+.burger-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+    transition: opacity 0.3s ease;
+}
+
+.burger-overlay.active {
+    display: block;
+}
+
+.burger-menu nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.burger-menu nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.burger-menu nav a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    padding-left: 30px;
+}
+
+.burger-menu .dark-mode-toggle,
+.burger-menu .dark-mode-toggle-btn,
+.burger-menu .settings-btn {
+    width: 100%;
+    padding: 18px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    margin-top: 10px;
+    border-radius: 8px;
+}
+
+.burger-menu .dark-mode-toggle:hover,
+.burger-menu .dark-mode-toggle-btn:hover,
+.burger-menu .settings-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .burger-menu {
+    background: linear-gradient(135deg, #4c51bf 0%, #553c9a 100%);
+}
+
+/* Back to Dashboard Link */
+.back-to-dashboard {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.back-to-dashboard a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 10px 16px;
+    border: 2px solid #667eea;
+    border-radius: 14px;
+    display: inline-block;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
+}
+
+.back-to-dashboard a:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(102, 126, 234, 0.25);
+}
+
+body.dark-mode .back-to-dashboard a {
+    background: #374151;
+    border-color: #4c51bf;
+    color: #a78bfa;
+}
+
+body.dark-mode .back-to-dashboard a:hover {
+    background: #4c51bf;
+    color: white;
 }
 
 /* Main Content */
