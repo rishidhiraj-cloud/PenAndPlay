@@ -118,9 +118,6 @@ body.dark-mode .form-section select:focus {
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     transition: all 0.3s ease;
 }
 
@@ -138,33 +135,21 @@ body.dark-mode .item-card:hover {
     border-color: #667eea;
 }
 
-.item-info {
-    flex: 1;
-}
-
 .item-name {
     font-size: 16px;
     font-weight: 600;
     color: #1a202c;
-    margin-bottom: 4px;
+    margin-bottom: 12px;
 }
 
 body.dark-mode .item-name {
     color: #e2e8f0;
 }
 
-.item-storage {
-    font-size: 13px;
-    color: #718096;
-}
-
-body.dark-mode .item-storage {
-    color: #a0aec0;
-}
-
 .item-actions {
     display: flex;
     gap: 8px;
+    justify-content: flex-end;
 }
 
 .update-btn {

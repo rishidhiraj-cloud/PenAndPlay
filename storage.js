@@ -136,10 +136,7 @@ async function loadStorageItems() {
 function renderStorageItems(items) {
     const html = items.map(item => `
         <div class="item-card" id="item-${item.id}">
-            <div class="item-info">
-                <div class="item-name" id="item-name-${item.id}">${escapeHtml(item.item_name)}</div>
-                <div class="item-storage">${escapeHtml(item.storage_area)}</div>
-            </div>
+            <div class="item-name" id="item-name-${item.id}">${escapeHtml(item.item_name)}</div>
             <div class="item-actions">
                 <button class="update-btn" onclick="updateItem(${item.id})">Update</button>
                 <button class="delete-btn" onclick="deleteItem(${item.id})">Delete</button>
