@@ -90,7 +90,7 @@ async function handleAddItem(e) {
         if (error) throw error;
 
         showMessage(addStatusMessage, `Item "${itemName}" added to ${storageArea}`, 'success');
-        addItemForm.reset();
+        itemNameInput.value = '';
     } catch (err) {
         console.error('Error adding item:', err);
         showMessage(addStatusMessage, 'Failed to add item', 'error');
