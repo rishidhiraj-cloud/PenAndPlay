@@ -594,7 +594,7 @@ function updateDailyBreakdown(data) {
                     </div>
                     <div class="daily-details">
                         <div class="daily-detail-item">
-                            <span class="daily-detail-label">Cash on Day</span>
+                            <span class="daily-detail-label">Today's Cash</span>
                             <span>₹${formatIndianNumber(entry.cash_total || 0)}</span>
                         </div>
                         <div class="daily-detail-item">

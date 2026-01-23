@@ -133,7 +133,7 @@ function displayHistory(entries) {
                         <span class="detail-value">₹${formatIndianNumber(entry.cash_amount)}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Cash on Day:</span>
+                        <span class="detail-label">Today's Cash:</span>
                         <span class="detail-value">₹${formatIndianNumber(entry.cash_total || 0)}</span>
                     </div>
                     <div class="detail-item">
@@ -219,7 +219,7 @@ async function sendWhatsApp(entry) {
     let message = `*Pen & Play Cash Register - ${formattedDate}*
 
 Drawer Cash: ₹${formatIndianNumber(entry.cash_amount)}
-Cash on Day: ₹${formatIndianNumber(entry.cash_total || 0)}
+Today's Cash: ₹${formatIndianNumber(entry.cash_total || 0)}
 UPI: ₹${formatIndianNumber(entry.upi_amount)}
 Card: ₹${formatIndianNumber(entry.card_amount)}
 AP Cash: ₹${formatIndianNumber(entry.ap_cash || 0)}
