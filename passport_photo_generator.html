@@ -238,6 +238,30 @@
         }
         body.dark-mode .passport-log-open { color: #a78bfa; }
 
+        .passport-log-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .passport-log-delete {
+            font: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #dc2626;
+            background: none;
+            border: none;
+            padding: 2px 0;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .passport-log-delete:hover { color: #991b1b; text-decoration: underline; }
+        .passport-log-delete:disabled { opacity: 0.5; cursor: not-allowed; }
+        body.dark-mode .passport-log-delete { color: #f87171; }
+        body.dark-mode .passport-log-delete:hover { color: #fca5a5; }
+
         .passport-log-empty {
             text-align: center;
             padding: 30px 10px;
@@ -1172,6 +1196,8 @@
             return;
           }
 
+          const canDelete = window.washiAuth && window.washiAuth.getUsername() === 'Dhiraj';
+
           passportLogList.innerHTML = data.map(row => {
             const when = formatLogWhen(row.created_at);
             const rel = relativeWhen(row.created_at);
@@ -1185,14 +1211,20 @@
             const openLink = hasUrl
               ? `<a class="passport-log-open" href="${escapeAttr(row.photo_url)}" target="_blank" rel="noopener">↗ Open</a>`
               : '';
+            const deleteBtn = canDelete
+              ? `<button type="button" class="passport-log-delete" data-id="${row.id}" data-photo-url="${escapeAttr(row.photo_url || '')}" title="Delete this image">🗑 Delete</button>`
+              : '';
             return `
-              <div class="passport-log-item">
+              <div class="passport-log-item" data-row-id="${row.id}">
                 ${thumb}
                 <div class="passport-log-meta">
                   <span class="passport-log-when">${when}</span>
                   <span class="passport-log-when-rel">${rel}</span>
                 </div>
-                ${openLink}
+                <div class="passport-log-actions">
+                  ${openLink}
+                  ${deleteBtn}
+                </div>
               </div>
             `;
           }).join('');
