@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<!--
+  IMPORTANT: This page must be loaded over http:// or https:// — NOT file://.
+  Opening the file directly (double-click in Finder) breaks the WASM background
+  removal with: "Failed to create session: no available backend found.
+  ERR: [wasm] TypeError: Failed to fetch."
+  Use the included run.command to start a local server:  ./run.command
+  Or manually:  python3 -m http.server 8765   then visit http://localhost:8765/
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passport Photo - Pen & Play Club</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Passport Photo page-specific styles (scoped under .passport-page) */
+        .passport-page * { box-sizing: border-box; }
+
+        .passport-page h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 6px;
+            color: #1a202c;
+        }
+        .passport-page .page-intro {
+            color: #4a5568;
+            font-size: 14px;
+            margin: 0 0 20px;
+        }
+        .passport-page .counters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 10px;
+            align-items: baseline;
+        }
+        .passport-page .counters strong {
+            color: #1a202c;
+            font-weight: 700;
+        }
+        .passport-page .counter-divider {
+            color: #cbd5e0;
+            font-weight: 700;
+        }
+        body.dark-mode .passport-page .counters strong { color: #e2e8f0; }
+        body.dark-mode .passport-page .counter-divider { color: #4a5568; }
+
+        /* Clickable counter spans */
+        .passport-page .counter-clickable {
+            cursor: pointer;
+            border-bottom: 1.5px dashed #cbd5e0;
+            transition: color 0.15s, border-color 0.15s;
+            padding: 1px 2px;
+        }
+        .passport-page .counter-clickable:hover,
+        .passport-page .counter-clickable:focus-visible {
+            color: #667eea;
+            border-color: #667eea;
+            outline: none;
+        }
+        body.dark-mode .passport-page .counter-clickable {
+            border-bottom-color: #4a5568;
+        }
+        body.dark-mode .passport-page .counter-clickable:hover,
+        body.dark-mode .passport-page .counter-clickable:focus-visible {
+            color: #a78bfa;
+            border-color: #a78bfa;
+        }
+
+        /* ============ Passport Log Modal ============ */
+        .passport-log-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+        .passport-log-modal.hidden { display: none !important; }
+
+        .passport-log-content {
+            background: white;
+            border-radius: 14px;
+            max-width: 720px;
+            width: 100%;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+        body.dark-mode .passport-log-content { background: #2d3748; }
+
+        .passport-log-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        }
+        body.dark-mode .passport-log-header { border-bottom-color: #4a5568; }
+
+        .passport-log-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #1f2937;
+            font-weight: 800;
+        }
+        body.dark-mode .passport-log-header h3 { color: #e2e8f0; }
+
+        #passportLogClose {
+            background: rgba(255, 255, 255, 0.95);
+            color: #1f2937;
+            border: 1px solid #e2e8f0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        #passportLogClose:hover { transform: scale(1.08); }
+        body.dark-mode #passportLogClose {
+            background: #374151;
+            color: #e2e8f0;
+            border-color: #4a5568;
+        }
+
+        .passport-log-list {
+            padding: 12px 16px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .passport-log-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .passport-log-item:hover {
+            border-color: rgba(102, 126, 234, 0.5);
+            background: #f1f5f9;
+        }
+        body.dark-mode .passport-log-item {
+            background: #374151;
+            border-color: #4a5568;
+        }
+        body.dark-mode .passport-log-item:hover {
+            border-color: #a78bfa;
+            background: #404a5c;
+        }
+
+        .passport-log-thumb-link {
+            display: inline-flex;
+            text-decoration: none;
+        }
+        .passport-log-thumb {
+            width: 64px;
+            height: 82px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            transition: transform 0.15s;
+        }
+        .passport-log-thumb-link:hover .passport-log-thumb {
+            transform: scale(1.04);
+            border-color: #667eea;
+        }
+        body.dark-mode .passport-log-thumb { border-color: #4a5568; }
+
+        .passport-log-thumb-missing {
+            width: 64px;
+            height: 82px;
+            border-radius: 6px;
+            border: 1px dashed #cbd5e0;
+            background: #f3f4f6;
+            color: #9ca3af;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4px;
+            line-height: 1.2;
+        }
+        body.dark-mode .passport-log-thumb-missing {
+            background: #1a202c;
+            border-color: #4a5568;
+            color: #6b7280;
+        }
+
+        .passport-log-meta {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .passport-log-when {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        .passport-log-when-rel {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        body.dark-mode .passport-log-when { color: #e2e8f0; }
+        body.dark-mode .passport-log-when-rel { color: #9ca3af; }
+
+        .passport-log-open {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        body.dark-mode .passport-log-open { color: #a78bfa; }
+
+        .passport-log-empty {
+            text-align: center;
+            padding: 30px 10px;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        /* Prominent processing banner shown during background work */
+        .processing-banner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.10) 0%, rgba(118, 75, 162, 0.10) 100%);
+            border: 2px solid #667eea;
+            border-radius: 16px;
+            animation: bannerFadeIn 0.25s ease-out, bannerPulse 2.2s ease-in-out infinite 0.25s;
+        }
+        @keyframes bannerFadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bannerPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.35); }
+            50%      { box-shadow: 0 0 0 12px rgba(102, 126, 234, 0); }
+        }
+        .processing-banner.warn {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.12) 100%);
+            animation: bannerFadeIn 0.25s ease-out, bannerPulseWarn 2.2s ease-in-out infinite 0.25s;
+        }
+        @keyframes bannerPulseWarn {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            50%      { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
+        }
+        .processing-banner.warn .spinner-ring {
+            border-color: rgba(245, 158, 11, 0.25);
+            border-top-color: #f59e0b;
+        }
+        .processing-spinner {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+        }
+        .spinner-ring {
+            width: 38px;
+            height: 38px;
+            border: 4px solid rgba(102, 126, 234, 0.22);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spinRing 0.85s linear infinite;
+        }
+        @keyframes spinRing { to { transform: rotate(360deg); } }
+        .processing-info { flex: 1; min-width: 0; }
+        .processing-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .processing-banner.warn .processing-title { color: #b45309; }
+        .processing-detail {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a202c;
+            line-height: 1.35;
+            animation: detailFade 0.35s ease-out;
+        }
+        @keyframes detailFade {
+            from { opacity: 0.4; transform: translateX(-4px); }
+            to   { opacity: 1;   transform: translateX(0); }
+        }
+        body.dark-mode .processing-banner {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.18) 100%);
+            border-color: #818cf8;
+        }
+        body.dark-mode .processing-title { color: #a78bfa; }
+        body.dark-mode .processing-detail { color: #e2e8f0; }
+        body.dark-mode .processing-banner.warn {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(217, 119, 6, 0.18) 100%);
+        }
+        body.dark-mode .processing-banner.warn .processing-title { color: #fbbf24; }
+
+        .passport-card {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .upload-row {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0 4px;
+            transition: all 0.2s;
+            border-radius: 14px;
+        }
+        .upload-row.dragging {
+            background: rgba(102, 126, 234, 0.06);
+            outline: 2px dashed #667eea;
+            outline-offset: 6px;
+        }
+        .upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .upload-btn-icon {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .upload-hint {
+            font-size: 13px;
+            color: #4a5568;
+            margin: 0;
+        }
+        body.dark-mode .upload-hint { color: #a0aec0; }
+
+        /* Visually hide the file input but keep it interactive on mobile.
+           Don't use display:none / hidden / visibility:hidden — iOS Safari
+           refuses to open the file picker for inputs hidden that way. */
+        .visually-hidden-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Enhance toggle row — controls whether BG removal + retouching run */
+        .pp-toggle-row {
+            margin-top: 16px;
+            padding: 14px 16px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+        .toggle-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .toggle-switch input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            background: #cbd5e0;
+            border-radius: 12px;
+            transition: background 0.25s ease;
+            flex-shrink: 0;
+        }
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.25s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .toggle-switch input[type="checkbox"]:checked + .toggle-slider {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .toggle-switch input[type="checkbox"]:checked + .toggle-slider::before {
+            transform: translateX(20px);
+        }
+        .toggle-switch input[type="checkbox"]:focus-visible + .toggle-slider {
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.25);
+        }
+        .toggle-label-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a202c;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .toggle-hint {
+            font-size: 12px;
+            color: #4a5568;
+            margin: 6px 0 0;
+            padding-left: 56px;
+        }
+        body.dark-mode .pp-toggle-row {
+            background: #374151;
+            border-left-color: #818cf8;
+        }
+        body.dark-mode .toggle-label-text { color: #e2e8f0; }
+        body.dark-mode .toggle-hint { color: #a0aec0; }
+        body.dark-mode .toggle-slider { background: #4a5568; }
+
+        .pp-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+        .pp-controls label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .pp-controls select {
+            font: inherit;
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #fff;
+            color: #1a202c;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .pp-controls select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-primary, .btn-secondary {
+            font: inherit;
+            padding: 12px 20px;
+            border-radius: 14px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border-color: #667eea;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary:disabled, .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .pp-status {
+            font-size: 14px;
+            color: #4a5568;
+            padding: 12px 16px;
+            background: #f7fafc;
+            border-radius: 12px;
+            margin-top: 14px;
+            min-height: 20px;
+            display: none;
+            border-left: 4px solid #cbd5e0;
+        }
+        .pp-status.show { display: block; }
+        .pp-status.error {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: #991b1b;
+            border-left-color: #dc2626;
+        }
+        .pp-status.ok {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #166534;
+            border-left-color: #16a34a;
+        }
+
+        .preview-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+        @media (max-width: 480px) {
+            .preview-row { grid-template-columns: 1fr; }
+        }
+        .photo-preview {
+            width: 140px;
+            height: 180px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f7fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Crect width='10' height='10' fill='%23eee'/%3E%3Crect x='10' y='10' width='10' height='10' fill='%23eee'/%3E%3C/svg%3E");
+            object-fit: contain;
+        }
+        .photo-info {
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.7;
+        }
+        .photo-info strong {
+            color: #1a202c;
+            font-weight: 700;
+        }
+
+        .sheet-wrap {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 12px;
+            text-align: center;
+            overflow: auto;
+        }
+        .sheet-canvas-wrap {
+            display: inline-block;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        .sheet-canvas-wrap canvas {
+            display: block;
+            background: #fff;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Dark mode overrides */
+        body.dark-mode .passport-page h2 { color: #e2e8f0; }
+        body.dark-mode .passport-page .page-intro { color: #a0aec0; }
+        body.dark-mode .passport-card {
+            background: #2d3748;
+            border-color: #4a5568;
+        }
+        body.dark-mode .pp-controls label { color: #a0aec0; }
+        body.dark-mode .pp-controls select {
+            background: #374151;
+            border-color: #4a5568;
+            color: #e2e8f0;
+        }
+        body.dark-mode .pp-status {
+            background: #374151;
+            color: #a0aec0;
+            border-left-color: #4a5568;
+        }
+        body.dark-mode .pp-status.error {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+            color: #fecaca;
+            border-left-color: #dc2626;
+        }
+        body.dark-mode .pp-status.ok {
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            color: #d1fae5;
+            border-left-color: #059669;
+        }
+        body.dark-mode .photo-info { color: #a0aec0; }
+        body.dark-mode .photo-info strong { color: #e2e8f0; }
+        body.dark-mode .photo-preview {
+            border-color: #4a5568;
+            background-color: #374151;
+        }
+        body.dark-mode .sheet-wrap { background: #374151; }
+        body.dark-mode .btn-secondary {
+            background: #374151;
+            color: #a78bfa;
+            border-color: #4c51bf;
+        }
+        body.dark-mode .btn-secondary:hover:not(:disabled) {
+            background: #4c51bf;
+            color: white;
+        }
+        /* Print: only the print sheet visible, exactly A4 with no margins */
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        @media print {
+            body > *:not(.print-area) { display: none !important; }
+            body { background: #fff; padding: 0; margin: 0; }
+            .print-area {
+                display: block !important;
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 0;
+            }
+            .print-area img {
+                width: 210mm;
+                height: 297mm;
+                display: block;
+            }
+        }
+        .print-area { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Passport Photo</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="Logo.png" alt="Shop Logo">
+                </div>
+            </div>
+        </header>
+
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html">➕ New Entry</a>
+                <a href="history.html">📋 History</a>
+                <a href="expense.html">💸 Expenses</a>
+                <a href="statement.html">📒 Statement</a>
+                <a href="storage.html">📦 Manage Storage</a>
+                <a href="outofstock.html">📋 Out of Stock</a>
+                <a href="passport_photo_generator.html">📸 Passport Photo</a>
+                <a href="collage.html">🖼 Collage</a>
+                <a href="generate_bill.html">📝 Generate Bill</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙 Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
+            <div class="back-to-dashboard">
+                <a href="index.html">« Back To Dashboard</a>
+            </div>
+
+            <div class="passport-page">
+                <h2>Passport Photo Generator</h2>
+                <p class="page-intro counters">
+                    <span class="counter-clickable" id="counterTriggerTotal" role="button" tabindex="0" title="View photo log">
+                        Tot. Images Processed: <strong id="totalCount">0</strong>
+                    </span>
+                    <span class="counter-divider" aria-hidden="true">•</span>
+                    <span class="counter-clickable" id="counterTriggerToday" role="button" tabindex="0" title="View today's photo log">
+                        Images Processed Today: <strong id="todayCount">0</strong>
+                    </span>
+                </p>
+
+                <div class="processing-banner hidden" id="processingBanner" role="status" aria-live="polite">
+                    <div class="processing-spinner" aria-hidden="true">
+                        <div class="spinner-ring"></div>
+                    </div>
+                    <div class="processing-info">
+                        <div class="processing-title">Working</div>
+                        <div class="processing-detail" id="processingDetail">Starting…</div>
+                    </div>
+                </div>
+
+                <div class="passport-card">
+                    <div class="upload-row" id="drop-zone">
+                        <button type="button" class="btn-primary upload-btn" id="upload-btn">
+                            <span class="upload-btn-icon">⬆</span> Upload image
+                        </button>
+                        <input type="file" id="file-input" accept="image/*" class="visually-hidden-input">
+                        <p class="upload-hint">JPEG, PNG, or WebP • Best results with a clear face shot, head and shoulders visible</p>
+                    </div>
+
+                    <div class="pp-toggle-row">
+                        <label class="toggle-switch" for="enhance-toggle">
+                            <input type="checkbox" id="enhance-toggle" checked>
+                            <span class="toggle-slider" aria-hidden="true"></span>
+                            <span class="toggle-label-text">Enhance</span>
+                        </label>
+                        <p class="toggle-hint">When ON, the photo is auto-enhanced and the background is replaced with white. When OFF, your photo is used as-is (no enhancement, no background removal).</p>
+                    </div>
+
+                    <div class="pp-controls">
+                        <label for="count">Photos per sheet:</label>
+                        <select id="count">
+                            <option value="12">12 (4 × 3 grid)</option>
+                            <option value="20">20 (4 × 5 grid)</option>
+                            <option value="36">36 (6 × 6 borderless)</option>
+                        </select>
+                        <button id="generate-btn" class="btn-primary" disabled>Generate sheet</button>
+                    </div>
+
+                    <div class="pp-status" id="status"></div>
+                </div>
+
+                <div class="passport-card hidden" id="result-card">
+                    <div class="preview-row" id="preview-row">
+                        <div>
+                            <div style="font-size: 13px; color: #4a5568; margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Single photo</div>
+                            <canvas class="photo-preview" id="photo-preview" width="140" height="180"></canvas>
+                        </div>
+                        <div class="photo-info" id="photo-info"></div>
+                    </div>
+
+                    <div class="actions hidden" id="actions">
+                        <button id="print-btn" class="btn-primary">🖨 Print sheet</button>
+                        <button id="download-btn" class="btn-secondary">⬇ Download PNG</button>
+                    </div>
+
+                    <div class="sheet-wrap hidden" id="sheet-wrap">
+                        <div class="sheet-canvas-wrap" id="sheet-canvas-wrap">
+                            <canvas id="sheet-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden print-only area: contains an img sized exactly to A4 -->
+    <div class="print-area" id="print-area">
+        <img id="print-img" alt="">
+    </div>
+
+    <!-- Passport Photo Log Modal -->
+    <div id="passportLogModal" class="passport-log-modal hidden" role="dialog" aria-modal="true" aria-labelledby="passportLogTitle">
+        <div class="passport-log-content">
+            <div class="passport-log-header">
+                <h3 id="passportLogTitle">Photo Generation Log</h3>
+                <button type="button" id="passportLogClose" aria-label="Close">✕</button>
+            </div>
+            <div id="passportLogList" class="passport-log-list">
+                <div class="passport-log-empty">Loading…</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase SDK — for shared counter (synced across devices) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- face-api.js (UMD global: faceapi) -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="auth.js"></script>
+
+    <!--
+      Background-removal loader — MediaPipe Tasks Vision Selfie Segmenter
+      (~1.4 MB TFLite model, WebGL-backed). Used on every device.
+      Was previously @imgly/background-removal on desktop, but ONNX Runtime
+      Web has chronic "no available backend / Failed to fetch" issues
+      depending on network, browser, and CORS conditions. MediaPipe is
+      tiny, reliable, and works identically on iOS Safari, iOS Chrome,
+      Android Chrome, and desktop Chrome/Safari/Firefox.
+    -->
+    <script type="module">
+      try {
+        const mp = await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/+esm');
+        window.__mpClasses = { ImageSegmenter: mp.ImageSegmenter, FilesetResolver: mp.FilesetResolver };
+        window.dispatchEvent(new Event('bgremoval-ready'));
+      } catch (e) {
+        console.error('Failed to load MediaPipe Tasks Vision:', e);
+        window.__bgRemovalLoadError = e;
+      }
+    </script>
+
+    <script>
+      // ============================================================
+      // Burger Menu + Dark Mode (consistent with other pages)
+      // ============================================================
+      const darkModeToggle = document.getElementById('darkModeToggle');
+
+      function initDarkMode() {
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        if (isDark) {
+          document.body.classList.add('dark-mode');
+          if (darkModeToggle) darkModeToggle.textContent = '☀️ Light Mode';
+        }
+      }
+      function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('darkMode', isDark);
+        darkModeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+      }
+      function initBurgerMenu() {
+        const burgerIcon = document.getElementById('burgerIcon');
+        const burgerMenu = document.getElementById('burgerMenu');
+        const burgerOverlay = document.getElementById('burgerOverlay');
+        if (burgerIcon && burgerMenu && burgerOverlay) {
+          burgerIcon.addEventListener('click', () => {
+            burgerMenu.classList.toggle('active');
+            burgerOverlay.classList.toggle('active');
+          });
+          burgerOverlay.addEventListener('click', () => {
+            burgerMenu.classList.remove('active');
+            burgerOverlay.classList.remove('active');
+          });
+        }
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        initDarkMode();
+        initBurgerMenu();
+        if (darkModeToggle) darkModeToggle.addEventListener('click', toggleDarkMode);
+        const loader = document.getElementById('pageLoader');
+        if (loader) loader.style.display = 'none';
+      });
+
+      // ============================================================
+      // Constants
+      // ============================================================
+      const PHOTO_W_MM = 35;      // 3.5 cm
+      const PHOTO_H_MM = 45;      // 4.5 cm
+      const A4_W_MM = 210;
+      const A4_H_MM = 297;
+      const DPI = 300;
+      const MM_TO_PX = DPI / 25.4;   // 11.811...
+      const PHOTO_W_PX = Math.round(PHOTO_W_MM * MM_TO_PX);  // 413
+      const PHOTO_H_PX = Math.round(PHOTO_H_MM * MM_TO_PX);  // 531
+      const A4_W_PX = Math.round(A4_W_MM * MM_TO_PX);        // 2480
+      const A4_H_PX = Math.round(A4_H_MM * MM_TO_PX);        // 3508
+
+      // Layouts: cols, rows, gap (mm). 12 / 20 use a 0.25 mm hairline gap
+      // (~3 px @ 300 DPI) so the photos don't visually merge but waste
+      // virtually no paper. 36 stays borderless (touching).
+      const LAYOUTS = {
+        12: { cols: 4, rows: 3, gapMM: 0.25 },
+        20: { cols: 4, rows: 5, gapMM: 0.25 },
+        36: { cols: 6, rows: 6, gapMM: 0 },
+      };
+
+      // ============================================================
+      // Device detection — mobile browsers (esp. iOS Safari) cap WASM
+      // memory hard. We aggressively shrink inputs and use the smaller
+      // background-removal model to stay under the limit.
+      // ============================================================
+      const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        || (navigator.maxTouchPoints > 1 && Math.min(window.innerWidth, window.innerHeight) < 900);
+
+      // Max input dimension before downscaling (avoid OOM on big phone photos).
+      // Desktop can handle larger; mobile gets a tighter budget.
+      const MAX_INPUT_DIM = IS_MOBILE ? 1024 : 2000;
+
+      // Pre-bg-removal crop scale. Mobile keeps 1× to stay under iOS WASM/GPU
+      // budgets; desktop renders at 2× for sharper final output.
+      const PRE_BG_SCALE = IS_MOBILE ? 1 : 2;
+
+      // Face-api models (hosted via jsdelivr GH proxy from the official repo)
+      const FACE_MODEL_URL =
+        'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights/';
+
+      // ============================================================
+      // State
+      // ============================================================
+      function bgLibReady() {
+        return !!window.__mpClasses;
+      }
+
+      const state = {
+        modelsLoaded: false,
+        bgRemovalReady: bgLibReady(),
+        processedPhoto: null,
+        sheetCanvas: null,
+        busy: false,
+        mpSegmenter: null,
+      };
+
+      if (!state.bgRemovalReady) {
+        window.addEventListener('bgremoval-ready', () => {
+          state.bgRemovalReady = true;
+        });
+      }
+
+      // ============================================================
+      // DOM refs
+      // ============================================================
+      const dropZone = document.getElementById('drop-zone');
+      const uploadBtn = document.getElementById('upload-btn');
+      const fileInput = document.getElementById('file-input');
+      const countSelect = document.getElementById('count');
+      const generateBtn = document.getElementById('generate-btn');
+      const printBtn = document.getElementById('print-btn');
+      const downloadBtn = document.getElementById('download-btn');
+      const statusEl = document.getElementById('status');
+      const resultCard = document.getElementById('result-card');
+      const photoPreview = document.getElementById('photo-preview');
+      const photoInfo = document.getElementById('photo-info');
+      const previewRow = document.getElementById('preview-row');
+      const sheetWrap = document.getElementById('sheet-wrap');
+      const processingBanner = document.getElementById('processingBanner');
+      const processingDetail = document.getElementById('processingDetail');
+      const totalCountEl = document.getElementById('totalCount');
+      const todayCountEl = document.getElementById('todayCount');
+      const sheetCanvasEl = document.getElementById('sheet-canvas');
+      const actions = document.getElementById('actions');
+      const printImg = document.getElementById('print-img');
+      const enhanceToggle = document.getElementById('enhance-toggle');
+
+      // ============================================================
+      // UI helpers
+      // ============================================================
+      function showProcessing(msg, isWarn) {
+        // Re-trigger the detail fade animation on each new message
+        processingDetail.style.animation = 'none';
+        // force reflow so the next assignment restarts the animation
+        // eslint-disable-next-line no-unused-expressions
+        processingDetail.offsetHeight;
+        processingDetail.style.animation = '';
+        processingDetail.textContent = msg;
+        processingBanner.classList.toggle('warn', !!isWarn);
+        processingBanner.classList.remove('hidden');
+      }
+      function hideProcessing() {
+        processingBanner.classList.add('hidden');
+      }
+
+      function setStatus(msg, kind = '') {
+        if (kind === 'ok' || kind === 'error') {
+          // Final state: inline message, banner hidden
+          statusEl.textContent = msg;
+          statusEl.className = 'pp-status show ' + kind;
+          hideProcessing();
+        } else {
+          // Mid-process state: prominent banner, no inline status
+          statusEl.className = 'pp-status';
+          statusEl.textContent = '';
+          if (msg) showProcessing(msg, kind === 'warn');
+          else hideProcessing();
+        }
+      }
+      function clearStatus() {
+        statusEl.className = 'pp-status';
+        statusEl.textContent = '';
+        hideProcessing();
+      }
+      function setBusy(b) {
+        state.busy = b;
+        generateBtn.disabled = b || !state.processedPhoto;
+        fileInput.disabled = b;
+        if (!b) hideProcessing();
+      }
+
+      // ============================================================
+      // Shared counters (Supabase) — synced across devices
+      // ============================================================
+      // Same project as the rest of the app (storage.js, dashboard.js, etc.)
+      const SUPABASE_URL = 'https://sckgsgakyyosgjxoctlb.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNja2dzZ2FreXlvc2dqeG9jdGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTIwNDEsImV4cCI6MjA4NDQ2ODA0MX0.DUVClZFzC4oEcBK_3MarnMa0tq2XXhIKsSsDyq8vExM';
+      const COUNTER_TABLE = 'passport_photo_log';
+      const supabaseClient = (window.supabase && typeof window.supabase.createClient === 'function')
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+        : null;
+
+      // Start of "today" in the user's local timezone, as ISO (UTC) string.
+      // Local-day boundary matches user expectation regardless of where the
+      // device is physically located.
+      function startOfTodayIso() {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        return d.toISOString();
+      }
+
+      async function fetchCounts() {
+        if (!supabaseClient) return null;
+        try {
+          const todayStart = startOfTodayIso();
+          const [totalRes, todayRes] = await Promise.all([
+            supabaseClient.from(COUNTER_TABLE).select('*', { count: 'exact', head: true }),
+            supabaseClient.from(COUNTER_TABLE).select('*', { count: 'exact', head: true }).gte('created_at', todayStart),
+          ]);
+          if (totalRes.error || todayRes.error) {
+            console.warn('Counter fetch error:', totalRes.error || todayRes.error);
+            return null;
+          }
+          return { total: totalRes.count || 0, today: todayRes.count || 0 };
+        } catch (e) {
+          console.warn('Counter fetch failed:', e);
+          return null;
+        }
+      }
+
+      async function renderCounts() {
+        const result = await fetchCounts();
+        if (!result) {
+          // Network/db unavailable — leave whatever's currently shown
+          return;
+        }
+        if (totalCountEl) totalCountEl.textContent = result.total;
+        if (todayCountEl) todayCountEl.textContent = result.today;
+      }
+
+      // Upload the processed passport photo to Supabase Storage and return
+      // the public URL. Best-effort — returns null on any failure.
+      async function uploadPassportPhoto(canvas) {
+        if (!supabaseClient || !canvas) return null;
+        try {
+          const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.9));
+          if (!blob) return null;
+          const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+          const rand = Math.random().toString(36).slice(2, 8);
+          const fileName = `photo_${stamp}_${rand}.jpg`;
+          const { error: upErr } = await supabaseClient
+            .storage
+            .from('passport-photos')
+            .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
+          if (upErr) {
+            console.warn('Passport photo upload error:', upErr);
+            return null;
+          }
+          const { data: pub } = supabaseClient.storage.from('passport-photos').getPublicUrl(fileName);
+          return pub && pub.publicUrl ? pub.publicUrl : null;
+        } catch (e) {
+          console.warn('Passport photo upload failed:', e);
+          return null;
+        }
+      }
+
+      // Insert a "photo processed" event in the DB and refresh the counters.
+      // Best-effort — failures are logged but never block photo generation.
+      async function incrementCounts(photoUrl) {
+        if (!supabaseClient) return;
+        // Optimistic UI bump — feels instant, real numbers refresh from DB right after
+        if (totalCountEl) totalCountEl.textContent = (parseInt(totalCountEl.textContent, 10) || 0) + 1;
+        if (todayCountEl) todayCountEl.textContent = (parseInt(todayCountEl.textContent, 10) || 0) + 1;
+        try {
+          const row = photoUrl ? { photo_url: photoUrl } : {};
+          const { error } = await supabaseClient.from(COUNTER_TABLE).insert([row]);
+          if (error) {
+            console.warn('Counter insert error:', error);
+            return;
+          }
+          await renderCounts();
+        } catch (e) {
+          console.warn('Counter insert failed:', e);
+        }
+      }
+
+      // ============================================================
+      // Photo log modal
+      // ============================================================
+      const passportLogModal = document.getElementById('passportLogModal');
+      const passportLogList = document.getElementById('passportLogList');
+      const passportLogClose = document.getElementById('passportLogClose');
+      const counterTriggerTotal = document.getElementById('counterTriggerTotal');
+      const counterTriggerToday = document.getElementById('counterTriggerToday');
+
+      function formatLogWhen(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        const date = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const time = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+        return `${date}, ${time}`;
+      }
+      function relativeWhen(iso) {
+        if (!iso) return '';
+        const ms = Date.now() - new Date(iso).getTime();
+        const mins = Math.floor(ms / 60000);
+        if (mins < 1) return 'just now';
+        if (mins < 60) return `${mins} min ago`;
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return `${hrs} hr ago`;
+        const days = Math.floor(hrs / 24);
+        if (days < 30) return `${days} day${days === 1 ? '' : 's'} ago`;
+        return new Date(iso).toLocaleDateString();
+      }
+
+      function escapeAttr(s) {
+        return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      async function openPassportLogModal(filter) {
+        if (!passportLogModal || !passportLogList) return;
+        passportLogModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        passportLogList.innerHTML = '<div class="passport-log-empty">Loading…</div>';
+
+        if (!supabaseClient) {
+          passportLogList.innerHTML = '<div class="passport-log-empty">Database not available.</div>';
+          return;
+        }
+
+        try {
+          let q = supabaseClient
+            .from(COUNTER_TABLE)
+            .select('id, created_at, photo_url')
+            .order('created_at', { ascending: false })
+            .limit(100);
+          if (filter === 'today') {
+            q = q.gte('created_at', startOfTodayIso());
+          }
+          const { data, error } = await q;
+          if (error) {
+            console.warn('Log fetch error:', error);
+            passportLogList.innerHTML = '<div class="passport-log-empty">Could not load log.</div>';
+            return;
+          }
+
+          if (!data || data.length === 0) {
+            passportLogList.innerHTML = '<div class="passport-log-empty">No photos generated yet.</div>';
+            return;
+          }
+
+          passportLogList.innerHTML = data.map(row => {
+            const when = formatLogWhen(row.created_at);
+            const rel = relativeWhen(row.created_at);
+            const hasUrl = !!row.photo_url;
+            const thumb = hasUrl
+              ? `<a class="passport-log-thumb-link" href="${escapeAttr(row.photo_url)}" target="_blank" rel="noopener" title="Open full photo">
+                   <img class="passport-log-thumb" src="${escapeAttr(row.photo_url)}" alt="Passport photo"
+                        onerror="this.outerHTML='&lt;div class=\\'passport-log-thumb-missing\\'&gt;Image<br>missing&lt;/div&gt;'">
+                 </a>`
+              : `<div class="passport-log-thumb-missing">No image</div>`;
+            const openLink = hasUrl
+              ? `<a class="passport-log-open" href="${escapeAttr(row.photo_url)}" target="_blank" rel="noopener">↗ Open</a>`
+              : '';
+            return `
+              <div class="passport-log-item">
+                ${thumb}
+                <div class="passport-log-meta">
+                  <span class="passport-log-when">${when}</span>
+                  <span class="passport-log-when-rel">${rel}</span>
+                </div>
+                ${openLink}
+              </div>
+            `;
+          }).join('');
+        } catch (e) {
+          console.warn('Log render failed:', e);
+          passportLogList.innerHTML = '<div class="passport-log-empty">Could not load log.</div>';
+        }
+      }
+
+      function closePassportLogModal() {
+        if (!passportLogModal) return;
+        passportLogModal.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+
+      if (counterTriggerTotal) {
+        counterTriggerTotal.addEventListener('click', () => openPassportLogModal('all'));
+        counterTriggerTotal.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPassportLogModal('all'); }
+        });
+      }
+      if (counterTriggerToday) {
+        counterTriggerToday.addEventListener('click', () => openPassportLogModal('today'));
+        counterTriggerToday.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPassportLogModal('today'); }
+        });
+      }
+      if (passportLogClose) passportLogClose.addEventListener('click', closePassportLogModal);
+      if (passportLogModal) {
+        passportLogModal.addEventListener('click', (e) => {
+          if (e.target === passportLogModal) closePassportLogModal();
+        });
+      }
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && passportLogModal && !passportLogModal.classList.contains('hidden')) {
+          closePassportLogModal();
+        }
+      });
+
+      // Initial fetch — fire and forget so it doesn't block the UI
+      renderCounts();
+
+      // ============================================================
+      // Load face-api models (once)
+      // ============================================================
+      async function ensureFaceModels() {
+        if (state.modelsLoaded) return;
+        setStatus('Loading face detection models (one-time, ~500 KB)…');
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
+        ]);
+        state.modelsLoaded = true;
+      }
+
+      async function ensureBgRemoval() {
+        if (window.__bgRemovalLoadError) {
+          throw new Error(
+            'Background removal library failed to load: ' +
+            (window.__bgRemovalLoadError.message || window.__bgRemovalLoadError)
+          );
+        }
+        if (bgLibReady()) {
+          state.bgRemovalReady = true;
+          return;
+        }
+        setStatus('Loading background removal module…');
+        await new Promise((resolve, reject) => {
+          let waited = 0;
+          const check = () => {
+            if (window.__bgRemovalLoadError) {
+              reject(new Error(
+                'Background removal library failed to load: ' +
+                (window.__bgRemovalLoadError.message || window.__bgRemovalLoadError)
+              ));
+              return;
+            }
+            if (bgLibReady()) {
+              state.bgRemovalReady = true;
+              resolve();
+              return;
+            }
+            waited += 100;
+            if (waited > 30000) {
+              reject(new Error('Timed out waiting for background removal library'));
+              return;
+            }
+            setTimeout(check, 100);
+          };
+          check();
+        });
+      }
+
+      // ============================================================
+      // MediaPipe Selfie Segmentation (mobile path)
+      // ============================================================
+      async function ensureMpSegmenter() {
+        if (state.mpSegmenter) return state.mpSegmenter;
+        if (!window.__mpClasses) {
+          throw new Error('MediaPipe classes not loaded');
+        }
+        const { ImageSegmenter, FilesetResolver } = window.__mpClasses;
+        const vision = await FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm'
+        );
+        state.mpSegmenter = await ImageSegmenter.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite',
+            delegate: 'GPU',
+          },
+          runningMode: 'IMAGE',
+          outputCategoryMask: false,
+          outputConfidenceMasks: true,
+        });
+        return state.mpSegmenter;
+      }
+
+      async function mpRemoveBg(canvas) {
+        const segmenter = await ensureMpSegmenter();
+
+        // segment() is synchronous in IMAGE mode
+        const result = segmenter.segment(canvas);
+        const masks = result.confidenceMasks;
+        if (!masks || !masks.length) {
+          if (result.close) result.close();
+          throw new Error('MediaPipe returned no segmentation mask');
+        }
+        const mask = masks[0];
+        const maskW = mask.width;
+        const maskH = mask.height;
+        const maskData = mask.getAsFloat32Array();
+
+        const srcCtx = canvas.getContext('2d');
+        const srcImg = srcCtx.getImageData(0, 0, canvas.width, canvas.height);
+        const out = document.createElement('canvas');
+        out.width = canvas.width;
+        out.height = canvas.height;
+        const ctx = out.getContext('2d');
+        const outImg = ctx.createImageData(canvas.width, canvas.height);
+
+        const sx = maskW / canvas.width;
+        const sy = maskH / canvas.height;
+        const sameSize = (maskW === canvas.width && maskH === canvas.height);
+
+        for (let y = 0; y < canvas.height; y++) {
+          const myBase = sameSize ? y * maskW : Math.min(maskH - 1, Math.floor(y * sy)) * maskW;
+          for (let x = 0; x < canvas.width; x++) {
+            const mIdx = sameSize ? (myBase + x) : (myBase + Math.min(maskW - 1, Math.floor(x * sx)));
+            // Selfie segmenter confidence: 1.0 = person, 0.0 = bg.
+            // Push edges harder (gamma) so the cutout doesn't look hazy.
+            let c = maskData[mIdx];
+            if (c < 0) c = 0; else if (c > 1) c = 1;
+            // Sigmoid-style edge sharpening around 0.5
+            c = c < 0.5 ? c * c * 1.5 : 1 - (1 - c) * (1 - c) * 1.5;
+            if (c < 0) c = 0; else if (c > 1) c = 1;
+
+            const px = (y * canvas.width + x) * 4;
+            const inv = 1 - c;
+            outImg.data[px]     = srcImg.data[px]     * c + 255 * inv;
+            outImg.data[px + 1] = srcImg.data[px + 1] * c + 255 * inv;
+            outImg.data[px + 2] = srcImg.data[px + 2] * c + 255 * inv;
+            outImg.data[px + 3] = 255;
+          }
+        }
+
+        ctx.putImageData(outImg, 0, 0);
+        if (mask.close) mask.close();
+        if (result.close) result.close();
+        // Free source canvas
+        canvas.width = 0;
+        canvas.height = 0;
+        return out;
+      }
+
+      // ============================================================
+      // Image pipeline
+      // ============================================================
+      function readImage(file) {
+        return new Promise((resolve, reject) => {
+          const url = URL.createObjectURL(file);
+          const img = new Image();
+          img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+          img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+          img.src = url;
+        });
+      }
+
+      function downscaleToCanvas(img) {
+        const scale = Math.min(1, MAX_INPUT_DIM / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, w, h);
+        return c;
+      }
+
+      async function detectFace(canvas) {
+        const detection = await faceapi
+          .detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({
+            inputSize: 416,
+            scoreThreshold: 0.5,
+          }))
+          .withFaceLandmarks();
+        return detection || null;
+      }
+
+      function cropForPassport(srcCanvas, faceData) {
+        const fb = faceData.detection.box;
+        const landmarks = faceData.landmarks;
+
+        const lEye = landmarks.getLeftEye();
+        const rEye = landmarks.getRightEye();
+        const eyeY = (
+          lEye.reduce((s, p) => s + p.y, 0) / lEye.length +
+          rEye.reduce((s, p) => s + p.y, 0) / rEye.length
+        ) / 2;
+        const faceCenterX = fb.x + fb.width / 2;
+
+        const headTopY = Math.max(0, fb.y - fb.height * 0.45);
+        const chinY = fb.y + fb.height;
+        const headHeight = chinY - headTopY;
+
+        const cropH = headHeight / 0.70;
+        const cropW = cropH * (PHOTO_W_MM / PHOTO_H_MM);
+
+        let cropY = headTopY - cropH * 0.10;
+        let cropX = faceCenterX - cropW / 2;
+
+        if (cropX < 0) cropX = 0;
+        if (cropY < 0) cropY = 0;
+        if (cropX + cropW > srcCanvas.width)  cropX = srcCanvas.width  - cropW;
+        if (cropY + cropH > srcCanvas.height) cropY = srcCanvas.height - cropH;
+
+        let finalW = cropW, finalH = cropH;
+        if (cropW > srcCanvas.width || cropH > srcCanvas.height) {
+          const scale = Math.min(srcCanvas.width / cropW, srcCanvas.height / cropH);
+          finalW = cropW * scale;
+          finalH = cropH * scale;
+          cropX = Math.max(0, faceCenterX - finalW / 2);
+          cropY = Math.max(0, headTopY - finalH * 0.10);
+          cropX = Math.min(cropX, srcCanvas.width - finalW);
+          cropY = Math.min(cropY, srcCanvas.height - finalH);
+        }
+
+        const outScale = PRE_BG_SCALE;
+        const out = document.createElement('canvas');
+        out.width = Math.round(PHOTO_W_PX * outScale);
+        out.height = Math.round(PHOTO_H_PX * outScale);
+        const ctx = out.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(srcCanvas, cropX, cropY, finalW, finalH, 0, 0, out.width, out.height);
+
+        return out;
+      }
+
+      function centerCropForPassport(srcCanvas) {
+        const targetAspect = PHOTO_W_MM / PHOTO_H_MM;
+        const srcAspect = srcCanvas.width / srcCanvas.height;
+        let cropW, cropH;
+        if (srcAspect > targetAspect) {
+          cropH = srcCanvas.height;
+          cropW = cropH * targetAspect;
+        } else {
+          cropW = srcCanvas.width;
+          cropH = cropW / targetAspect;
+        }
+        const cropX = (srcCanvas.width - cropW) / 2;
+        const cropY = (srcCanvas.height - cropH) / 2;
+
+        const outScale = PRE_BG_SCALE;
+        const out = document.createElement('canvas');
+        out.width = Math.round(PHOTO_W_PX * outScale);
+        out.height = Math.round(PHOTO_H_PX * outScale);
+        const ctx = out.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(srcCanvas, cropX, cropY, cropW, cropH, 0, 0, out.width, out.height);
+        return out;
+      }
+
+      async function removeBgAndWhitenize(canvas) {
+        // MediaPipe Selfie Segmentation (WebGL, ~1.4 MB TFLite model) on
+        // every device. Drops the old @imgly/ONNX desktop path which was
+        // failing intermittently with "Failed to fetch" / "no available
+        // backend" depending on network and browser.
+        return await mpRemoveBg(canvas);
+      }
+
+      /**
+       * Enhanced retouch pipeline.
+       *  1. Tone-curve LUT — shadow lift + S-curve contrast + brightness boost.
+       *     Pure-white background pixels are skipped so the passport bg stays
+       *     a clean #FFFFFF after print.
+       *  2. Saturation +8% via canvas filter (healthier skin tone).
+       *  3. Frequency-separation skin softening — medium-radius blur blended
+       *     onto the original at 35% opacity smooths skin texture / mild
+       *     blemishes / fine lines.
+       *  4. Unsharp mask — adds back (sharp − blur) × 0.5 so eyes, lashes,
+       *     mouth, hairline stay crisp despite the smoothing pass.
+       *  5. High-quality downscale to the exact 413 × 531 passport size.
+       */
+      function enhance(canvas) {
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // -------- Step 1: build tone curve LUT (single channel, applied to all) --------
+        const lut = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) {
+          let v = i / 255;
+          // Shadow lift — gamma < 1 raises darks more than highlights
+          v = Math.pow(v, 0.88);
+          // S-curve — punchier mid-tones, prettier contrast
+          v = v < 0.5
+            ? 0.5 * Math.pow(2 * v, 1.15)
+            : 1 - 0.5 * Math.pow(2 * (1 - v), 1.15);
+          // Overall brightness lift
+          v *= 1.04;
+          if (v > 1) v = 1;
+          else if (v < 0) v = 0;
+          lut[i] = Math.round(v * 255);
+        }
+
+        // -------- Step 2: saturation boost + apply LUT --------
+        const c1 = document.createElement('canvas');
+        c1.width = w; c1.height = h;
+        const ctx1 = c1.getContext('2d');
+        ctx1.filter = 'saturate(1.08)';
+        ctx1.drawImage(canvas, 0, 0);
+        ctx1.filter = 'none';
+
+        const img1 = ctx1.getImageData(0, 0, w, h);
+        const d1 = img1.data;
+        for (let i = 0; i < d1.length; i += 4) {
+          // Preserve pure white background
+          if (d1[i] === 255 && d1[i + 1] === 255 && d1[i + 2] === 255) continue;
+          d1[i]     = lut[d1[i]];
+          d1[i + 1] = lut[d1[i + 1]];
+          d1[i + 2] = lut[d1[i + 2]];
+        }
+        ctx1.putImageData(img1, 0, 0);
+
+        // -------- Step 3: medium-radius blur for skin smoothing --------
+        const blurPx = Math.max(1.5, w * 0.0045);  // ~0.45% of width
+        const c2 = document.createElement('canvas');
+        c2.width = w; c2.height = h;
+        const ctx2 = c2.getContext('2d');
+        ctx2.filter = `blur(${blurPx}px)`;
+        ctx2.drawImage(c1, 0, 0);
+        ctx2.filter = 'none';
+
+        // -------- Step 4: composite — sharp + blurred(35%), then unsharp mask --------
+        const c3 = document.createElement('canvas');
+        c3.width = w; c3.height = h;
+        const ctx3 = c3.getContext('2d');
+        ctx3.drawImage(c1, 0, 0);
+        ctx3.globalAlpha = 0.35;
+        ctx3.drawImage(c2, 0, 0);
+        ctx3.globalAlpha = 1;
+
+        // Unsharp: result += (sharp − blur) × amount, channel-wise
+        const sharpAmount = 0.5;
+        const sharpData = ctx1.getImageData(0, 0, w, h).data;
+        const blurData  = ctx2.getImageData(0, 0, w, h).data;
+        const r3img = ctx3.getImageData(0, 0, w, h);
+        const r3 = r3img.data;
+        for (let i = 0; i < r3.length; i += 4) {
+          if (r3[i] === 255 && r3[i + 1] === 255 && r3[i + 2] === 255) continue;
+          let R = r3[i]     + (sharpData[i]     - blurData[i])     * sharpAmount;
+          let G = r3[i + 1] + (sharpData[i + 1] - blurData[i + 1]) * sharpAmount;
+          let B = r3[i + 2] + (sharpData[i + 2] - blurData[i + 2]) * sharpAmount;
+          r3[i]     = R < 0 ? 0 : R > 255 ? 255 : R;
+          r3[i + 1] = G < 0 ? 0 : G > 255 ? 255 : G;
+          r3[i + 2] = B < 0 ? 0 : B > 255 ? 255 : B;
+        }
+        ctx3.putImageData(r3img, 0, 0);
+
+        // -------- Step 5: final high-quality downscale to passport size --------
+        const final = document.createElement('canvas');
+        final.width = PHOTO_W_PX;
+        final.height = PHOTO_H_PX;
+        const ctxF = final.getContext('2d');
+        ctxF.imageSmoothingEnabled = true;
+        ctxF.imageSmoothingQuality = 'high';
+        ctxF.drawImage(c3, 0, 0, PHOTO_W_PX, PHOTO_H_PX);
+
+        // Release intermediate canvases (esp. important on iOS)
+        c1.width = 0; c1.height = 0;
+        c2.width = 0; c2.height = 0;
+        c3.width = 0; c3.height = 0;
+        canvas.width = 0; canvas.height = 0;
+
+        return final;
+      }
+
+      // ============================================================
+      // Sheet generation
+      // ============================================================
+      function buildSheet(photoCanvas, count) {
+        const layout = LAYOUTS[count];
+        const { cols, rows, gapMM } = layout;
+        const gapPx = Math.round(gapMM * MM_TO_PX);
+
+        const totalW = cols * PHOTO_W_PX + (cols - 1) * gapPx;
+        const totalH = rows * PHOTO_H_PX + (rows - 1) * gapPx;
+        const marginX = Math.round((A4_W_PX - totalW) / 2);
+        const marginY = Math.round((A4_H_PX - totalH) / 2);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = A4_W_PX;
+        canvas.height = A4_H_PX;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, A4_W_PX, A4_H_PX);
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = marginX + c * (PHOTO_W_PX + gapPx);
+            const y = marginY + r * (PHOTO_H_PX + gapPx);
+            ctx.drawImage(photoCanvas, x, y);
+          }
+        }
+
+        // Dashed cut lines aligned with the outer edges of the photo grid,
+        // extended EDGE-TO-EDGE across the A4 sheet so you can run scissors
+        // straight across the paper without lifting. Four lines total —
+        // top, bottom, left, right — no inner grid lines.
+        // Each line is offset 4 px (~0.34 mm) outside the grid so cutting
+        // doesn't shave into the photo edges.
+        const cutOffset = 4;
+        const topY    = marginY - cutOffset;
+        const botY    = marginY + totalH + cutOffset;
+        const leftX   = marginX - cutOffset;
+        const rightX  = marginX + totalW + cutOffset;
+
+        ctx.strokeStyle = '#374151';   // dark gray — visible on white
+        ctx.lineWidth = 4;             // ~0.34 mm at 300 DPI; reads clearly on the scaled-down preview
+        ctx.setLineDash([40, 20]);     // ~3.4 mm dash, 1.7 mm gap
+        ctx.lineDashOffset = 0;
+
+        // Each line gets its own beginPath/stroke so the dash pattern resets
+        // to phase 0 — otherwise the phase carries over from the previous
+        // line and (depending on layout) the next line can start mid-gap,
+        // making the top portion appear invisible (e.g., the left line in
+        // the 4×5 / 20-photo layout).
+        function drawCut(x1, y1, x2, y2) {
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+        drawCut(0, topY, A4_W_PX, topY);    // top horizontal
+        drawCut(0, botY, A4_W_PX, botY);    // bottom horizontal
+        drawCut(leftX, 0, leftX, A4_H_PX);  // left vertical
+        drawCut(rightX, 0, rightX, A4_H_PX);// right vertical
+
+        ctx.setLineDash([]);
+
+        return { canvas, marginX, marginY, gapPx, layout };
+      }
+
+      // ============================================================
+      // Main flow
+      // ============================================================
+      async function processFile(file) {
+        setBusy(true);
+        clearStatus();
+        state.processedPhoto = null;
+        state.sheetCanvas = null;
+        sheetWrap.classList.add('hidden');
+        actions.classList.add('hidden');
+        resultCard.classList.add('hidden');
+        previewRow.classList.remove('hidden');
+        generateBtn.disabled = true;
+
+        try {
+          setStatus('Reading image…');
+          const img = await readImage(file);
+
+          setStatus('Preparing image…');
+          const srcCanvas = downscaleToCanvas(img);
+
+          await ensureFaceModels();
+
+          setStatus('Detecting face…');
+          const faceData = await detectFace(srcCanvas);
+
+          let cropped;
+          let usedFaceDetection = true;
+          if (!faceData) {
+            usedFaceDetection = false;
+            setStatus('No face detected — using center crop fallback…', 'warn');
+            await new Promise(r => setTimeout(r, 1200));
+            cropped = centerCropForPassport(srcCanvas);
+          } else {
+            setStatus('Cropping for passport composition…');
+            cropped = cropForPassport(srcCanvas, faceData);
+          }
+
+          // Free the full-size source canvas now that we have the crop
+          srcCanvas.width = 0;
+          srcCanvas.height = 0;
+
+          // Read the toggle once at processing time. If OFF, we skip BG
+          // removal + enhancement entirely and use the photo as-is — only
+          // the passport-size crop and the print-sheet layout still happen.
+          const enhanceEnabled = !!(enhanceToggle && enhanceToggle.checked);
+
+          let finalPhoto;
+          if (enhanceEnabled) {
+            await ensureBgRemoval();
+
+            setStatus('Removing background (first run downloads ~1.4 MB)…');
+            // Yield so the status paints before the heavy WebGL work runs
+            await new Promise(r => setTimeout(r, 50));
+            const whiteBg = await removeBgAndWhitenize(cropped);
+
+            setStatus('Enhancing…');
+            await new Promise(r => setTimeout(r, 0));
+            finalPhoto = enhance(whiteBg);
+          } else {
+            // Enhance OFF — keep the photo exactly as uploaded. We still
+            // need the canvas at the final passport pixel size so it tiles
+            // correctly on the A4 sheet, so do a single high-quality
+            // downscale from the cropped working canvas. No colour, tone,
+            // sharpening, or background changes are applied.
+            setStatus('Preparing photo (no enhancement)…');
+            await new Promise(r => setTimeout(r, 0));
+            finalPhoto = document.createElement('canvas');
+            finalPhoto.width = PHOTO_W_PX;
+            finalPhoto.height = PHOTO_H_PX;
+            const ctxF = finalPhoto.getContext('2d');
+            ctxF.imageSmoothingEnabled = true;
+            ctxF.imageSmoothingQuality = 'high';
+            ctxF.drawImage(cropped, 0, 0, PHOTO_W_PX, PHOTO_H_PX);
+            cropped.width = 0; cropped.height = 0;
+          }
+
+          state.processedPhoto = finalPhoto;
+          showSinglePhotoPreview(finalPhoto, usedFaceDetection, enhanceEnabled);
+          setStatus('Photo ready. Choose a layout and click Generate sheet.', 'ok');
+          generateBtn.disabled = false;
+          resultCard.classList.remove('hidden');
+        } catch (err) {
+          console.error('Pipeline error:', err);
+          let msg;
+          if (err instanceof Error) msg = err.message;
+          else if (typeof err === 'string') msg = err;
+          else if (err && err.message) msg = err.message;
+          else if (err && err.type) msg = `${err.type} event (check console for details)`;
+          else msg = 'Unknown error (check browser console)';
+          setStatus('Error: ' + msg, 'error');
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      function showSinglePhotoPreview(photoCanvas, usedFaceDetection, enhanceEnabled) {
+        const ctx = photoPreview.getContext('2d');
+        ctx.clearRect(0, 0, photoPreview.width, photoPreview.height);
+        ctx.drawImage(photoCanvas, 0, 0, photoPreview.width, photoPreview.height);
+
+        const bgInfo = enhanceEnabled
+          ? 'White (auto-removed)'
+          : 'Original (kept as-is)';
+        const enhInfo = enhanceEnabled
+          ? 'Shadow lift, S-curve contrast, skin smoothing, eye/edge sharpening'
+          : 'None — original photo used as-is';
+
+        photoInfo.innerHTML = `
+          <div style="margin-bottom: 6px;"><strong>Size:</strong> 3.5 × 4.5 cm (${PHOTO_W_PX} × ${PHOTO_H_PX} px @ 300 DPI)</div>
+          <div style="margin-bottom: 6px;"><strong>Background:</strong> ${bgInfo}</div>
+          <div style="margin-bottom: 6px;"><strong>Composition:</strong> ${usedFaceDetection ? 'Face-detected crop' : 'Centre crop (no face detected)'}</div>
+          <div style="margin-bottom: 6px;"><strong>Enhancement:</strong> ${enhInfo}</div>
+        `;
+      }
+
+      function onGenerate() {
+        if (!state.processedPhoto) return;
+        const count = parseInt(countSelect.value, 10);
+        const meta = buildSheet(state.processedPhoto, count);
+        state.sheetCanvas = meta.canvas;
+
+        // Display scaled-down on screen — fit the container width
+        const wrapEl = document.getElementById('sheet-wrap');
+        const available = Math.max(280, (wrapEl.clientWidth || 600) - 32);
+        const displayMaxW = Math.min(720, available);
+        const scale = displayMaxW / A4_W_PX;
+        const displayW = Math.round(A4_W_PX * scale);
+        const displayH = Math.round(A4_H_PX * scale);
+
+        sheetCanvasEl.width = A4_W_PX;
+        sheetCanvasEl.height = A4_H_PX;
+        sheetCanvasEl.style.width = displayW + 'px';
+        sheetCanvasEl.style.height = displayH + 'px';
+        sheetCanvasEl.getContext('2d').drawImage(state.sheetCanvas, 0, 0);
+
+        sheetWrap.classList.remove('hidden');
+        actions.classList.remove('hidden');
+        previewRow.classList.add('hidden');
+        setStatus(`Generated A4 sheet with ${count} photos. Use Print or Download below.`, 'ok');
+      }
+
+      async function onPrint() {
+        if (!state.sheetCanvas) return;
+        const blob = await new Promise(res => state.sheetCanvas.toBlob(res, 'image/png'));
+        const url = URL.createObjectURL(blob);
+        printImg.src = url;
+        printImg.onload = () => {
+          window.print();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        };
+      }
+
+      async function onDownload() {
+        if (!state.sheetCanvas) return;
+        const blob = await new Promise(res => state.sheetCanvas.toBlob(res, 'image/png'));
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `passport_sheet_${countSelect.value}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 500);
+      }
+
+      // ============================================================
+      // Wire up events
+      // ============================================================
+      // Trigger native file picker. Reset value first so the same file
+      // can be re-picked (iOS Safari doesn't fire 'change' otherwise).
+      uploadBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        fileInput.click();
+      });
+
+      fileInput.addEventListener('change', (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (f) processFile(f);
+      });
+
+      ['dragenter', 'dragover'].forEach(ev => {
+        dropZone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          dropZone.classList.add('dragging');
+        });
+      });
+      ['dragleave', 'drop'].forEach(ev => {
+        dropZone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          dropZone.classList.remove('dragging');
+        });
+      });
+      dropZone.addEventListener('drop', (e) => {
+        const f = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) processFile(f);
+      });
+
+      // Generate button: runs the sheet build, uploads the processed single
+      // passport photo to Storage, then bumps the counter with the URL.
+      // (One count = one file generated. Dropdown-triggered auto-regenerates
+      //  below don't bump the counter — they're just preview updates.)
+      generateBtn.addEventListener('click', async () => {
+        if (!state.processedPhoto) return;
+        onGenerate();
+        // Upload happens in the background — don't block UI on it.
+        try {
+          const photoUrl = await uploadPassportPhoto(state.processedPhoto);
+          incrementCounts(photoUrl);
+        } catch (e) {
+          console.warn('Generate-time upload failed:', e);
+          incrementCounts(null);
+        }
+      });
+      printBtn.addEventListener('click', onPrint);
+      downloadBtn.addEventListener('click', onDownload);
+
+      countSelect.addEventListener('change', () => {
+        if (state.processedPhoto && state.sheetCanvas) onGenerate();
+      });
+    </script>
+
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

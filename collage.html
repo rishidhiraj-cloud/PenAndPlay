@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collage - Pen & Play Club</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .collage-page * { box-sizing: border-box; }
+
+        .collage-page h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 6px;
+            color: #1a202c;
+        }
+        .collage-page .page-intro {
+            color: #4a5568;
+            font-size: 14px;
+            margin: 0 0 20px;
+        }
+        .collage-page .page-intro strong {
+            color: #1a202c;
+            font-weight: 700;
+        }
+
+        .collage-card {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .upload-row {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0 4px;
+            border-radius: 14px;
+            transition: all 0.2s;
+        }
+        .upload-row.dragging {
+            background: rgba(102, 126, 234, 0.06);
+            outline: 2px dashed #667eea;
+            outline-offset: 6px;
+        }
+        .upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .upload-btn-icon {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .upload-hint {
+            font-size: 13px;
+            color: #4a5568;
+            margin: 0;
+        }
+        body.dark-mode .upload-hint { color: #a0aec0; }
+
+        .visually-hidden-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .btn-primary, .btn-secondary {
+            font: inherit;
+            padding: 12px 20px;
+            border-radius: 14px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+        }
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border-color: #667eea;
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary:disabled, .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        body.dark-mode .collage-page h2 { color: #e2e8f0; }
+        body.dark-mode .collage-page .page-intro { color: #a0aec0; }
+        body.dark-mode .collage-page .page-intro strong { color: #e2e8f0; }
+        body.dark-mode .collage-card {
+            background: #2d3748;
+            border-color: #4a5568;
+        }
+        body.dark-mode .btn-secondary {
+            background: #374151;
+            color: #a78bfa;
+            border-color: #4c51bf;
+        }
+        body.dark-mode .btn-secondary:hover:not(:disabled) {
+            background: #4c51bf;
+            color: white;
+        }
+
+        /* Status messages */
+        .pp-status {
+            font-size: 14px;
+            color: #4a5568;
+            padding: 12px 16px;
+            background: #f7fafc;
+            border-radius: 12px;
+            margin-top: 14px;
+            min-height: 20px;
+            display: none;
+            border-left: 4px solid #cbd5e0;
+        }
+        .pp-status.show { display: block; }
+        .pp-status.error {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: #991b1b;
+            border-left-color: #dc2626;
+        }
+        .pp-status.ok {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #166534;
+            border-left-color: #16a34a;
+        }
+        body.dark-mode .pp-status {
+            background: #374151;
+            color: #a0aec0;
+            border-left-color: #4a5568;
+        }
+        body.dark-mode .pp-status.error {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+            color: #fecaca;
+        }
+        body.dark-mode .pp-status.ok {
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            color: #d1fae5;
+        }
+
+        /* Thumbnails */
+        .thumbs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin: 16px 0 10px;
+        }
+        .thumbs-header .label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        body.dark-mode .thumbs-header .label { color: #a0aec0; }
+        .thumbs-header .clear-btn {
+            font-size: 13px;
+            color: #dc2626;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .thumbs-header .clear-btn:hover { background: rgba(220, 38, 38, 0.1); }
+
+        .thumbs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+        }
+        .thumb {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        body.dark-mode .thumb {
+            background: #374151;
+            border-color: #4a5568;
+        }
+        .thumb img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+        .thumb-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+        .thumb-remove:hover { background: rgba(220, 38, 38, 0.9); }
+
+        /* Sheet preview */
+        .sheet-wrap {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 12px;
+            text-align: center;
+            overflow: auto;
+        }
+        body.dark-mode .sheet-wrap { background: #374151; }
+        .sheet-canvas-wrap {
+            display: inline-block;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        .sheet-canvas-wrap canvas {
+            display: block;
+            background: #fff;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        .hidden { display: none !important; }
+
+        /* Processing banner */
+        .processing-banner {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.10) 0%, rgba(118, 75, 162, 0.10) 100%);
+            border: 2px solid #667eea;
+            border-radius: 16px;
+            animation: bannerFadeIn 0.25s ease-out, bannerPulse 2.2s ease-in-out infinite 0.25s;
+        }
+        @keyframes bannerFadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bannerPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.35); }
+            50%      { box-shadow: 0 0 0 12px rgba(102, 126, 234, 0); }
+        }
+        .processing-spinner { width: 38px; height: 38px; flex-shrink: 0; }
+        .spinner-ring {
+            width: 38px; height: 38px;
+            border: 4px solid rgba(102, 126, 234, 0.22);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spinRing 0.85s linear infinite;
+        }
+        @keyframes spinRing { to { transform: rotate(360deg); } }
+        .processing-info { flex: 1; min-width: 0; }
+        .processing-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .processing-detail {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a202c;
+            line-height: 1.35;
+        }
+        body.dark-mode .processing-banner {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.18) 0%, rgba(118, 75, 162, 0.18) 100%);
+            border-color: #818cf8;
+        }
+        body.dark-mode .processing-title { color: #a78bfa; }
+        body.dark-mode .processing-detail { color: #e2e8f0; }
+
+        @page { size: A4 portrait; margin: 0; }
+    </style>
+</head>
+<body>
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Collage</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="Logo.png" alt="Shop Logo">
+                </div>
+            </div>
+        </header>
+
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html">➕ New Entry</a>
+                <a href="history.html">📋 History</a>
+                <a href="expense.html">💸 Expenses</a>
+                <a href="statement.html">📒 Statement</a>
+                <a href="storage.html">📦 Manage Storage</a>
+                <a href="outofstock.html">📋 Out of Stock</a>
+                <a href="passport_photo_generator.html">📸 Passport Photo</a>
+                <a href="collage.html">🖼 Collage</a>
+                <a href="generate_bill.html">📝 Generate Bill</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙 Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
+            <div class="back-to-dashboard">
+                <a href="index.html">« Back To Dashboard</a>
+            </div>
+
+            <div class="collage-page">
+                <h2>Collage Maker</h2>
+                <p class="page-intro">
+                    Collages Made Till Date: <strong id="collageCount">0</strong>
+                </p>
+
+                <div class="processing-banner hidden" id="processingBanner" role="status" aria-live="polite">
+                    <div class="processing-spinner" aria-hidden="true">
+                        <div class="spinner-ring"></div>
+                    </div>
+                    <div class="processing-info">
+                        <div class="processing-title">Working</div>
+                        <div class="processing-detail" id="processingDetail">Starting…</div>
+                    </div>
+                </div>
+
+                <div class="collage-card">
+                    <div class="upload-row" id="drop-zone">
+                        <button type="button" class="btn-primary upload-btn" id="upload-btn">
+                            <span class="upload-btn-icon">⬆</span> Upload images
+                        </button>
+                        <input type="file" id="file-input" accept="image/*" multiple class="visually-hidden-input">
+                        <p class="upload-hint">JPEG, PNG, or WebP • Choose multiple images at once. Each image will be placed inside a square cell with no cropping.</p>
+                    </div>
+
+                    <div class="thumbs-header hidden" id="thumbsHeader">
+                        <span class="label"><span id="thumbsCount">0</span> images selected</span>
+                        <button type="button" class="clear-btn" id="clearAllBtn">Clear all</button>
+                    </div>
+                    <div class="thumbs-grid" id="thumbsGrid"></div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap;">
+                        <button id="generate-btn" class="btn-primary" disabled>Generate collage</button>
+                    </div>
+
+                    <div class="pp-status" id="status"></div>
+                </div>
+
+                <div class="collage-card hidden" id="result-card">
+                    <div class="actions" id="actions">
+                        <button id="download-btn" class="btn-primary">⬇ Download collage (PNG)</button>
+                    </div>
+
+                    <div class="sheet-wrap">
+                        <div class="sheet-canvas-wrap" id="sheet-canvas-wrap">
+                            <canvas id="sheet-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+
+    <script>
+      // ============================================================
+      // Burger Menu + Dark Mode (consistent with other pages)
+      // ============================================================
+      const darkModeToggle = document.getElementById('darkModeToggle');
+      function initDarkMode() {
+        const isDark = localStorage.getItem('darkMode') === 'true';
+        if (isDark) {
+          document.body.classList.add('dark-mode');
+          if (darkModeToggle) darkModeToggle.textContent = '☀️ Light Mode';
+        }
+      }
+      function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('darkMode', isDark);
+        darkModeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+      }
+      function initBurgerMenu() {
+        const burgerIcon = document.getElementById('burgerIcon');
+        const burgerMenu = document.getElementById('burgerMenu');
+        const burgerOverlay = document.getElementById('burgerOverlay');
+        if (burgerIcon && burgerMenu && burgerOverlay) {
+          burgerIcon.addEventListener('click', () => {
+            burgerMenu.classList.toggle('active');
+            burgerOverlay.classList.toggle('active');
+          });
+          burgerOverlay.addEventListener('click', () => {
+            burgerMenu.classList.remove('active');
+            burgerOverlay.classList.remove('active');
+          });
+        }
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        initDarkMode();
+        initBurgerMenu();
+        if (darkModeToggle) darkModeToggle.addEventListener('click', toggleDarkMode);
+        const loader = document.getElementById('pageLoader');
+        if (loader) loader.style.display = 'none';
+      });
+
+      // ============================================================
+      // Constants — A4 portrait at 300 DPI
+      // ============================================================
+      const A4_W_MM = 210;
+      const A4_H_MM = 297;
+      const DPI = 300;
+      const MM_TO_PX = DPI / 25.4;
+      const A4_W_PX = Math.round(A4_W_MM * MM_TO_PX);   // 2480
+      const A4_H_PX = Math.round(A4_H_MM * MM_TO_PX);   // 3508
+      const MARGIN_PX = Math.round(10 * MM_TO_PX);      // 10mm safe margin
+      const GAP_PX = Math.round(4 * MM_TO_PX);          // 4mm gap between squares
+
+      const MAX_IMAGES = 36;
+
+      // ============================================================
+      // State
+      // ============================================================
+      const state = {
+        images: [],          // [{ id, file, img (HTMLImageElement), thumbUrl }]
+        sheetCanvas: null,
+      };
+      let nextImageId = 1;
+
+      // ============================================================
+      // DOM refs
+      // ============================================================
+      const dropZone = document.getElementById('drop-zone');
+      const uploadBtn = document.getElementById('upload-btn');
+      const fileInput = document.getElementById('file-input');
+      const generateBtn = document.getElementById('generate-btn');
+      const downloadBtn = document.getElementById('download-btn');
+      const statusEl = document.getElementById('status');
+      const resultCard = document.getElementById('result-card');
+      const sheetCanvasEl = document.getElementById('sheet-canvas');
+      const thumbsGrid = document.getElementById('thumbsGrid');
+      const thumbsHeader = document.getElementById('thumbsHeader');
+      const thumbsCount = document.getElementById('thumbsCount');
+      const clearAllBtn = document.getElementById('clearAllBtn');
+      const processingBanner = document.getElementById('processingBanner');
+      const processingDetail = document.getElementById('processingDetail');
+      const collageCountEl = document.getElementById('collageCount');
+
+      // ============================================================
+      // UI helpers
+      // ============================================================
+      function showProcessing(msg) {
+        processingDetail.textContent = msg;
+        processingBanner.classList.remove('hidden');
+      }
+      function hideProcessing() { processingBanner.classList.add('hidden'); }
+
+      function setStatus(msg, kind = '') {
+        if (kind === 'ok' || kind === 'error') {
+          statusEl.textContent = msg;
+          statusEl.className = 'pp-status show ' + kind;
+          hideProcessing();
+        } else {
+          statusEl.className = 'pp-status';
+          statusEl.textContent = '';
+          if (msg) showProcessing(msg);
+          else hideProcessing();
+        }
+      }
+      function clearStatus() {
+        statusEl.className = 'pp-status';
+        statusEl.textContent = '';
+        hideProcessing();
+      }
+
+      // ============================================================
+      // Shared counter (Supabase) — synced across devices
+      // ============================================================
+      const SUPABASE_URL = 'https://sckgsgakyyosgjxoctlb.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNja2dzZ2FreXlvc2dqeG9jdGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTIwNDEsImV4cCI6MjA4NDQ2ODA0MX0.DUVClZFzC4oEcBK_3MarnMa0tq2XXhIKsSsDyq8vExM';
+      const COUNTER_TABLE = 'collage_log';
+      const supabaseClient = (window.supabase && typeof window.supabase.createClient === 'function')
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+        : null;
+
+      async function fetchCount() {
+        if (!supabaseClient) return null;
+        try {
+          const { count, error } = await supabaseClient
+            .from(COUNTER_TABLE)
+            .select('*', { count: 'exact', head: true });
+          if (error) {
+            console.warn('Counter fetch error:', error);
+            return null;
+          }
+          return count || 0;
+        } catch (e) {
+          console.warn('Counter fetch failed:', e);
+          return null;
+        }
+      }
+      async function renderCount() {
+        const n = await fetchCount();
+        if (n === null) return;
+        if (collageCountEl) collageCountEl.textContent = n;
+      }
+      async function incrementCount() {
+        if (!supabaseClient) return;
+        if (collageCountEl) {
+          collageCountEl.textContent = (parseInt(collageCountEl.textContent, 10) || 0) + 1;
+        }
+        try {
+          const { error } = await supabaseClient.from(COUNTER_TABLE).insert([{}]);
+          if (error) {
+            console.warn('Counter insert error:', error);
+            return;
+          }
+          await renderCount();
+        } catch (e) {
+          console.warn('Counter insert failed:', e);
+        }
+      }
+      renderCount();
+
+      // ============================================================
+      // Image management
+      // ============================================================
+      function loadImageFromFile(file) {
+        return new Promise((resolve, reject) => {
+          const url = URL.createObjectURL(file);
+          const img = new Image();
+          img.onload = () => resolve({ img, url });
+          img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
+          img.src = url;
+        });
+      }
+
+      async function addFiles(files) {
+        const fileArr = Array.from(files).filter(f => f.type.startsWith('image/'));
+        if (!fileArr.length) {
+          setStatus('No image files selected.', 'error');
+          return;
+        }
+
+        const remaining = MAX_IMAGES - state.images.length;
+        if (remaining <= 0) {
+          setStatus(`Maximum ${MAX_IMAGES} images reached. Remove some to add more.`, 'error');
+          return;
+        }
+        const toAdd = fileArr.slice(0, remaining);
+        if (fileArr.length > remaining) {
+          setStatus(`Added ${remaining} of ${fileArr.length} images (max ${MAX_IMAGES} total).`, 'error');
+        }
+
+        showProcessing('Loading images…');
+        try {
+          for (const file of toAdd) {
+            try {
+              const { img, url } = await loadImageFromFile(file);
+              state.images.push({
+                id: nextImageId++,
+                file,
+                img,
+                thumbUrl: url,
+              });
+            } catch (e) {
+              console.warn('Skipped file:', file.name, e);
+            }
+          }
+          renderThumbs();
+          if (toAdd.length === fileArr.length) clearStatus();
+        } finally {
+          hideProcessing();
+        }
+      }
+
+      function removeImage(id) {
+        const idx = state.images.findIndex(it => it.id === id);
+        if (idx >= 0) {
+          URL.revokeObjectURL(state.images[idx].thumbUrl);
+          state.images.splice(idx, 1);
+          renderThumbs();
+          // If a result was already shown, hide it (it's now stale)
+          resultCard.classList.add('hidden');
+          state.sheetCanvas = null;
+        }
+      }
+
+      function clearAllImages() {
+        state.images.forEach(it => URL.revokeObjectURL(it.thumbUrl));
+        state.images = [];
+        renderThumbs();
+        resultCard.classList.add('hidden');
+        state.sheetCanvas = null;
+        clearStatus();
+      }
+
+      function renderThumbs() {
+        thumbsGrid.innerHTML = '';
+        if (!state.images.length) {
+          thumbsHeader.classList.add('hidden');
+          generateBtn.disabled = true;
+          return;
+        }
+        thumbsHeader.classList.remove('hidden');
+        thumbsCount.textContent = state.images.length;
+        generateBtn.disabled = false;
+
+        for (const item of state.images) {
+          const wrap = document.createElement('div');
+          wrap.className = 'thumb';
+          const imgEl = document.createElement('img');
+          imgEl.src = item.thumbUrl;
+          imgEl.alt = '';
+          wrap.appendChild(imgEl);
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'thumb-remove';
+          btn.textContent = '✕';
+          btn.title = 'Remove';
+          btn.setAttribute('aria-label', 'Remove image');
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            removeImage(item.id);
+          });
+          wrap.appendChild(btn);
+
+          thumbsGrid.appendChild(wrap);
+        }
+      }
+
+      // ============================================================
+      // Layout: find best (cols, rows) that maximises square size
+      // ============================================================
+      function findBestGrid(n, areaW, areaH, gap) {
+        let best = { cols: 1, rows: n, size: 0 };
+        for (let cols = 1; cols <= n; cols++) {
+          const rows = Math.ceil(n / cols);
+          const totalGapW = (cols - 1) * gap;
+          const totalGapH = (rows - 1) * gap;
+          const size = Math.min(
+            (areaW - totalGapW) / cols,
+            (areaH - totalGapH) / rows
+          );
+          if (size > best.size) best = { cols, rows, size };
+        }
+        return best;
+      }
+
+      function buildCollage() {
+        const n = state.images.length;
+        if (!n) throw new Error('No images uploaded');
+
+        const areaW = A4_W_PX - 2 * MARGIN_PX;
+        const areaH = A4_H_PX - 2 * MARGIN_PX;
+        const grid = findBestGrid(n, areaW, areaH, GAP_PX);
+        const sq = Math.floor(grid.size);
+
+        // Total grid pixel size, used to centre the grid on the sheet
+        const totalW = grid.cols * sq + (grid.cols - 1) * GAP_PX;
+        const totalH = grid.rows * sq + (grid.rows - 1) * GAP_PX;
+        const startX = Math.round((A4_W_PX - totalW) / 2);
+        const startY = Math.round((A4_H_PX - totalH) / 2);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = A4_W_PX;
+        canvas.height = A4_H_PX;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        // Pure white background (paper)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, A4_W_PX, A4_H_PX);
+
+        // Draw each image inside its square cell, contain-fit (no crop, white pad)
+        for (let i = 0; i < n; i++) {
+          const r = Math.floor(i / grid.cols);
+          const c = i % grid.cols;
+          const x = startX + c * (sq + GAP_PX);
+          const y = startY + r * (sq + GAP_PX);
+
+          const img = state.images[i].img;
+          const imgAspect = img.width / img.height;
+          let drawW, drawH;
+          if (imgAspect >= 1) {
+            drawW = sq;
+            drawH = sq / imgAspect;
+          } else {
+            drawH = sq;
+            drawW = sq * imgAspect;
+          }
+          const drawX = x + (sq - drawW) / 2;
+          const drawY = y + (sq - drawH) / 2;
+          ctx.drawImage(img, drawX, drawY, drawW, drawH);
+        }
+
+        return { canvas, grid, squareMm: sq / MM_TO_PX };
+      }
+
+      // ============================================================
+      // Generate flow
+      // ============================================================
+      async function onGenerate() {
+        if (!state.images.length) return;
+        clearStatus();
+        resultCard.classList.add('hidden');
+        generateBtn.disabled = true;
+        showProcessing('Building collage…');
+
+        // Yield so the banner paints before the heavy work
+        await new Promise(r => setTimeout(r, 30));
+
+        try {
+          const { canvas, grid, squareMm } = buildCollage();
+          state.sheetCanvas = canvas;
+
+          // Render scaled-down preview to fit container width
+          const wrapEl = document.getElementById('sheet-canvas-wrap').parentElement;
+          const available = Math.max(280, (wrapEl.clientWidth || 600) - 32);
+          const displayMaxW = Math.min(720, available);
+          const scale = displayMaxW / A4_W_PX;
+          const displayW = Math.round(A4_W_PX * scale);
+          const displayH = Math.round(A4_H_PX * scale);
+
+          sheetCanvasEl.width = A4_W_PX;
+          sheetCanvasEl.height = A4_H_PX;
+          sheetCanvasEl.style.width = displayW + 'px';
+          sheetCanvasEl.style.height = displayH + 'px';
+          sheetCanvasEl.getContext('2d').drawImage(canvas, 0, 0);
+
+          resultCard.classList.remove('hidden');
+          const sqMm = Math.round(squareMm * 10) / 10;
+          setStatus(
+            `Collage ready: ${state.images.length} images in ${grid.cols}×${grid.rows} grid (each ${sqMm}mm). ` +
+            `Click Download to save.`,
+            'ok'
+          );
+          incrementCount();
+        } catch (err) {
+          console.error('Collage error:', err);
+          setStatus('Error: ' + (err.message || 'Failed to build collage'), 'error');
+        } finally {
+          generateBtn.disabled = false;
+          hideProcessing();
+        }
+      }
+
+      async function onDownload() {
+        if (!state.sheetCanvas) return;
+        const blob = await new Promise(res => state.sheetCanvas.toBlob(res, 'image/png'));
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        a.download = `collage_${state.images.length}imgs_${stamp}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 500);
+      }
+
+      // ============================================================
+      // Wire up events
+      // ============================================================
+      uploadBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        fileInput.click();
+      });
+      fileInput.addEventListener('change', (e) => {
+        const files = e.target.files;
+        if (files && files.length) addFiles(files);
+      });
+
+      ['dragenter', 'dragover'].forEach(ev => {
+        dropZone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          dropZone.classList.add('dragging');
+        });
+      });
+      ['dragleave', 'drop'].forEach(ev => {
+        dropZone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          dropZone.classList.remove('dragging');
+        });
+      });
+      dropZone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files && files.length) addFiles(files);
+      });
+
+      generateBtn.addEventListener('click', onGenerate);
+      downloadBtn.addEventListener('click', onDownload);
+      clearAllBtn.addEventListener('click', clearAllImages);
+    </script>
+
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

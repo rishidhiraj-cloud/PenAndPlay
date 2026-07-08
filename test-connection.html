@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Supabase Connection</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #fff;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #2d5016;
+            color: #9fff9f;
+        }
+        .error {
+            background: #5c1616;
+            color: #ff9f9f;
+        }
+        .info {
+            background: #16315c;
+            color: #9fc8ff;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <div id="results"></div>
+    <button onclick="testConnection()">Test Connection</button>
+    <button onclick="testInsert()">Test Insert</button>
+    <button onclick="testSelect()">Test Select</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://sckgsgakyyosgjxoctlb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNja2dzZ2FreXlvc2dqeG9jdGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTIwNDEsImV4cCI6MjA4NDQ2ODA0MX0.DUVClZFzC4oEcBK_3MarnMa0tq2XXhIKsSsDyq8vExM';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const results = document.getElementById('results');
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        // Auto-run diagnostics on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('=== AUTOMATIC DIAGNOSTICS ===', 'info');
+            checkConfig();
+        });
+
+        function checkConfig() {
+            log('Checking configuration...', 'info');
+            log(`URL: ${SUPABASE_URL}`, 'info');
+            log(`Key length: ${SUPABASE_ANON_KEY.length} characters`, 'info');
+            log(`Key starts with: ${SUPABASE_ANON_KEY.substring(0, 20)}...`, 'info');
+
+            // Check if key format is correct
+            if (SUPABASE_ANON_KEY.startsWith('eyJ')) {
+                log('✅ API key format looks correct (JWT token)', 'success');
+            } else {
+                log('⚠️  WARNING: API key format looks wrong!', 'error');
+                log('Supabase anon keys should start with "eyJ" and be very long (hundreds of characters)', 'error');
+                log('You might have the wrong key. Check: Project Settings → API → anon/public key', 'error');
+            }
+
+            log('\n--- Click "Test Connection" to continue ---', 'info');
+        }
+
+        async function testConnection() {
+            log('\n=== TESTING CONNECTION ===', 'info');
+
+            try {
+                const { data, error } = await supabase
+                    .from('daily_entries')
+                    .select('count');
+
+                if (error) {
+                    log(`❌ Connection error: ${error.message}`, 'error');
+                    log(`Error code: ${error.code || 'N/A'}`, 'error');
+                    log(`Full error: ${JSON.stringify(error, null, 2)}`, 'error');
+
+                    // Provide specific guidance
+                    if (error.message.includes('JWT')) {
+                        log('\n🔧 FIX: Your API key is invalid. Get the correct "anon public" key from Supabase.', 'error');
+                    } else if (error.message.includes('row-level security') || error.code === '42501') {
+                        log('\n🔧 FIX: Run the SQL from SUPABASE_FIX.sql to disable RLS.', 'error');
+                    }
+                } else {
+                    log('✅ Connection successful!', 'success');
+                    log(`Table exists and is accessible`, 'success');
+                }
+            } catch (err) {
+                log(`❌ Exception: ${err.message}`, 'error');
+                console.error('Full error:', err);
+            }
+        }
+
+        async function testInsert() {
+            log('\n=== TESTING INSERT ===', 'info');
+
+            try {
+                const testData = {
+                    date: '2026-01-20',
+                    cash_amount: 100,
+                    upi_amount: 200,
+                    card_amount: 300,
+                    petty_cash: 50,
+                    total_income: 550
+                };
+
+                log(`Attempting to insert test data...`);
+
+                const { data, error } = await supabase
+                    .from('daily_entries')
+                    .insert([testData])
+                    .select();
+
+                if (error) {
+                    log(`❌ INSERT failed: ${error.message}`, 'error');
+                    log(`Error code: ${error.code || 'N/A'}`, 'error');
+                    log(`Full error: ${JSON.stringify(error, null, 2)}`, 'error');
+
+                    // Provide specific guidance based on error
+                    if (error.code === '42501' || error.message.includes('row-level security') || error.message.includes('policy')) {
+                        log('\n🔧 FIX: Row Level Security is blocking writes!', 'error');
+                        log('Go to Supabase SQL Editor and run:', 'info');
+                        log('ALTER TABLE daily_entries DISABLE ROW LEVEL SECURITY;', 'info');
+                    } else if (error.code === '23505' || error.message.includes('duplicate')) {
+                        log('\n✅ Good news: INSERT works! (Entry already exists for this date)', 'success');
+                        log('Try changing the date in the test or delete the existing entry.', 'info');
+                    } else if (error.message.includes('JWT') || error.message.includes('Invalid API')) {
+                        log('\n🔧 FIX: Invalid API key!', 'error');
+                        log('Get the correct "anon public" key from: Project Settings → API', 'info');
+                    } else if (error.code === '42P01' || error.message.includes('does not exist')) {
+                        log('\n🔧 FIX: Table "daily_entries" does not exist!', 'error');
+                        log('Run the CREATE TABLE SQL from README.md in Supabase SQL Editor.', 'info');
+                    }
+                } else {
+                    log('✅ INSERT successful!', 'success');
+                    log(`Inserted data: ${JSON.stringify(data, null, 2)}`, 'success');
+                    log('\nYour app should now work! Try going back to index.html', 'success');
+                }
+            } catch (err) {
+                log(`❌ Exception: ${err.message}`, 'error');
+                console.error('Full error:', err);
+            }
+        }
+
+        async function testSelect() {
+            results.innerHTML = '';
+            log('Testing SELECT operation...');
+
+            try {
+                const { data, error } = await supabase
+                    .from('daily_entries')
+                    .select('*')
+                    .limit(5);
+
+                if (error) {
+                    log(`❌ SELECT failed: ${error.message}`, 'error');
+                } else {
+                    log('✅ SELECT successful!', 'success');
+                    log(`Found ${data.length} records`, 'success');
+                    if (data.length > 0) {
+                        log(`Sample: ${JSON.stringify(data[0])}`, 'info');
+                    }
+                }
+            } catch (err) {
+                log(`❌ Exception: ${err.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

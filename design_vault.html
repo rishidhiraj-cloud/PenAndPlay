@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design 2 — Vault (Dark Luxury)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --navy: #0D1117;
+    --navy-card: #161B22;
+    --navy-surface: #1C2230;
+    --gold: #D4AF37;
+    --gold-dim: rgba(212, 175, 55, 0.5);
+    --gold-subtle: rgba(212, 175, 55, 0.08);
+    --white: #F0EDE6;
+    --muted: rgba(240, 237, 230, 0.45);
+    --border: rgba(212, 175, 55, 0.18);
+    --emerald: #2ECC71;
+  }
+
+  body {
+    background: #07090E;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    gap: 40px;
+  }
+
+  .design-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: rgba(212, 175, 55, 0.6);
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .page-rows {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgba(212, 175, 55, 0.4);
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .phone-frame {
+    width: 375px;
+    background: var(--navy);
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(212,175,55,0.15),
+      0 40px 120px rgba(0,0,0,0.8),
+      0 0 60px rgba(212,175,55,0.04);
+  }
+
+  /* Header */
+  .app-header {
+    background: var(--navy);
+    padding: 52px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .app-header::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212,175,55,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+  }
+
+  .menu-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 5px;
+    cursor: pointer;
+  }
+
+  .menu-btn span {
+    display: block;
+    height: 1.5px;
+    background: var(--gold);
+    border-radius: 1px;
+  }
+
+  .menu-btn span:nth-child(1) { width: 22px; }
+  .menu-btn span:nth-child(2) { width: 16px; }
+  .menu-btn span:nth-child(3) { width: 10px; }
+
+  .header-center { text-align: center; flex: 1; }
+
+  .shop-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.12em;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .page-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-top: 4px;
+    opacity: 0.8;
+  }
+
+  .header-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .gold-rule {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.3;
+    margin-top: 20px;
+  }
+
+  /* Body */
+  .app-body { padding: 24px 20px 32px; }
+
+  .section-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 16px;
+  }
+
+  /* Input Cards */
+  .input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .input-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 14px 12px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .input-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .input-card.active {
+    border-color: rgba(212,175,55,0.5);
+    background: rgba(212,175,55,0.04);
+  }
+
+  .input-card.active::after { opacity: 1; }
+
+  .card-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+
+  .card-value.muted {
+    color: rgba(240,237,230,0.25);
+    font-weight: 300;
+  }
+
+  .card-icon {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    font-size: 11px;
+    opacity: 0.25;
+  }
+
+  /* Total Block */
+  .total-block {
+    background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.04));
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .total-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0.5;
+  }
+
+  .total-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 6px;
+  }
+
+  .total-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .total-glow {
+    text-shadow: 0 0 30px rgba(212,175,55,0.4), 0 0 60px rgba(212,175,55,0.15);
+  }
+
+  .total-sub-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(212,175,55,0.1);
+  }
+
+  .sub-item {
+    text-align: center;
+  }
+
+  .sub-item-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 7px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .sub-item-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: rgba(240,237,230,0.7);
+    margin-top: 3px;
+  }
+
+  /* Save Button */
+  .save-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--gold);
+    border: none;
+    color: var(--navy);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.25em;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 24px rgba(212,175,55,0.25);
+  }
+
+  .save-btn:hover {
+    background: #E8C547;
+    box-shadow: 0 8px 32px rgba(212,175,55,0.4);
+  }
+
+  /* Nav */
+  .nav-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .nav-item {
+    flex: 1;
+    padding: 9px 6px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  /* DASHBOARD */
+  .dash-header {
+    padding: 52px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--navy);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dash-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 80% 0%, rgba(212,175,55,0.06) 0%, transparent 60%);
+  }
+
+  .dash-month-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .month-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    opacity: 0.6;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 5px 10px;
+    background: transparent;
+    text-transform: uppercase;
+  }
+
+  .month-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.1em;
+    color: var(--white);
+  }
+
+  .dash-body { padding: 20px 20px 32px; }
+
+  /* Stats */
+  .stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .stat-value.white { color: var(--white); }
+  .stat-value.green { color: var(--emerald); }
+
+  .stat-delta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    color: var(--emerald);
+    margin-top: 5px;
+  }
+
+  /* Chart */
+  .chart-panel {
+    background: var(--navy-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .chart-panel::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+  }
+
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+
+  .chart-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .chart-peak {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    color: var(--gold);
+    opacity: 0.7;
+  }
+
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 72px;
+  }
+
+  .bar {
+    flex: 1;
+    background: rgba(212,175,55,0.15);
+    border-radius: 2px 2px 0 0;
+    position: relative;
+  }
+
+  .bar.lit {
+    background: rgba(212,175,55,0.5);
+  }
+
+  .bar.peak {
+    background: var(--gold);
+    box-shadow: 0 -4px 16px rgba(212,175,55,0.4);
+  }
+</style>
+</head>
+<body>
+
+<div class="design-label">Design 02 — "Vault" — Dark Luxury</div>
+
+<div class="page-rows">
+
+  <!-- ENTRY PAGE -->
+  <div>
+    <h2>Entry Page</h2>
+    <div class="phone-frame">
+      <div class="app-header">
+        <div class="header-row">
+          <div class="menu-btn">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="header-center">
+            <div class="shop-name">Pen & Play Club</div>
+            <div class="page-title">Daily Register</div>
+          </div>
+          <div class="header-date">21 MAY<br>2026</div>
+        </div>
+        <div class="gold-rule"></div>
+      </div>
+
+      <div class="app-body">
+        <div class="section-tag">Cash Entry</div>
+
+        <div class="input-grid">
+          <div class="input-card active">
+            <div class="card-label">Cash</div>
+            <div class="card-value">₹12,400</div>
+            <div class="card-icon">💵</div>
+          </div>
+          <div class="input-card">
+            <div class="card-label">UPI</div>
+            <div class="card-value">₹8,200</div>
+            <div class="card-icon">📱</div>
+          </div>
+          <div class="input-card">
+            <div class="card-label">Card</div>
+            <div class="card-value">₹3,100</div>
+            <div class="card-icon">💳</div>
+          </div>
+          <div class="input-card">
+            <div class="card-label">AP Cash</div>
+            <div class="card-value muted">—</div>
+          </div>
+        </div>
+
+        <div class="total-block">
+          <div class="total-label">Total Income</div>
+          <div class="total-value total-glow">₹23,700</div>
+          <div class="total-sub-row">
+            <div class="sub-item">
+              <div class="sub-item-label">Cash Total</div>
+              <div class="sub-item-value">₹11,500</div>
+            </div>
+            <div class="sub-item">
+              <div class="sub-item-label">Petty Cash</div>
+              <div class="sub-item-value">₹900</div>
+            </div>
+            <div class="sub-item">
+              <div class="sub-item-label">Date</div>
+              <div class="sub-item-value">21 May</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="save-btn">Save Entry</button>
+
+        <div class="nav-row">
+          <div class="nav-item">History</div>
+          <div class="nav-item">Dashboard</div>
+          <div class="nav-item">Expenses</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div>
+    <h2>Dashboard</h2>
+    <div class="phone-frame">
+      <div class="dash-header">
+        <div class="header-row" style="position:relative;z-index:1">
+          <div class="menu-btn">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="header-center">
+            <div class="shop-name">Pen & Play Club</div>
+            <div class="page-title">Analytics</div>
+          </div>
+          <div class="header-date">2026</div>
+        </div>
+        <div class="gold-rule"></div>
+        <div class="dash-month-row">
+          <div class="month-btn">◂ Apr</div>
+          <div class="month-name">May 2026</div>
+          <div class="month-btn">Jun ▸</div>
+        </div>
+      </div>
+
+      <div class="dash-body">
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-label">Monthly Income</div>
+            <div class="stat-value">₹4.2L</div>
+            <div class="stat-delta">▲ 12% vs Apr</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg / Day</div>
+            <div class="stat-value white">₹18.4K</div>
+            <div class="stat-delta" style="color:rgba(240,237,230,0.3)">21 days</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Expenses</div>
+            <div class="stat-value white">₹62K</div>
+            <div class="stat-delta" style="color:#e74c3c">▲ 8%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Peak Day</div>
+            <div class="stat-value green">₹32.4K</div>
+            <div class="stat-delta" style="color:rgba(240,237,230,0.3)">May 10</div>
+          </div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="chart-header">
+            <div class="chart-title">Daily Income — May</div>
+            <div class="chart-peak">Peak: ₹32,400</div>
+          </div>
+          <div class="bars">
+            <div class="bar" style="height:42%"></div>
+            <div class="bar" style="height:55%"></div>
+            <div class="bar lit" style="height:68%"></div>
+            <div class="bar" style="height:48%"></div>
+            <div class="bar lit" style="height:75%"></div>
+            <div class="bar peak" style="height:100%"></div>
+            <div class="bar lit" style="height:72%"></div>
+            <div class="bar" style="height:52%"></div>
+            <div class="bar lit" style="height:64%"></div>
+            <div class="bar" style="height:38%"></div>
+            <div class="bar lit" style="height:70%"></div>
+            <div class="bar" style="height:56%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

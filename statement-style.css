@@ -1,0 +1,220 @@
+/* ─────────────────────────────────────────────
+   WASHI — Statement Page
+   ───────────────────────────────────────────── */
+
+.month-indicator {
+    border-bottom: 1px solid var(--rule-mid);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.mi-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--olive);
+}
+
+.mi-value {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--ink);
+}
+
+/* ─── Account Selector ────────────────────── */
+.account-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.account-selector label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    white-space: nowrap;
+}
+
+.account-selector select {
+    flex: 1;
+    min-width: 140px;
+    background: var(--cream-mid);
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--ink);
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 8px 28px 8px 10px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%231C1C1E' opacity='.4' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    transition: border-color var(--transition);
+}
+
+.account-selector select:focus {
+    outline: none;
+    border-color: var(--ink);
+}
+
+/* ─── Ledger Summary Cards ────────────────── */
+.ledger-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin-bottom: 16px;
+    background: var(--rule-mid);
+    border: 1px solid var(--rule-mid);
+}
+
+.summary-card {
+    background: var(--cream);
+    padding: 11px 12px;
+    text-align: left;
+}
+
+.summary-card .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+}
+
+.summary-card .value {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.summary-card.credit .value  { color: var(--olive); }
+.summary-card.debit .value   { color: var(--red); }
+.summary-card.closing .value { color: var(--ink); font-size: 17px; }
+
+.summary-card.closing {
+    background: var(--cream-mid);
+    border-top: 2px solid var(--ink);
+}
+
+/* ─── Ledger Wrapper & Table ──────────────── */
+.ledger-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--rule-mid);
+    border-top: 1.5px solid var(--ink);
+}
+
+.ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 15px;
+}
+
+.ledger-table thead {
+    background: var(--cream-mid);
+    border-bottom: 1px solid var(--rule-strong);
+}
+
+.ledger-table th {
+    padding: 9px 8px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.ledger-table th.amount,
+.ledger-table td.amount {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.ledger-table tbody tr {
+    border-bottom: 1px solid var(--rule);
+}
+
+.ledger-table tbody tr:hover { background: var(--cream-mid); }
+
+.ledger-table tbody tr.opening-row { background: var(--cream-mid); }
+.ledger-table tbody tr.opening-row td { font-weight: 700; }
+
+.ledger-table tbody tr.closing-row {
+    background: var(--cream-mid);
+    border-top: 2px solid var(--ink);
+    border-bottom: none;
+}
+
+.ledger-table tbody tr.closing-row td { font-weight: 700; }
+
+.ledger-table td {
+    padding: 7px 8px;
+    color: var(--ink);
+    vertical-align: top;
+}
+
+.ledger-table td.date {
+    white-space: nowrap;
+    color: var(--ink-faint);
+    font-size: 12px;
+}
+
+.ledger-table td.description {
+    color: var(--ink-soft);
+    word-break: break-word;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+}
+
+.ledger-table td.credit {
+    color: var(--olive);
+    font-weight: 700;
+}
+
+.ledger-table td.debit {
+    color: var(--red);
+    font-weight: 700;
+}
+
+.ledger-table td.balance {
+    color: var(--ink);
+    font-weight: 700;
+}
+
+.ledger-table td .muted,
+.ledger-table td.muted { color: var(--ink-faint); }
+
+/* ─── Empty State ─────────────────────────── */
+.statement-empty {
+    border: 1px dashed var(--rule-mid);
+    padding: 40px 20px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+/* ─── Mobile ──────────────────────────────── */
+@media (max-width: 600px) {
+    .ledger-table { font-size: 12px; }
+    .ledger-table th { padding: 7px 5px; font-size: 10px; }
+    .ledger-table td { padding: 6px 5px; font-size: 12px; }
+    .ledger-table td.date { font-size: 11px; }
+}

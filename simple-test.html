@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Database Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            min-height: 100px;
+            white-space: pre-wrap;
+            margin-top: 10px;
+        }
+        .error { color: #ff6b6b; }
+        .success { color: #51cf66; }
+        .info { color: #74c0fc; }
+        h1 { color: #333; }
+        h2 { color: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🔍 Database Connection Tester</h1>
+        <p>This will help diagnose why entries aren't saving.</p>
+    </div>
+
+    <div class="box">
+        <h2>Step 1: Test Connection</h2>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="output1" class="output">Click the button above...</div>
+    </div>
+
+    <div class="box">
+        <h2>Step 2: Test Insert</h2>
+        <button onclick="testInsert()">Test Insert Data</button>
+        <div id="output2" class="output">Click the button above...</div>
+    </div>
+
+    <div class="box">
+        <h2>Step 3: Check Browser Console</h2>
+        <p>Press F12 (or Cmd+Option+I on Mac) to open Developer Tools and check the Console tab for errors.</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        console.log('Script loaded!');
+
+        const SUPABASE_URL = 'https://sckgsgakyyosgjxoctlb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNja2dzZ2FreXlvc2dqeG9jdGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTIwNDEsImV4cCI6MjA4NDQ2ODA0MX0.DUVClZFzC4oEcBK_3MarnMa0tq2XXhIKsSsDyq8vExM';
+
+        console.log('URL:', SUPABASE_URL);
+        console.log('Key length:', SUPABASE_ANON_KEY.length);
+
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client created successfully');
+        } catch (err) {
+            console.error('Failed to create Supabase client:', err);
+            alert('Failed to initialize Supabase: ' + err.message);
+        }
+
+        function log(elementId, message, type = 'info') {
+            const output = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            console.log(message);
+        }
+
+        async function testConnection() {
+            const output = document.getElementById('output1');
+            output.innerHTML = '';
+
+            log('output1', '=== TESTING CONNECTION ===', 'info');
+            log('output1', 'Connecting to: ' + SUPABASE_URL, 'info');
+
+            try {
+                log('output1', 'Attempting to query daily_entries table...', 'info');
+
+                const { data, error, count } = await supabase
+                    .from('daily_entries')
+                    .select('*', { count: 'exact', head: false })
+                    .limit(1);
+
+                if (error) {
+                    log('output1', '❌ ERROR: ' + error.message, 'error');
+                    log('output1', 'Error code: ' + (error.code || 'N/A'), 'error');
+                    log('output1', 'Error hint: ' + (error.hint || 'N/A'), 'error');
+
+                    if (error.message.includes('relation') && error.message.includes('does not exist')) {
+                        log('output1', '\n🔧 FIX: Table does not exist!', 'error');
+                        log('output1', 'Go to Supabase SQL Editor and create the table.', 'info');
+                    } else if (error.code === '42501' || error.message.includes('policy')) {
+                        log('output1', '\n🔧 FIX: Row Level Security is blocking!', 'error');
+                        log('output1', 'Run this SQL: ALTER TABLE daily_entries DISABLE ROW LEVEL SECURITY;', 'info');
+                    }
+                } else {
+                    log('output1', '✅ SUCCESS: Connected to database!', 'success');
+                    log('output1', 'Table exists and is accessible.', 'success');
+                    log('output1', 'Found ' + (count || 0) + ' existing entries.', 'info');
+                    if (data && data.length > 0) {
+                        log('output1', 'Sample: ' + JSON.stringify(data[0]), 'info');
+                    }
+                }
+            } catch (err) {
+                log('output1', '❌ EXCEPTION: ' + err.message, 'error');
+                log('output1', 'Full error: ' + JSON.stringify(err), 'error');
+            }
+        }
+
+        async function testInsert() {
+            const output = document.getElementById('output2');
+            output.innerHTML = '';
+
+            log('output2', '=== TESTING INSERT ===', 'info');
+
+            try {
+                const testDate = '2026-01-' + String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+                const testData = {
+                    date: testDate,
+                    cash_amount: 100.50,
+                    upi_amount: 200.75,
+                    card_amount: 300.25,
+                    petty_cash: 50.00,
+                    total_income: 601.50
+                };
+
+                log('output2', 'Attempting to insert test data...', 'info');
+                log('output2', 'Date: ' + testDate, 'info');
+
+                const { data, error } = await supabase
+                    .from('daily_entries')
+                    .insert([testData])
+                    .select();
+
+                if (error) {
+                    log('output2', '❌ INSERT FAILED: ' + error.message, 'error');
+                    log('output2', 'Error code: ' + (error.code || 'N/A'), 'error');
+
+                    if (error.code === '42501' || error.message.includes('policy') || error.message.includes('row-level security')) {
+                        log('output2', '\n🔧 THIS IS YOUR PROBLEM!', 'error');
+                        log('output2', 'Row Level Security is BLOCKING all inserts.', 'error');
+                        log('output2', '\nGo to Supabase and run this SQL:', 'info');
+                        log('output2', 'ALTER TABLE daily_entries DISABLE ROW LEVEL SECURITY;', 'success');
+                        log('output2', '\nThen click "Test Insert Data" again.', 'info');
+                    } else if (error.code === '23505') {
+                        log('output2', '✅ GOOD NEWS: Insert actually works!', 'success');
+                        log('output2', 'Entry already exists for ' + testDate, 'info');
+                        log('output2', 'This means your database is working fine.', 'success');
+                    } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
+                        log('output2', '\n🔧 FIX: Table does not exist!', 'error');
+                        log('output2', 'Create the daily_entries table first.', 'info');
+                    }
+                } else {
+                    log('output2', '✅✅✅ SUCCESS! INSERT WORKS! ✅✅✅', 'success');
+                    log('output2', 'Data saved: ' + JSON.stringify(data), 'success');
+                    log('output2', '\n🎉 Your database is working perfectly!', 'success');
+                    log('output2', 'Now try your main app at index.html', 'success');
+                }
+            } catch (err) {
+                log('output2', '❌ EXCEPTION: ' + err.message, 'error');
+                console.error('Full error:', err);
+            }
+        }
+
+        // Auto-run on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded, auto-running tests...');
+            setTimeout(() => {
+                testConnection();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

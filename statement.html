@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statement - Pen & Play Club</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="history-style.css">
+    <link rel="stylesheet" href="statement-style.css">
+</head>
+<body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Account Statement</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="Logo.png" alt="Shop Logo">
+                </div>
+            </div>
+        </header>
+
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html" data-num="01">New Entry</a>
+                <a href="history.html" data-num="02">History</a>
+                <a href="expense.html" data-num="03">Expenses</a>
+                <a href="statement.html" data-num="04">Statement</a>
+                <a href="storage.html" data-num="05">Manage Storage</a>
+                <a href="outofstock.html" data-num="06">Out of Stock</a>
+                <a href="passport_photo_generator.html" data-num="07">Passport Photo</a>
+                <a href="collage.html" data-num="08">Collage</a>
+                <a href="generate_bill.html" data-num="09">Generate Bill</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
+            <div class="back-to-dashboard">
+                <a href="index.html">« Back To Dashboard</a>
+            </div>
+
+            <!-- Month Indicator -->
+            <div class="month-indicator">
+                <span class="mi-label">Viewing Month:</span> <span id="currentMonthLabel" class="mi-value">Loading...</span>
+            </div>
+
+            <!-- Account Type Selector -->
+            <div class="account-selector">
+                <label for="accountType">Select Account Type :</label>
+                <select id="accountType">
+                    <option value="">Select</option>
+                    <option value="BoB">BoB</option>
+                    <option value="AP Cash">AP Cash</option>
+                </select>
+            </div>
+
+            <!-- Statement Container -->
+            <div id="statementContainer"></div>
+        </main>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <script src="statement.js"></script>
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

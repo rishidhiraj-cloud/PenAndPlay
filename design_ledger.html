@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design 3 — Ledger (Warm Brutalist)</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --sand: #FAF3E0;
+    --sand-mid: #F0E8CC;
+    --sand-dark: #E6D9B8;
+    --ink: #111111;
+    --ink-soft: #333333;
+    --red: #E63946;
+    --olive: #7C8C5E;
+    --olive-light: rgba(124,140,94,0.15);
+    --rule: rgba(17,17,17,0.12);
+    --rule-mid: rgba(17,17,17,0.2);
+  }
+
+  body {
+    background: #2A2A22;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    font-family: 'Syne', sans-serif;
+    gap: 40px;
+  }
+
+  .design-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: rgba(250,243,224,0.4);
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .page-rows {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  h2 {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: rgba(250,243,224,0.3);
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .phone-frame {
+    width: 375px;
+    background: var(--sand);
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.2);
+  }
+
+  /* Header — thick stamp bar */
+  .app-header {
+    background: var(--ink);
+    padding: 52px 24px 20px;
+    position: relative;
+  }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .menu-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+  }
+
+  .menu-btn span {
+    display: block;
+    height: 2px;
+    background: var(--sand);
+  }
+
+  .menu-btn span:nth-child(1) { width: 22px; }
+  .menu-btn span:nth-child(2) { width: 22px; }
+  .menu-btn span:nth-child(3) { width: 14px; }
+
+  .header-center { text-align: center; flex: 1; }
+
+  .shop-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--sand);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .page-title {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    color: rgba(250,243,224,0.55);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .header-date {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    color: rgba(250,243,224,0.5);
+    letter-spacing: 0.08em;
+    text-align: right;
+    line-height: 1.7;
+  }
+
+  .red-stripe {
+    height: 4px;
+    background: var(--red);
+    width: 100%;
+  }
+
+  /* Body */
+  .app-body { padding: 24px 24px 32px; }
+
+  .section-head {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--olive);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* Ledger rows */
+  .ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4px;
+  }
+
+  .ledger-row {
+    display: flex;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .ledger-row:first-child {
+    border-top: 2px solid var(--ink);
+  }
+
+  .ledger-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    width: 90px;
+  }
+
+  .dot-fill {
+    flex: 1;
+    overflow: hidden;
+    height: 14px;
+    position: relative;
+    margin: 0 6px;
+    opacity: 0.25;
+  }
+
+  .dot-fill::after {
+    content: '· · · · · · · · · · · · · · · · · · · · · · · · · · · · ·';
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    white-space: nowrap;
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    letter-spacing: 2px;
+  }
+
+  .ledger-value {
+    font-family: 'Courier Prime', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    text-align: right;
+    min-width: 85px;
+  }
+
+  .ledger-value.placeholder {
+    color: rgba(17,17,17,0.2);
+    font-weight: 400;
+  }
+
+  /* Total Block */
+  .total-block {
+    border-top: 3px solid var(--ink);
+    padding: 16px 0 12px;
+    margin-top: 4px;
+  }
+
+  .total-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .total-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+
+  .total-value {
+    font-family: 'Courier Prime', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .sub-block {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--rule-mid);
+  }
+
+  .sub-item {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .sub-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--olive);
+    text-transform: uppercase;
+  }
+
+  .sub-value {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  /* Button */
+  .save-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--ink);
+    border: 3px solid var(--ink);
+    color: var(--sand);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 0;
+    transition: all 0.15s;
+  }
+
+  .save-btn:hover {
+    background: var(--red);
+    border-color: var(--red);
+  }
+
+  /* Nav */
+  .nav-row {
+    display: flex;
+    gap: 0;
+    margin-top: 16px;
+    border: 2px solid var(--ink);
+  }
+
+  .nav-item {
+    flex: 1;
+    padding: 10px 6px;
+    text-align: center;
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-right: 1px solid var(--rule-mid);
+  }
+
+  .nav-item:last-child { border-right: none; }
+
+  /* DASHBOARD */
+  .dash-header {
+    background: var(--ink);
+    padding: 52px 24px 20px;
+  }
+
+  .dash-month-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+
+  .month-btn {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: rgba(250,243,224,0.5);
+    cursor: pointer;
+    padding: 5px 10px;
+    border: 1px solid rgba(250,243,224,0.15);
+    background: transparent;
+    text-transform: uppercase;
+  }
+
+  .month-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--sand);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .dash-body { padding: 20px 24px 32px; }
+
+  /* Stat Row */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-bottom: 16px;
+    border: 2px solid var(--ink);
+  }
+
+  .stat-card {
+    background: var(--sand);
+    padding: 14px 12px;
+    border-right: 1px solid var(--rule-mid);
+    border-bottom: 1px solid var(--rule-mid);
+  }
+
+  .stat-card:nth-child(2n) { border-right: none; }
+  .stat-card:nth-child(3), .stat-card:nth-child(4) { border-bottom: none; }
+
+  .stat-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 8px;
+    letter-spacing: 0.16em;
+    color: var(--olive);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-family: 'Courier Prime', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .stat-value.red { color: var(--red); }
+
+  .stat-delta {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    color: var(--olive);
+    margin-top: 4px;
+  }
+
+  /* Chart */
+  .chart-panel {
+    background: var(--sand-mid);
+    border: 2px solid var(--ink);
+    padding: 14px;
+  }
+
+  .chart-title {
+    font-family: 'Courier Prime', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--olive);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .chart-peak-label {
+    color: var(--red);
+  }
+
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 72px;
+  }
+
+  .bar {
+    flex: 1;
+    background: var(--ink);
+    opacity: 0.12;
+    border-radius: 1px 1px 0 0;
+  }
+
+  .bar.active { opacity: 0.45; }
+  .bar.peak { opacity: 1; background: var(--red); }
+
+  .chart-foot {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .foot-label {
+    font-family: 'Courier Prime', monospace;
+    font-size: 8px;
+    color: rgba(17,17,17,0.35);
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+
+<div class="design-label">Design 03 — "Ledger" — Warm Brutalist</div>
+
+<div class="page-rows">
+
+  <!-- ENTRY PAGE -->
+  <div>
+    <h2>Entry Page</h2>
+    <div class="phone-frame">
+      <div class="app-header">
+        <div class="header-row">
+          <div class="menu-btn">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="header-center">
+            <div class="shop-name">Pen & Play Club</div>
+            <div class="page-title">Daily Register</div>
+          </div>
+          <div class="header-date">21 MAY<br>2026</div>
+        </div>
+      </div>
+      <div class="red-stripe"></div>
+
+      <div class="app-body">
+        <div class="section-head">Cash Entry · 21 May 2026</div>
+
+        <div>
+          <div class="ledger-row" style="border-top: 2px solid #111;">
+            <span class="ledger-label">Cash</span>
+            <span class="dot-fill"></span>
+            <span class="ledger-value">₹ 12,400</span>
+          </div>
+          <div class="ledger-row">
+            <span class="ledger-label">UPI</span>
+            <span class="dot-fill"></span>
+            <span class="ledger-value">₹  8,200</span>
+          </div>
+          <div class="ledger-row">
+            <span class="ledger-label">Card</span>
+            <span class="dot-fill"></span>
+            <span class="ledger-value">₹  3,100</span>
+          </div>
+          <div class="ledger-row">
+            <span class="ledger-label">AP Cash</span>
+            <span class="dot-fill"></span>
+            <span class="ledger-value placeholder">—</span>
+          </div>
+        </div>
+
+        <div class="total-block">
+          <div class="total-row">
+            <div>
+              <div class="total-label">Total Income</div>
+            </div>
+            <div class="total-value">₹23,700</div>
+          </div>
+          <div class="sub-block">
+            <div class="sub-item">
+              <span class="sub-label">Cash Total</span>
+              <span class="sub-value">₹11,500</span>
+            </div>
+            <div class="sub-item">
+              <span class="sub-label">Petty Cash</span>
+              <span class="sub-value">₹900</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="save-btn">Punch In Entry</button>
+
+        <div class="nav-row">
+          <div class="nav-item">History</div>
+          <div class="nav-item">Dashboard</div>
+          <div class="nav-item">Expenses</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD PAGE -->
+  <div>
+    <h2>Dashboard</h2>
+    <div class="phone-frame">
+      <div class="dash-header">
+        <div class="header-row">
+          <div class="menu-btn">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="header-center">
+            <div class="shop-name">Pen & Play Club</div>
+            <div class="page-title">Analytics</div>
+          </div>
+          <div class="header-date">2026</div>
+        </div>
+        <div class="dash-month-row">
+          <div class="month-btn">◂ Apr</div>
+          <div class="month-name">May 2026</div>
+          <div class="month-btn">Jun ▸</div>
+        </div>
+      </div>
+      <div class="red-stripe"></div>
+
+      <div class="dash-body">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Monthly Income</div>
+            <div class="stat-value red">₹4.2L</div>
+            <div class="stat-delta">▲ 12% vs Apr</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg / Day</div>
+            <div class="stat-value">₹18,400</div>
+            <div class="stat-delta">21 days</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Expenses</div>
+            <div class="stat-value">₹62,000</div>
+            <div class="stat-delta">this month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Peak Day</div>
+            <div class="stat-value red">₹32.4K</div>
+            <div class="stat-delta">May 10</div>
+          </div>
+        </div>
+
+        <div class="chart-panel">
+          <div class="chart-title">
+            <span>Daily Income — May 2026</span>
+            <span class="chart-peak-label">Peak ₹32,400</span>
+          </div>
+          <div class="bars">
+            <div class="bar" style="height:42%"></div>
+            <div class="bar" style="height:55%"></div>
+            <div class="bar active" style="height:68%"></div>
+            <div class="bar" style="height:48%"></div>
+            <div class="bar active" style="height:75%"></div>
+            <div class="bar peak" style="height:100%"></div>
+            <div class="bar active" style="height:72%"></div>
+            <div class="bar" style="height:52%"></div>
+            <div class="bar active" style="height:64%"></div>
+            <div class="bar" style="height:38%"></div>
+            <div class="bar active" style="height:70%"></div>
+            <div class="bar" style="height:56%"></div>
+          </div>
+          <div class="chart-foot">
+            <span class="foot-label">1 May</span>
+            <span class="foot-label">10 May</span>
+            <span class="foot-label">21 May</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

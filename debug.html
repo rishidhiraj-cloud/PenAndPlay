@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .box {
+            background: white;
+            padding: 25px;
+            margin: 15px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .output {
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-height: 150px;
+            white-space: pre-wrap;
+            margin-top: 15px;
+            overflow-x: auto;
+        }
+        .red { color: #ff4444; }
+        .green { color: #44ff44; }
+        .yellow { color: #ffff44; }
+        .cyan { color: #44ffff; }
+        h1 { color: #333; margin: 0 0 10px 0; }
+        h2 { color: #667eea; margin: 0 0 15px 0; font-size: 20px; }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.loading { background: #fff3cd; color: #856404; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h1>🔧 Database Debugger</h1>
+        <p>This will show exactly what's wrong and how to fix it.</p>
+        <div id="loadStatus" class="status loading">Loading Supabase library...</div>
+    </div>
+
+    <div class="box">
+        <h2>Test #1: Connection Test</h2>
+        <button id="btn1">Run Connection Test</button>
+        <div id="output1" class="output">Waiting for button click...</div>
+    </div>
+
+    <div class="box">
+        <h2>Test #2: Insert Test</h2>
+        <button id="btn2">Run Insert Test</button>
+        <div id="output2" class="output">Waiting for button click...</div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuration
+        const CONFIG = {
+            url: 'https://sckgsgakyyosgjxoctlb.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNja2dzZ2FreXlvc2dqeG9jdGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTIwNDEsImV4cCI6MjA4NDQ2ODA0MX0.DUVClZFzC4oEcBK_3MarnMa0tq2XXhIKsSsDyq8vExM'
+        };
+
+        let supabaseClient = null;
+
+        // Initialize
+        function init() {
+            const loadStatus = document.getElementById('loadStatus');
+
+            try {
+                if (typeof window.supabase === 'undefined') {
+                    loadStatus.className = 'status error';
+                    loadStatus.textContent = '❌ ERROR: Supabase library failed to load!';
+                    return;
+                }
+
+                supabaseClient = window.supabase.createClient(CONFIG.url, CONFIG.key);
+                loadStatus.className = 'status success';
+                loadStatus.textContent = '✅ Ready! Supabase library loaded successfully.';
+
+                // Setup button handlers
+                document.getElementById('btn1').addEventListener('click', runTest1);
+                document.getElementById('btn2').addEventListener('click', runTest2);
+
+            } catch (err) {
+                loadStatus.className = 'status error';
+                loadStatus.textContent = '❌ Initialization Error: ' + err.message;
+            }
+        }
+
+        // Helper function
+        function log(outputId, msg, color = 'green') {
+            const output = document.getElementById(outputId);
+            const time = new Date().toLocaleTimeString();
+            output.innerHTML += '<span class="' + color + '">[' + time + '] ' + msg + '</span>\n';
+        }
+
+        function clear(outputId) {
+            document.getElementById(outputId).innerHTML = '';
+        }
+
+        // Test 1: Connection
+        async function runTest1() {
+            clear('output1');
+            log('output1', '═══════════════════════════════════════', 'cyan');
+            log('output1', '  CONNECTION TEST', 'cyan');
+            log('output1', '═══════════════════════════════════════', 'cyan');
+            log('output1', '');
+            log('output1', 'URL: ' + CONFIG.url, 'yellow');
+            log('output1', 'Key length: ' + CONFIG.key.length + ' chars', 'yellow');
+            log('output1', '');
+            log('output1', 'Querying daily_entries table...', 'cyan');
+
+            try {
+                const { data, error, count } = await supabaseClient
+                    .from('daily_entries')
+                    .select('*', { count: 'exact' })
+                    .limit(1);
+
+                if (error) {
+                    log('output1', '', 'red');
+                    log('output1', '❌❌❌ CONNECTION FAILED ❌❌❌', 'red');
+                    log('output1', '', 'red');
+                    log('output1', 'Error: ' + error.message, 'red');
+                    log('output1', 'Code: ' + (error.code || 'N/A'), 'red');
+                    log('output1', '', 'red');
+
+                    if (error.message.includes('relation') && error.message.includes('does not exist')) {
+                        log('output1', '🔧 SOLUTION:', 'yellow');
+                        log('output1', 'Table "daily_entries" does not exist.', 'yellow');
+                        log('output1', 'Go to Supabase SQL Editor and create it.', 'yellow');
+                    }
+                } else {
+                    log('output1', '', 'green');
+                    log('output1', '✅✅✅ CONNECTION SUCCESS ✅✅✅', 'green');
+                    log('output1', '', 'green');
+                    log('output1', 'Database is accessible!', 'green');
+                    log('output1', 'Found ' + (count || 0) + ' existing entries.', 'green');
+                    log('output1', '', 'green');
+                    log('output1', 'Now click "Run Insert Test" button above.', 'cyan');
+                }
+            } catch (err) {
+                log('output1', '', 'red');
+                log('output1', '❌ EXCEPTION: ' + err.message, 'red');
+            }
+        }
+
+        // Test 2: Insert
+        async function runTest2() {
+            clear('output2');
+            log('output2', '═══════════════════════════════════════', 'cyan');
+            log('output2', '  INSERT TEST', 'cyan');
+            log('output2', '═══════════════════════════════════════', 'cyan');
+            log('output2', '');
+
+            const randomDay = Math.floor(Math.random() * 28) + 1;
+            const testDate = '2026-01-' + String(randomDay).padStart(2, '0');
+
+            const testData = {
+                date: testDate,
+                cash_amount: 500,
+                upi_amount: 750,
+                card_amount: 1000,
+                petty_cash: 100,
+                total_income: 2150
+            };
+
+            log('output2', 'Test data:', 'yellow');
+            log('output2', JSON.stringify(testData, null, 2), 'yellow');
+            log('output2', '');
+            log('output2', 'Attempting INSERT...', 'cyan');
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('daily_entries')
+                    .insert([testData])
+                    .select();
+
+                if (error) {
+                    log('output2', '', 'red');
+                    log('output2', '❌❌❌ INSERT FAILED ❌❌❌', 'red');
+                    log('output2', '', 'red');
+                    log('output2', 'Error: ' + error.message, 'red');
+                    log('output2', 'Code: ' + (error.code || 'N/A'), 'red');
+                    log('output2', '', 'red');
+
+                    if (error.code === '42501' || error.message.includes('policy') || error.message.includes('row-level security')) {
+                        log('output2', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
+                        log('output2', '🎯 FOUND THE PROBLEM! 🎯', 'yellow');
+                        log('output2', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'yellow');
+                        log('output2', '', 'yellow');
+                        log('output2', 'Row Level Security (RLS) is BLOCKING writes.', 'yellow');
+                        log('output2', '', 'yellow');
+                        log('output2', 'FIX STEPS:', 'green');
+                        log('output2', '1. Go to https://app.supabase.com', 'green');
+                        log('output2', '2. Click SQL Editor (left sidebar)', 'green');
+                        log('output2', '3. Paste this SQL:', 'green');
+                        log('output2', '', 'cyan');
+                        log('output2', '   ALTER TABLE daily_entries', 'cyan');
+                        log('output2', '   DISABLE ROW LEVEL SECURITY;', 'cyan');
+                        log('output2', '', 'green');
+                        log('output2', '4. Click RUN', 'green');
+                        log('output2', '5. Come back and click this button again', 'green');
+                    } else if (error.code === '23505') {
+                        log('output2', '✅ Actually, INSERT WORKS!', 'green');
+                        log('output2', 'Entry for ' + testDate + ' already exists.', 'green');
+                        log('output2', 'Your database is working fine!', 'green');
+                    }
+                } else {
+                    log('output2', '', 'green');
+                    log('output2', '✅✅✅ INSERT SUCCESS! ✅✅✅', 'green');
+                    log('output2', '', 'green');
+                    log('output2', '🎉 DATABASE IS WORKING PERFECTLY! 🎉', 'green');
+                    log('output2', '', 'green');
+                    log('output2', 'Saved: ' + JSON.stringify(data[0], null, 2), 'cyan');
+                    log('output2', '', 'green');
+                    log('output2', '👉 Your main app should now work!', 'green');
+                    log('output2', '   Go to index.html and try it.', 'green');
+                }
+            } catch (err) {
+                log('output2', '', 'red');
+                log('output2', '❌ EXCEPTION: ' + err.message, 'red');
+            }
+        }
+
+        // Run init when page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>

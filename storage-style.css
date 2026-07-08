@@ -1,0 +1,129 @@
+/* ─────────────────────────────────────────────
+   WASHI — Storage Page
+   ───────────────────────────────────────────── */
+
+:root {
+    --serif: 'Times New Roman', Times, serif;
+}
+
+body {
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.tab-content { display: none; }
+
+.tab-content.active {
+    display: block;
+    animation: fadeUp 0.2s ease both;
+}
+
+.form-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--rule-mid);
+}
+
+.form-section:last-child { border-bottom: none; }
+
+/* ─── Items List ──────────────────────────── */
+.items-list { margin-top: 16px; }
+
+.item-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+    gap: 10px;
+}
+
+.item-card:first-child { border-top: 1px solid var(--rule-mid); }
+.item-card:last-child { border-bottom: none; }
+
+.item-name {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 16px;
+    font-style: normal;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+}
+
+/* ─── Item Actions ────────────────────────── */
+.item-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.update-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border: 1px solid var(--rule-mid);
+    background: transparent;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.15s;
+}
+
+.update-btn:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+    background: var(--cream-mid);
+}
+
+.delete-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(192, 57, 43, 0.45);
+    border: 1px solid rgba(192, 57, 43, 0.18);
+    background: transparent;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.15s;
+}
+
+.delete-btn:hover {
+    color: var(--red);
+    border-color: var(--red);
+    background: var(--red-light);
+}
+
+/* ─── Search Results ──────────────────────── */
+.search-results { margin-top: 16px; }
+
+.search-group { margin-bottom: 18px; }
+.search-group:last-child { margin-bottom: 0; }
+
+.storage-header {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 0 0 6px;
+    border-bottom: 1px solid var(--rule-mid);
+    margin-bottom: 0;
+}
+
+.storage-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 16px;
+    font-style: normal;
+    color: var(--ink);
+}
+
+.storage-item:last-child { border-bottom: none; }

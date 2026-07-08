@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage Management - Pen & Play Club</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="storage-style.css">
+</head>
+<body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Storage Management</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="Logo.png" alt="Shop Logo">
+                </div>
+            </div>
+        </header>
+
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html" data-num="01">New Entry</a>
+                <a href="history.html" data-num="02">History</a>
+                <a href="expense.html" data-num="03">Expenses</a>
+                <a href="statement.html" data-num="04">Statement</a>
+                <a href="storage.html" data-num="05">Manage Storage</a>
+                <a href="outofstock.html" data-num="06">Out of Stock</a>
+                <a href="passport_photo_generator.html" data-num="07">Passport Photo</a>
+                <a href="collage.html" data-num="08">Collage</a>
+                <a href="generate_bill.html" data-num="09">Generate Bill</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙 Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
+            <div class="back-to-dashboard">
+                <a href="index.html">« Back To Dashboard</a>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="add">Add</button>
+                <button class="tab-btn" data-tab="view">Storage</button>
+                <button class="tab-btn" data-tab="search">Search</button>
+            </div>
+
+            <!-- Add Item Tab -->
+            <div id="addTab" class="tab-content active">
+                <div class="form-section">
+                    <h2>Add Item to Storage</h2>
+                    <form id="addItemForm">
+                        <div class="form-group">
+                            <label for="storageArea">Storage Area</label>
+                            <select id="storageArea" name="storageArea" required>
+                                <option value="">Select Storage Area</option>
+                                <option value="Rack 1">Rack 1</option>
+                                <option value="Rack 2">Rack 2</option>
+                                <option value="Rack 3">Rack 3</option>
+                                <option value="Rack 4">Rack 4</option>
+                                <option value="Rack 5">Rack 5</option>
+                                <option value="Rack 6">Rack 6</option>
+                                <option value="Rack 7">Rack 7</option>
+                                <option value="Rack 8">Rack 8</option>
+                                <option value="Rack 9">Rack 9</option>
+                                <option value="Rack 10">Rack 10</option>
+                                <option value="Rack 11">Rack 11</option>
+                                <option value="Small Rack 1">Small Rack 1</option>
+                                <option value="Small Rack 2">Small Rack 2</option>
+                                <option value="DG Home">DG Home</option>
+                                <option value="AP Home">AP Home</option>
+                                <option value="Vaishali">Vaishali</option>
+                                <option value="Almirah">Almirah</option>
+                                <option value="Outer Almirah 1">Outer Almirah 1</option>
+                                <option value="Outer Almirah 2">Outer Almirah 2</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="itemName">Item Name</label>
+                            <input type="text" id="itemName" name="itemName" placeholder="Enter item name" maxlength="500" required>
+                        </div>
+
+                        <button type="submit" class="btn-primary" id="addItemBtn">Add Item</button>
+                    </form>
+
+                    <div id="addStatusMessage" class="status-message"></div>
+                </div>
+            </div>
+
+            <!-- View by Storage Tab -->
+            <div id="viewTab" class="tab-content">
+                <div class="form-section">
+                    <h2>View Items by Storage</h2>
+
+                    <div class="form-group">
+                        <label for="viewStorageArea">Select Storage Area</label>
+                        <select id="viewStorageArea" name="viewStorageArea">
+                            <option value="">Select Storage Area</option>
+                            <option value="Rack 1">Rack 1</option>
+                            <option value="Rack 2">Rack 2</option>
+                            <option value="Rack 3">Rack 3</option>
+                            <option value="Rack 4">Rack 4</option>
+                            <option value="Rack 5">Rack 5</option>
+                            <option value="Rack 6">Rack 6</option>
+                            <option value="Rack 7">Rack 7</option>
+                            <option value="Rack 8">Rack 8</option>
+                            <option value="Rack 9">Rack 9</option>
+                            <option value="Rack 10">Rack 10</option>
+                            <option value="Rack 11">Rack 11</option>
+                            <option value="Small Rack 1">Small Rack 1</option>
+                            <option value="Small Rack 2">Small Rack 2</option>
+                            <option value="DG Home">DG Home</option>
+                            <option value="AP Home">AP Home</option>
+                            <option value="Vaishali">Vaishali</option>
+                            <option value="Almirah">Almirah</option>
+                            <option value="Outer Almirah 1">Outer Almirah 1</option>
+                            <option value="Outer Almirah 2">Outer Almirah 2</option>
+                        </select>
+                    </div>
+
+                    <div id="storageItemsList" class="items-list">
+                        <div class="empty-state">Select a storage area to view items</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Item Tab -->
+            <div id="searchTab" class="tab-content">
+                <div class="form-section">
+                    <h2>Search Item Across Storages</h2>
+
+                    <div class="form-group">
+                        <label for="searchItemInput">Search Item</label>
+                        <input type="text" id="searchItemInput" name="searchItemInput" placeholder="Enter item name to search">
+                    </div>
+
+                    <button type="button" class="btn-primary" id="searchBtn">Search</button>
+
+                    <div id="searchResults" class="search-results">
+                        <div class="empty-state">Enter an item name to search</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <script src="storage.js"></script>
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

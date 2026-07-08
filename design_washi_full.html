@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Washi Design — Full Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --cream: #F5F0E8;
+  --cream-mid: #EDE6D6;
+  --cream-dark: #E2D8C2;
+  --ink: #1C1C1E;
+  --ink-soft: #3A3A3C;
+  --ink-faint: rgba(28,28,30,0.45);
+  --red: #C0392B;
+  --red-light: rgba(192,57,43,0.08);
+  --olive: #7C8C5E;
+  --olive-light: rgba(124,140,94,0.12);
+  --rule: rgba(28,28,30,0.1);
+  --rule-mid: rgba(28,28,30,0.18);
+  --rule-strong: rgba(28,28,30,0.28);
+  --mono: 'JetBrains Mono', monospace;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+}
+
+/* ─── Page Chrome ──────────────────────────────────────────────────────── */
+body {
+  background: #C8C0B0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0,0,0,0.08) 0%, transparent 50%);
+  min-height: 100vh;
+  padding: 48px 24px 80px;
+  font-family: var(--serif);
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.page-title h1 {
+  font-family: var(--serif);
+  font-size: 13px;
+  font-weight: 400;
+  font-style: italic;
+  color: rgba(28,28,30,0.5);
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.page-title h2 {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  color: rgba(28,28,30,0.35);
+  text-transform: uppercase;
+}
+
+/* ─── Flow Layout ──────────────────────────────────────────────────────── */
+.flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: center;
+}
+
+.flow-row {
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.flow-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.screen-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 16px;
+}
+
+.screen-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: rgba(28,28,30,0.4);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* ─── Arrows ───────────────────────────────────────────────────────────── */
+.arrow-h, .arrow-v {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(28,28,30,0.3);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.arrow-v {
+  flex-direction: column;
+  height: 32px;
+  gap: 2px;
+}
+
+.arrow-h {
+  width: 32px;
+  margin-top: 60px;
+}
+
+.arrow-line-v {
+  width: 1px;
+  flex: 1;
+  background: rgba(28,28,30,0.2);
+}
+
+.arrow-line-h {
+  height: 1px;
+  flex: 1;
+  background: rgba(28,28,30,0.2);
+}
+
+/* ─── Phone Frame ──────────────────────────────────────────────────────── */
+.phone {
+  width: 320px;
+  background: var(--cream);
+  border-radius: 36px;
+  overflow: clip;
+  box-shadow:
+    0 30px 90px rgba(0,0,0,0.2),
+    0 0 0 1px rgba(28,28,30,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+  position: relative;
+}
+
+.phone.narrow { width: 280px; }
+
+/* ─── Shared Header ────────────────────────────────────────────────────── */
+.ph {
+  background: var(--cream);
+  padding: 44px 20px 18px;
+  border-bottom: 1.5px solid var(--rule-strong);
+  position: relative;
+}
+
+.ph-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.ph-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 3px;
+  cursor: pointer;
+}
+
+.ph-menu span {
+  display: block;
+  height: 1.5px;
+  background: var(--ink);
+}
+
+.ph-menu span:nth-child(1) { width: 20px; }
+.ph-menu span:nth-child(2) { width: 20px; }
+.ph-menu span:nth-child(3) { width: 12px; }
+
+.ph-center { text-align: center; flex: 1; }
+
+.ph-shop {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.ph-page {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.ph-date {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--ink-faint);
+  letter-spacing: 0.08em;
+  text-align: right;
+  line-height: 1.7;
+}
+
+/* ─── Body ─────────────────────────────────────────────────────────────── */
+.pb { padding: 20px 20px 28px; }
+.pb-sm { padding: 16px 18px 24px; }
+
+.sect {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  color: var(--olive);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.hr-thin { width: 100%; height: 1px; background: var(--rule-mid); margin: 10px 0; }
+.hr-bold { width: 100%; height: 2px; background: var(--ink); margin: 4px 0; }
+
+/* ─── Ledger Rows ──────────────────────────────────────────────────────── */
+.ledger { width: 100%; margin-bottom: 2px; }
+
+.lr {
+  display: flex;
+  align-items: baseline;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.lr:first-child { border-top: 1.5px solid var(--ink); }
+
+.lr-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.lr-dots {
+  flex: 1;
+  height: 12px;
+  overflow: hidden;
+  position: relative;
+  margin: 0 6px;
+}
+
+.lr-dots::after {
+  content: '· · · · · · · · · · · · · · · · · ·';
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink);
+  opacity: 0.18;
+  white-space: nowrap;
+  position: absolute;
+  bottom: 1px;
+  left: 0;
+  letter-spacing: 3px;
+}
+
+.lr-val {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: right;
+  min-width: 70px;
+  letter-spacing: -0.01em;
+}
+
+.lr-val.dim { color: rgba(28,28,30,0.2); font-weight: 300; }
+.lr-val.readonly {
+  color: var(--olive);
+  background: var(--olive-light);
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+
+/* ─── Total Block ──────────────────────────────────────────────────────── */
+.total-block {
+  border-top: 2.5px solid var(--ink);
+  border-bottom: 2.5px solid var(--ink);
+  padding: 14px 0;
+  margin: 6px 0 16px;
+}
+
+.total-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.total-lbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+.total-val {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.total-subs {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--rule-mid);
+}
+
+.tsub {
+  display: flex;
+  gap: 5px;
+  align-items: baseline;
+}
+
+.tsub-l {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  color: var(--olive);
+  text-transform: uppercase;
+}
+
+.tsub-v {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+
+/* ─── Buttons ──────────────────────────────────────────────────────────── */
+.btn {
+  width: 100%;
+  padding: 13px;
+  background: transparent;
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 1px;
+  margin-top: 14px;
+  transition: all 0.15s;
+  display: block;
+  text-align: center;
+}
+
+.btn:hover { background: var(--ink); color: var(--cream); }
+
+.btn-outline {
+  margin-top: 8px;
+  border-color: var(--rule-strong);
+  color: var(--ink-faint);
+  font-size: 8px;
+}
+
+.btn-red {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* ─── Nav Pills ────────────────────────────────────────────────────────── */
+.nav-row {
+  display: flex;
+  gap: 0;
+  margin-top: 14px;
+  border: 1px solid var(--rule-strong);
+}
+
+.np {
+  flex: 1;
+  padding: 8px 4px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border-right: 1px solid var(--rule);
+  cursor: pointer;
+}
+
+.np:last-child { border-right: none; }
+.np.active { background: var(--ink); color: var(--cream); }
+
+/* ─── DASHBOARD ────────────────────────────────────────────────────────── */
+.dash-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px 14px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.dm-btn {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 4px 8px;
+  border: 1px solid var(--rule-mid);
+  border-radius: 2px;
+  background: transparent;
+}
+
+.dm-name {
+  font-size: 20px;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule-mid);
+  border: 1px solid var(--rule-mid);
+  margin: 16px 20px;
+}
+
+.sc {
+  background: var(--cream);
+  padding: 13px 12px;
+}
+
+.sc-label {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.sc-val {
+  font-family: var(--mono);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.sc-val.red { color: var(--red); }
+.sc-val.olive { color: var(--olive); }
+
+.sc-delta {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--olive);
+  margin-top: 4px;
+  letter-spacing: 0.08em;
+}
+
+.chart-area {
+  margin: 0 20px 20px;
+  padding: 14px;
+  background: var(--cream-mid);
+  border: 1px solid var(--rule-mid);
+}
+
+.chart-hdr {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.chart-ttl {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+.chart-peak {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--red);
+  letter-spacing: 0.08em;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 60px;
+}
+
+.bar {
+  flex: 1;
+  background: var(--ink);
+  opacity: 0.1;
+  border-radius: 1px 1px 0 0;
+}
+
+.bar.mid { opacity: 0.35; }
+.bar.hi { opacity: 0.65; }
+.bar.peak { opacity: 1; background: var(--red); }
+
+/* ─── HISTORY ──────────────────────────────────────────────────────────── */
+.filter-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.filter-btn {
+  flex: 1;
+  padding: 7px 4px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid var(--rule-mid);
+  color: var(--ink-faint);
+  background: transparent;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.filter-btn.active {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+
+.hist-item {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.hist-item:first-child { border-top: 1.5px solid var(--ink); }
+
+.hist-date {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.hist-sub {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--ink-faint);
+  letter-spacing: 0.1em;
+  margin-top: 3px;
+  text-transform: uppercase;
+}
+
+.hist-right { text-align: right; }
+
+.hist-total {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: -0.02em;
+}
+
+.hist-breakdown {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--ink-faint);
+  margin-top: 3px;
+}
+
+/* ─── EXPENSES ─────────────────────────────────────────────────────────── */
+.radio-group {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.rb {
+  padding: 6px 10px;
+  border: 1px solid var(--rule-mid);
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.rb.sel {
+  background: var(--ink);
+  color: var(--cream);
+  border-color: var(--ink);
+}
+
+.rb.olive-sel {
+  background: var(--olive);
+  color: var(--cream);
+  border-color: var(--olive);
+}
+
+.field-block {
+  margin-bottom: 10px;
+}
+
+.fl {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.fi {
+  width: 100%;
+  padding: 9px 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  background: var(--cream-mid);
+  border: 1px solid var(--rule-mid);
+  border-radius: 2px;
+  outline: none;
+}
+
+.fi:focus { border-color: var(--ink); }
+
+.fi.ta { height: 52px; resize: none; font-size: 11px; }
+
+.exp-item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.exp-item:first-child { border-top: 1.5px solid var(--ink); }
+
+.exp-who {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.exp-desc {
+  font-family: var(--serif);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+.exp-meta {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--olive);
+  margin-top: 3px;
+  letter-spacing: 0.08em;
+}
+
+.exp-amt {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ─── STATEMENT ────────────────────────────────────────────────────────── */
+.stmt-period {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.stmt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.stmt-row:first-child { border-top: 1.5px solid var(--ink); }
+
+.stmt-key {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+.stmt-val {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.stmt-val.red { color: var(--red); }
+.stmt-val.olive { color: var(--olive); }
+
+.stmt-net {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  margin-top: 4px;
+}
+
+.stmt-net-l {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--ink);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.stmt-net-v {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: -0.03em;
+}
+
+/* ─── STORAGE ──────────────────────────────────────────────────────────── */
+.storage-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1.5px solid var(--ink);
+  margin-bottom: 14px;
+}
+
+.st-tab {
+  flex: 1;
+  padding: 8px 4px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1.5px;
+}
+
+.st-tab.active {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.storage-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.storage-item:first-child { border-top: 1px solid var(--rule); }
+
+.si-name {
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--ink);
+  font-style: italic;
+}
+
+.si-loc {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--olive);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.si-badge {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  color: var(--cream);
+  background: var(--ink);
+  padding: 2px 7px;
+  border-radius: 1px;
+  text-transform: uppercase;
+}
+
+/* ─── OUT OF STOCK ─────────────────────────────────────────────────────── */
+.oos-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.oos-item:first-child { border-top: 1.5px solid var(--ink); }
+
+.oos-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  width: 18px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.oos-name {
+  flex: 1;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--ink);
+  font-style: italic;
+}
+
+.oos-meta {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--olive);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.oos-qty {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--red);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.cat-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 6px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  border-radius: 1px;
+  background: var(--olive-light);
+  color: var(--olive);
+  margin-top: 3px;
+}
+
+/* ─── BILL ─────────────────────────────────────────────────────────────── */
+.bill-item-row {
+  display: grid;
+  grid-template-columns: 1fr 44px 56px;
+  gap: 5px;
+  margin-bottom: 6px;
+  align-items: center;
+}
+
+.bi-name {
+  font-family: var(--serif);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ink);
+  padding: 7px 8px;
+  background: var(--cream-mid);
+  border: 1px solid var(--rule-mid);
+  border-radius: 1px;
+}
+
+.bi-qty, .bi-price {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink);
+  padding: 7px 6px;
+  background: var(--cream-mid);
+  border: 1px solid var(--rule-mid);
+  border-radius: 1px;
+  text-align: right;
+}
+
+.bill-preview {
+  margin-top: 12px;
+  background: white;
+  border: 1px solid var(--rule-mid);
+  padding: 14px;
+}
+
+.bp-header {
+  text-align: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule-mid);
+}
+
+.bp-shop {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+
+.bp-sub {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--ink-faint);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.bp-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px dashed var(--rule);
+}
+
+.bp-item { font-family: var(--serif); font-size: 11px; color: var(--ink); }
+.bp-price { font-family: var(--mono); font-size: 10px; color: var(--ink); }
+
+.bp-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0 0;
+  border-top: 1.5px solid var(--ink);
+  margin-top: 4px;
+}
+
+.bp-total-l { font-family: var(--mono); font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); }
+.bp-total-v { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--red); }
+
+/* ─── SIDE MENU ────────────────────────────────────────────────────────── */
+.menu-phone {
+  width: 300px;
+  background: var(--cream);
+  border-radius: 28px;
+  overflow: clip;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.2), 0 0 0 1px rgba(28,28,30,0.12);
+}
+
+.menu-header {
+  background: var(--ink);
+  padding: 44px 20px 20px;
+}
+
+.menu-shop {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--cream);
+  letter-spacing: 0.02em;
+  margin-bottom: 2px;
+}
+
+.menu-tagline {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.22em;
+  color: rgba(245,240,232,0.45);
+  text-transform: uppercase;
+}
+
+.menu-red { height: 3px; background: var(--red); }
+
+.menu-items { padding: 8px 0 20px; }
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+}
+
+.menu-item:last-child { border-bottom: none; }
+
+.mi-icon {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--olive);
+  width: 28px;
+  letter-spacing: 0.1em;
+}
+
+.mi-label {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--ink);
+  font-style: italic;
+}
+
+.mi-badge {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  color: var(--red);
+  background: var(--red-light);
+  padding: 2px 6px;
+  border-radius: 1px;
+}
+
+.menu-footer {
+  padding: 14px 20px;
+  border-top: 1.5px solid var(--rule-mid);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mf-label {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+}
+
+.mf-toggle {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  padding: 5px 10px;
+  border: 1px solid var(--rule-mid);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+/* ─── PASSPORT ─────────────────────────────────────────────────────────── */
+.pp-select {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.pp-opt {
+  padding: 10px 8px;
+  border: 1px solid var(--rule-mid);
+  border-radius: 2px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.pp-opt.sel { background: var(--ink); border-color: var(--ink); }
+.pp-opt.sel .pp-size { color: var(--cream); }
+.pp-opt.sel .pp-dim { color: rgba(245,240,232,0.5); }
+
+.pp-size {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: 0.1em;
+}
+
+.pp-dim {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+.pp-preview {
+  background: var(--cream-mid);
+  border: 1px solid var(--rule-mid);
+  padding: 12px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.pp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  margin: 0 auto;
+  width: 160px;
+}
+
+.pp-photo {
+  aspect-ratio: 35/45;
+  background: #c8c0b8;
+  border-radius: 1px;
+  border: 0.5px solid rgba(28,28,30,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 6px;
+  color: rgba(28,28,30,0.3);
+}
+
+.pp-preview-label {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ─── SECTION DIVIDERS ─────────────────────────────────────────────────── */
+.section-divider {
+  text-align: center;
+  margin: 48px 0 32px;
+  position: relative;
+}
+
+.section-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(28,28,30,0.15);
+}
+
+.section-divider span {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  color: rgba(28,28,30,0.4);
+  text-transform: uppercase;
+  background: #C8C0B0;
+  padding: 0 14px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── FLOW ARROW ───────────────────────────────────────────────────────── */
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 6px;
+  margin-top: 80px;
+  color: rgba(28,28,30,0.25);
+  font-size: 14px;
+}
+
+.flow-arrow-down {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 4px 0;
+  color: rgba(28,28,30,0.25);
+  font-size: 12px;
+  gap: 2px;
+}
+
+.arrow-vert-line {
+  width: 1px;
+  height: 20px;
+  background: rgba(28,28,30,0.2);
+}
+</style>
+</head>
+<body>
+
+<div class="page-title">
+  <h1>Pen & Play Club — Washi Design System</h1>
+  <h2>Full Application Flow · All Pages · Ink & Paper</h2>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- ROW 1: Navigation Menu + Dashboard -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider"><span>Navigation & Dashboard</span></div>
+
+<div class="flow-row">
+
+  <!-- Side Menu -->
+  <div class="screen-wrap">
+    <div class="screen-label">Side Navigation</div>
+    <div class="menu-phone">
+      <div class="menu-header">
+        <div class="menu-shop">Pen & Play Club</div>
+        <div class="menu-tagline">Management Suite</div>
+      </div>
+      <div class="menu-red"></div>
+      <div class="menu-items">
+        <div class="menu-item">
+          <div class="mi-icon">01</div>
+          <div class="mi-label">Dashboard</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">02</div>
+          <div class="mi-label">New Entry</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">03</div>
+          <div class="mi-label">History</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">04</div>
+          <div class="mi-label">Expenses</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">05</div>
+          <div class="mi-label">Statement</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">06</div>
+          <div class="mi-label">Storage</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">07</div>
+          <div class="mi-label">Out of Stock</div>
+          <div class="mi-badge">3</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">08</div>
+          <div class="mi-label">Passport Photo</div>
+        </div>
+        <div class="menu-item">
+          <div class="mi-icon">09</div>
+          <div class="mi-label">Generate Bill</div>
+        </div>
+      </div>
+      <div class="menu-footer">
+        <div class="mf-label">Dark Mode</div>
+        <div class="mf-toggle">○ Off</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">→</div>
+
+  <!-- Dashboard -->
+  <div class="screen-wrap">
+    <div class="screen-label">Dashboard</div>
+    <div class="phone">
+      <div class="ph">
+        <div class="ph-row">
+          <div class="ph-menu"><span></span><span></span><span></span></div>
+          <div class="ph-center">
+            <div class="ph-shop">Pen & Play Club</div>
+            <div class="ph-page">Dashboard</div>
+          </div>
+          <div class="ph-date">2026</div>
+        </div>
+      </div>
+
+      <div class="dash-month">
+        <button class="dm-btn">◂ Apr</button>
+        <div class="dm-name">May, 2026</div>
+        <button class="dm-btn">Jun ▸</button>
+      </div>
+
+      <div class="stat-grid">
+        <div class="sc">
+          <div class="sc-label">Monthly Income</div>
+          <div class="sc-val red">₹4.2L</div>
+          <div class="sc-delta">▲ 12% vs Apr</div>
+        </div>
+        <div class="sc">
+          <div class="sc-label">Avg / Day</div>
+          <div class="sc-val">₹18.4K</div>
+          <div class="sc-delta">21 working days</div>
+        </div>
+        <div class="sc">
+          <div class="sc-label">Total Expenses</div>
+          <div class="sc-val">₹62,000</div>
+          <div class="sc-delta">▲ 8% vs Apr</div>
+        </div>
+        <div class="sc">
+          <div class="sc-label">Peak Day</div>
+          <div class="sc-val olive">May 10</div>
+          <div class="sc-delta">₹32,400</div>
+        </div>
+      </div>
+
+      <div class="chart-area">
+        <div class="chart-hdr">
+          <div class="chart-ttl">Daily Income — May</div>
+          <div class="chart-peak">Peak ₹32,400</div>
+        </div>
+        <div class="bars">
+          <div class="bar" style="height:40%"></div>
+          <div class="bar mid" style="height:55%"></div>
+          <div class="bar hi" style="height:68%"></div>
+          <div class="bar" style="height:44%"></div>
+          <div class="bar hi" style="height:72%"></div>
+          <div class="bar peak" style="height:100%"></div>
+          <div class="bar hi" style="height:74%"></div>
+          <div class="bar mid" style="height:50%"></div>
+          <div class="bar hi" style="height:62%"></div>
+          <div class="bar" style="height:38%"></div>
+          <div class="bar mid" style="height:56%"></div>
+          <div class="bar hi" style="height:70%"></div>
+          <div class="bar" style="height:45%"></div>
+          <div class="bar mid" style="height:60%"></div>
+        </div>
+      </div>
+
+      <div style="padding: 0 20px 20px;">
+        <div class="chart-area" style="margin:0">
+          <div class="chart-hdr">
+            <div class="chart-ttl">Income vs Expenses</div>
+            <div class="chart-peak">Net ₹3.6L</div>
+          </div>
+          <div class="bars" style="height:48px">
+            <div class="bar hi" style="height:100%;background:var(--olive);opacity:0.4"></div>
+            <div class="bar" style="height:40%;background:var(--red);opacity:0.5"></div>
+            <div style="flex:0.3"></div>
+            <div class="bar hi" style="height:85%;background:var(--olive);opacity:0.4"></div>
+            <div class="bar" style="height:32%;background:var(--red);opacity:0.5"></div>
+            <div style="flex:0.3"></div>
+            <div class="bar hi" style="height:90%;background:var(--olive);opacity:0.4"></div>
+            <div class="bar" style="height:36%;background:var(--red);opacity:0.5"></div>
+            <div style="flex:0.3"></div>
+            <div class="bar peak" style="height:100%;background:var(--olive);opacity:0.7"></div>
+            <div class="bar" style="height:28%;background:var(--red);opacity:0.5"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- ROW 2: Entry + History -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider"><span>Daily Operations</span></div>
+
+<div class="flow-row">
+
+  <!-- Entry -->
+  <div class="screen-wrap">
+    <div class="screen-label">New Entry</div>
+    <div class="phone">
+      <div class="ph">
+        <div class="ph-row">
+          <div class="ph-menu"><span></span><span></span><span></span></div>
+          <div class="ph-center">
+            <div class="ph-shop">Pen & Play Club</div>
+            <div class="ph-page">Daily Register</div>
+          </div>
+          <div class="ph-date">21 MAY<br>2026</div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="sect">Cash Entry · 21 May 2026</div>
+
+        <div class="ledger">
+          <div class="lr">
+            <span class="lr-label">Drawer Cash</span>
+            <span class="lr-dots"></span>
+            <span class="lr-val">₹ 13,400</span>
+          </div>
+          <div class="lr">
+            <span class="lr-label">Yest. Petty</span>
+            <span class="lr-dots"></span>
+            <span class="lr-val readonly">₹ 1,000</span>
+          </div>
+          <div class="lr">
+            <span class="lr-label">Today's Cash</span>
+            <span class="lr-dots"></span>
+            <span class="lr-val readonly">₹ 12,400</span>
+          </div>
+          <div class="lr">
+            <span class="lr-label">UPI</span>
+            <span class="lr-dots"></span>
+            <span class="lr-val">₹  8,200</span>
+          </div>
+          <div class="lr">
+            <span class="lr-label">Card</span>
+            <span class="lr-dots"></span>
+            <span class="lr-val">₹  3,100</span>
+          </div>
+          <div class="lr">
+            <span class="lr-label">AP Cash</span>
+            <span class="lr-dots"></span>
+            <span class="lr-val dim">—</span>
+          </div>
+          <div class="lr">
+            <span class="lr-label">Petty Cash</span>
+            <span class="lr-dots"></span>
+            <span class="lr-val readonly">₹  1,100</span>
+          </div>
+        </div>
+
+        <div class="total-block">
+          <div class="total-row">
+            <div>
+              <div class="total-lbl">Total Income</div>
+              <div style="font-family:var(--mono);font-size:7px;color:var(--ink-faint);margin-top:3px;">Cash + UPI + Card</div>
+            </div>
+            <div class="total-val">₹23,700</div>
+          </div>
+          <div class="total-subs">
+            <div class="tsub"><span class="tsub-l">Cash Total</span><span class="tsub-v">₹11,300</span></div>
+            <div class="tsub"><span class="tsub-l">AP Cash</span><span class="tsub-v">—</span></div>
+            <div class="tsub"><span class="tsub-l">Date</span><span class="tsub-v">21 May</span></div>
+          </div>
+        </div>
+
+        <button class="btn">Save Entry</button>
+
+        <div class="nav-row" style="margin-top:12px">
+          <div class="np">History</div>
+          <div class="np">Dashboard</div>
+          <div class="np">Expenses</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">→</div>
+
+  <!-- History -->
+  <div class="screen-wrap">
+    <div class="screen-label">History</div>
+    <div class="phone">
+      <div class="ph">
+        <div class="ph-row">
+          <div class="ph-menu"><span></span><span></span><span></span></div>
+          <div class="ph-center">
+            <div class="ph-shop">Pen & Play Club</div>
+            <div class="ph-page">Entry History</div>
+          </div>
+          <div class="ph-date">MAY<br>2026</div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="filter-row">
+          <div class="filter-btn active">All</div>
+          <div class="filter-btn">This Week</div>
+          <div class="filter-btn">This Month</div>
+        </div>
+
+        <div class="ledger">
+          <div class="hist-item">
+            <div>
+              <div class="hist-date">21 May</div>
+              <div class="hist-sub">Wed · by Dhiraj</div>
+            </div>
+            <div class="hist-right">
+              <div class="hist-total">₹23,700</div>
+              <div class="hist-breakdown">C·12.4 U·8.2 K·3.1</div>
+            </div>
+          </div>
+          <div class="hist-item">
+            <div>
+              <div class="hist-date">20 May</div>
+              <div class="hist-sub">Tue · by Neha</div>
+            </div>
+            <div class="hist-right">
+              <div class="hist-total">₹18,400</div>
+              <div class="hist-breakdown">C·9.2 U·6.1 K·3.1</div>
+            </div>
+          </div>
+          <div class="hist-item">
+            <div>
+              <div class="hist-date">19 May</div>
+              <div class="hist-sub">Mon · by Priyanka</div>
+            </div>
+            <div class="hist-right">
+              <div class="hist-total">₹21,200</div>
+              <div class="hist-breakdown">C·10.8 U·7.4 K·3.0</div>
+            </div>
+          </div>
+          <div class="hist-item">
+            <div>
+              <div class="hist-date">17 May</div>
+              <div class="hist-sub">Sat · by Abhishek</div>
+            </div>
+            <div class="hist-right">
+              <div class="hist-total">₹32,400</div>
+              <div class="hist-breakdown">C·18.2 U·9.8 K·4.4</div>
+            </div>
+          </div>
+          <div class="hist-item">
+            <div>
+              <div class="hist-date">16 May</div>
+              <div class="hist-sub">Fri · by Neha</div>
+            </div>
+            <div class="hist-right">
+              <div class="hist-total">₹19,800</div>
+              <div class="hist-breakdown">C·11.2 U·5.6 K·3.0</div>
+            </div>
+          </div>
+          <div class="hist-item">
+            <div>
+              <div class="hist-date">15 May</div>
+              <div class="hist-sub">Thu · by Dhiraj</div>
+            </div>
+            <div class="hist-right">
+              <div class="hist-total">₹16,500</div>
+              <div class="hist-breakdown">C·8.8 U·5.2 K·2.5</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center;padding-top:14px">
+          <span style="font-family:var(--mono);font-size:7px;letter-spacing:0.18em;color:var(--ink-faint);text-transform:uppercase;">Showing 6 of 21 entries</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- ROW 3: Expenses + Statement -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider"><span>Finance</span></div>
+
+<div class="flow-row">
+
+  <!-- Expenses -->
+  <div class="screen-wrap">
+    <div class="screen-label">Expenses</div>
+    <div class="phone">
+      <div class="ph">
+        <div class="ph-row">
+          <div class="ph-menu"><span></span><span></span><span></span></div>
+          <div class="ph-center">
+            <div class="ph-shop">Pen & Play Club</div>
+            <div class="ph-page">Expenses</div>
+          </div>
+          <div class="ph-date">MAY<br>2026</div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="sect">Add Expense</div>
+
+        <div class="field-block">
+          <div class="fl">Expense By</div>
+          <div class="radio-group">
+            <div class="rb sel">Dhiraj</div>
+            <div class="rb">Abhishek</div>
+            <div class="rb">Neha</div>
+            <div class="rb">Priyanka</div>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="fl">Amount</div>
+          <input class="fi" placeholder="₹ 0.00" value="₹ 2,400">
+        </div>
+
+        <div class="field-block">
+          <div class="fl">Paid From</div>
+          <div class="radio-group">
+            <div class="rb olive-sel">Bank</div>
+            <div class="rb">AP Cash</div>
+            <div class="rb">Self</div>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="fl">Description</div>
+          <textarea class="fi ta" placeholder="Enter details...">Packaging supplies — 2 boxes</textarea>
+        </div>
+
+        <button class="btn" style="margin-top:10px">Add Expense</button>
+
+        <div class="hr-thin" style="margin:16px 0"></div>
+
+        <div class="sect">Expense History</div>
+
+        <div>
+          <div class="exp-item">
+            <div>
+              <div class="exp-who">Abhishek</div>
+              <div class="exp-desc">Stationery restocking</div>
+              <div class="exp-meta">Bank · 18 May</div>
+            </div>
+            <div class="exp-amt">₹4,200</div>
+          </div>
+          <div class="exp-item">
+            <div>
+              <div class="exp-who">Neha</div>
+              <div class="exp-desc">Courier charges</div>
+              <div class="exp-meta">AP Cash · 17 May</div>
+            </div>
+            <div class="exp-amt">₹380</div>
+          </div>
+          <div class="exp-item">
+            <div>
+              <div class="exp-who">Priyanka</div>
+              <div class="exp-desc">Cleaning supplies</div>
+              <div class="exp-meta">Self · 16 May</div>
+            </div>
+            <div class="exp-amt">₹650</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">→</div>
+
+  <!-- Statement -->
+  <div class="screen-wrap">
+    <div class="screen-label">Statement</div>
+    <div class="phone">
+      <div class="ph">
+        <div class="ph-row">
+          <div class="ph-menu"><span></span><span></span><span></span></div>
+          <div class="ph-center">
+            <div class="ph-shop">Pen & Play Club</div>
+            <div class="ph-page">Statement</div>
+          </div>
+          <div class="ph-date">MAY<br>2026</div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="dash-month" style="padding:0 0 14px;border:none">
+          <button class="dm-btn">◂ Apr</button>
+          <div class="dm-name" style="font-size:17px">May 2026</div>
+          <button class="dm-btn">Jun ▸</button>
+        </div>
+
+        <div class="sect">Income Summary</div>
+
+        <div>
+          <div class="stmt-row">
+            <span class="stmt-key">Total Cash</span>
+            <span class="stmt-val">₹1,84,200</span>
+          </div>
+          <div class="stmt-row">
+            <span class="stmt-key">Total UPI</span>
+            <span class="stmt-val">₹1,28,400</span>
+          </div>
+          <div class="stmt-row">
+            <span class="stmt-key">Total Card</span>
+            <span class="stmt-val">₹62,800</span>
+          </div>
+          <div class="stmt-row">
+            <span class="stmt-key">AP Cash (out)</span>
+            <span class="stmt-val olive">−₹12,600</span>
+          </div>
+          <div class="stmt-row">
+            <span class="stmt-key">Petty Cash</span>
+            <span class="stmt-val olive">−₹22,800</span>
+          </div>
+        </div>
+
+        <div class="stmt-net">
+          <div class="stmt-net-l">Gross Income</div>
+          <div class="stmt-net-v">₹4.2L</div>
+        </div>
+
+        <div class="sect" style="margin-top:16px">Expense Summary</div>
+
+        <div>
+          <div class="stmt-row">
+            <span class="stmt-key">Abhishek</span>
+            <span class="stmt-val">₹18,400</span>
+          </div>
+          <div class="stmt-row">
+            <span class="stmt-key">Neha</span>
+            <span class="stmt-val">₹14,200</span>
+          </div>
+          <div class="stmt-row">
+            <span class="stmt-key">Priyanka</span>
+            <span class="stmt-val">₹9,800</span>
+          </div>
+          <div class="stmt-row">
+            <span class="stmt-key">Dhiraj</span>
+            <span class="stmt-val">₹19,600</span>
+          </div>
+        </div>
+
+        <div class="stmt-net" style="margin-top:4px">
+          <div class="stmt-net-l">Net Profit</div>
+          <div class="stmt-net-v" style="font-size:20px">₹3.58L</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- ROW 4: Storage + Out of Stock -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider"><span>Inventory</span></div>
+
+<div class="flow-row">
+
+  <!-- Storage -->
+  <div class="screen-wrap">
+    <div class="screen-label">Storage</div>
+    <div class="phone">
+      <div class="ph">
+        <div class="ph-row">
+          <div class="ph-menu"><span></span><span></span><span></span></div>
+          <div class="ph-center">
+            <div class="ph-shop">Pen & Play Club</div>
+            <div class="ph-page">Storage</div>
+          </div>
+          <div class="ph-date">MAY<br>2026</div>
+        </div>
+      </div>
+      <div class="pb">
+
+        <div class="storage-tabs">
+          <div class="st-tab active">Add</div>
+          <div class="st-tab">View</div>
+          <div class="st-tab">Search</div>
+        </div>
+
+        <div class="sect">Add Item to Storage</div>
+
+        <div class="field-block">
+          <div class="fl">Storage Location</div>
+          <div class="radio-group">
+            <div class="rb sel">Rack A</div>
+            <div class="rb">Rack B</div>
+            <div class="rb">Rack C</div>
+            <div class="rb">Storeroom</div>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="fl">Item Name</div>
+          <input class="fi" placeholder="Enter item name" value="Parker Pens — Blue (12 pcs)">
+        </div>
+
+        <button class="btn" style="margin-top:10px">Add Item</button>
+
+        <div class="hr-thin" style="margin:16px 0"></div>
+
+        <div class="sect">Rack A — Current Items</div>
+
+        <div>
+          <div class="storage-item">
+            <div>
+              <div class="si-name">Parker Pens — Blue</div>
+              <div class="si-loc">Rack A · Added 20 May</div>
+            </div>
+            <div class="si-badge">12 pcs</div>
+          </div>
+          <div class="storage-item">
+            <div>
+              <div class="si-name">Washi Tape Set</div>
+              <div class="si-loc">Rack A · Added 18 May</div>
+            </div>
+            <div class="si-badge">4 rolls</div>
+          </div>
+          <div class="storage-item">
+            <div>
+              <div class="si-name">Kraft Notebooks A5</div>
+              <div class="si-loc">Rack A · Added 15 May</div>
+            </div>
+            <div class="si-badge">24 pcs</div>
+          </div>
+          <div class="storage-item">
+            <div>
+              <div class="si-name">Watercolour Set 24</div>
+              <div class="si-loc">Rack A · Added 14 May</div>
+            </div>
+            <div class="si-badge">6 sets</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">→</div>
+
+  <!-- Out of Stock -->
+  <div class="screen-wrap">
+    <div class="screen-label">Out of Stock</div>
+    <div class="phone">
+      <div class="ph">
+        <div class="ph-row">
+          <div class="ph-menu"><span></span><span></span><span></span></div>
+          <div class="ph-center">
+            <div class="ph-shop">Pen & Play Club</div>
+            <div class="ph-page">Replenish</div>
+          </div>
+          <div class="ph-date">MAY<br>2026</div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="sect">Add Item to Replenish</div>
+
+        <div class="field-block">
+          <div class="fl">Category</div>
+          <div class="radio-group">
+            <div class="rb sel">Stationery</div>
+            <div class="rb">Toys</div>
+            <div class="rb">Sports</div>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="fl">Suggested By</div>
+          <div class="radio-group">
+            <div class="rb">Neha</div>
+            <div class="rb">Priyanka</div>
+            <div class="rb sel">Abhishek</div>
+            <div class="rb">Dhiraj</div>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="fl">Item Name</div>
+          <input class="fi" placeholder="Enter item name">
+        </div>
+
+        <div class="field-block">
+          <div class="fl">Quantity Needed</div>
+          <input class="fi" placeholder="e.g. 2 boxes">
+        </div>
+
+        <button class="btn" style="margin-top:8px">Add to List</button>
+
+        <div class="hr-thin" style="margin:14px 0 10px"></div>
+
+        <div class="sect">Items to Replenish <span style="font-family:var(--mono);color:var(--red);font-size:9px;margin-left:4px">3</span></div>
+
+        <div>
+          <div class="oos-item">
+            <div class="oos-num">01</div>
+            <div>
+              <div class="oos-name">Staedtler Pencils HB</div>
+              <div class="oos-meta">by Neha · 18 May</div>
+              <div class="cat-badge">Stationery</div>
+            </div>
+            <div class="oos-qty">2 boxes</div>
+          </div>
+          <div class="oos-item">
+            <div class="oos-num">02</div>
+            <div>
+              <div class="oos-name">Foam Football Set</div>
+              <div class="oos-meta">by Abhishek · 17 May</div>
+              <div class="cat-badge">Sports</div>
+            </div>
+            <div class="oos-qty">5 pcs</div>
+          </div>
+          <div class="oos-item">
+            <div class="oos-num">03</div>
+            <div>
+              <div class="oos-name">Rubik's Cube 3×3</div>
+              <div class="oos-meta">by Priyanka · 16 May</div>
+              <div class="cat-badge">Toys</div>
+            </div>
+            <div class="oos-qty">1 dozen</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- ROW 5: Passport Photo + Generate Bill -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="section-divider"><span>Services</span></div>
+
+<div class="flow-row">
+
+  <!-- Passport Photo -->
+  <div class="screen-wrap">
+    <div class="screen-label">Passport Photo</div>
+    <div class="phone">
+      <div class="ph">
+        <div class="ph-row">
+          <div class="ph-menu"><span></span><span></span><span></span></div>
+          <div class="ph-center">
+            <div class="ph-shop">Pen & Play Club</div>
+            <div class="ph-page">Passport Photo</div>
+          </div>
+          <div class="ph-date">MAY<br>2026</div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="sect">Photo Size</div>
+
+        <div class="pp-select">
+          <div class="pp-opt sel">
+            <div class="pp-size">Passport</div>
+            <div class="pp-dim">35 × 45 mm</div>
+          </div>
+          <div class="pp-opt">
+            <div class="pp-size">Visa</div>
+            <div class="pp-dim">51 × 51 mm</div>
+          </div>
+          <div class="pp-opt">
+            <div class="pp-size">PAN Card</div>
+            <div class="pp-dim">25 × 35 mm</div>
+          </div>
+          <div class="pp-opt">
+            <div class="pp-size">School ID</div>
+            <div class="pp-dim">30 × 40 mm</div>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="fl">Upload Photo</div>
+          <div style="border:1.5px dashed var(--rule-strong);padding:16px;text-align:center;background:var(--cream-mid)">
+            <div style="font-size:20px;margin-bottom:4px">↑</div>
+            <div style="font-family:var(--mono);font-size:8px;letter-spacing:0.14em;color:var(--ink-faint);text-transform:uppercase">Tap to upload or capture</div>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="fl">Copies on Sheet</div>
+          <div class="radio-group">
+            <div class="rb">4</div>
+            <div class="rb sel">6</div>
+            <div class="rb">8</div>
+            <div class="rb">12</div>
+          </div>
+        </div>
+
+        <div class="pp-preview">
+          <div class="pp-preview-label">Sheet Preview — 6 Copies</div>
+          <div class="pp-grid">
+            <div class="pp-photo">ph</div>
+            <div class="pp-photo">ph</div>
+            <div class="pp-photo">ph</div>
+            <div class="pp-photo">ph</div>
+            <div class="pp-photo">ph</div>
+            <div class="pp-photo">ph</div>
+          </div>
+        </div>
+
+        <button class="btn">Generate & Download</button>
+        <button class="btn btn-outline">View History</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-arrow">→</div>
+
+  <!-- Generate Bill -->
+  <div class="screen-wrap">
+    <div class="screen-label">Generate Bill</div>
+    <div class="phone">
+      <div class="ph">
+        <div class="ph-row">
+          <div class="ph-menu"><span></span><span></span><span></span></div>
+          <div class="ph-center">
+            <div class="ph-shop">Pen & Play Club</div>
+            <div class="ph-page">Generate Bill</div>
+          </div>
+          <div class="ph-date">21 MAY<br>2026</div>
+        </div>
+      </div>
+      <div class="pb">
+        <div class="sect">Bill Details</div>
+
+        <div class="field-block">
+          <div class="fl">Customer Name</div>
+          <input class="fi" value="Mr. Sharma">
+        </div>
+
+        <div class="sect" style="margin-top:12px">Items</div>
+
+        <div>
+          <div class="bill-item-row">
+            <div class="bi-name">Parker Pen Blue</div>
+            <div class="bi-qty">2</div>
+            <div class="bi-price">₹280</div>
+          </div>
+          <div class="bill-item-row">
+            <div class="bi-name">A5 Notebook Kraft</div>
+            <div class="bi-qty">3</div>
+            <div class="bi-price">₹450</div>
+          </div>
+          <div class="bill-item-row">
+            <div class="bi-name">Washi Tape</div>
+            <div class="bi-qty">1</div>
+            <div class="bi-price">₹120</div>
+          </div>
+        </div>
+
+        <button class="btn btn-outline" style="border-style:dashed;color:var(--olive);border-color:var(--olive)">+ Add Item</button>
+
+        <div class="total-block" style="margin-top:10px">
+          <div class="total-row">
+            <div class="total-lbl">Bill Total</div>
+            <div class="total-val" style="font-size:22px">₹850</div>
+          </div>
+        </div>
+
+        <div class="bill-preview">
+          <div class="bp-header">
+            <div class="bp-shop">Pen & Play Club</div>
+            <div class="bp-sub">Retail · Stationery & Toys</div>
+            <div style="font-family:var(--mono);font-size:7px;color:rgba(28,28,30,0.35);margin-top:4px">21 May 2026 · Mr. Sharma</div>
+          </div>
+          <div class="bp-row">
+            <div class="bp-item">Parker Pen Blue ×2</div>
+            <div class="bp-price">₹280</div>
+          </div>
+          <div class="bp-row">
+            <div class="bp-item">A5 Notebook ×3</div>
+            <div class="bp-price">₹450</div>
+          </div>
+          <div class="bp-row">
+            <div class="bp-item">Washi Tape ×1</div>
+            <div class="bp-price">₹120</div>
+          </div>
+          <div class="bp-total">
+            <div class="bp-total-l">Total</div>
+            <div class="bp-total-v">₹850</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:6px;margin-top:12px">
+          <button class="btn" style="margin-top:0;flex:1">⬇ Download</button>
+          <button class="btn btn-outline" style="margin-top:0;flex:1;font-size:7px">WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

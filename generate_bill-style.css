@@ -1,0 +1,262 @@
+/* ─────────────────────────────────────────────
+   WASHI — Generate Bill
+   ───────────────────────────────────────────── */
+
+.form-section { margin-bottom: 20px; }
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+/* ─── Items heading ───────────────────────── */
+.items-heading {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--olive);
+    margin: 14px 0 8px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule-mid);
+}
+
+/* ─── Items list ──────────────────────────── */
+.items-list {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+/* ─── Individual item row ─────────────────── */
+.item-row {
+    display: grid;
+    grid-template-columns: 1fr 50px 70px auto auto;
+    gap: 6px;
+    align-items: end;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.item-row .form-group {
+    margin-bottom: 0;
+    animation: none;
+}
+
+.item-row .form-group label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 3px;
+    display: block;
+}
+
+.item-row .form-group input {
+    background: var(--cream-mid);
+    border: 1px solid var(--rule-mid);
+    border-radius: 1px;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 16px;
+    padding: 7px 8px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: unset;
+    transition: border-color var(--transition);
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.item-row .form-group input:focus { border-color: var(--ink); }
+
+.inp-item {
+    font-family: var(--serif) !important;
+    font-style: italic !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+}
+
+.inp-qty,
+.inp-rate {
+    font-family: var(--mono) !important;
+    font-size: 16px !important;
+    text-align: right;
+}
+
+.item-row .form-group input[type="number"]::-webkit-outer-spin-button,
+.item-row .form-group input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.inp-qty,
+.inp-rate {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+}
+
+/* ─── Amount display ──────────────────────── */
+.item-total {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    padding: 7px 6px;
+    background: var(--cream-mid);
+    border: 1px solid var(--rule);
+    border-radius: 1px;
+    text-align: right;
+    min-width: 0;
+    align-self: end;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ─── Delete button ───────────────────────── */
+.remove-item-btn {
+    background: transparent;
+    color: var(--red);
+    border: 1px solid rgba(192, 57, 43, 0.25);
+    border-radius: 1px;
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+    align-self: end;
+    flex-shrink: 0;
+}
+
+.remove-item-btn:hover {
+    background: var(--red-light);
+    border-color: var(--red);
+}
+
+/* ─── Grand total row ─────────────────────── */
+.grand-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-top: 2.5px solid var(--ink);
+    border-bottom: 2.5px solid var(--ink);
+    margin: 10px 0 18px;
+    padding: 14px 0;
+}
+
+.grand-total-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.grand-total-value {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: -0.04em;
+}
+
+/* ─── Actions row ─────────────────────────── */
+.actions-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+.actions-row .btn-primary { flex: 1; }
+
+/* ─── WhatsApp button ─────────────────────── */
+.btn-whatsapp {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--rule-mid);
+    color: var(--ink-faint);
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all var(--transition);
+    min-height: 48px;
+}
+
+.btn-whatsapp:hover { border-color: var(--ink); color: var(--ink); }
+.btn-whatsapp:active { opacity: 0.75; }
+.btn-whatsapp:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.btn-whatsapp svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+/* ─── Preview section ─────────────────────── */
+.preview-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule-mid);
+}
+
+.preview-wrapper {
+    background: white;
+    border: 1px solid var(--rule-mid);
+    padding: 12px;
+    margin-bottom: 14px;
+}
+
+.preview-wrapper img { width: 100%; display: block; }
+
+/* ─── Utility ─────────────────────────────── */
+.hidden { display: none !important; }
+
+/* ─── Mobile ──────────────────────────────── */
+@media (max-width: 520px) {
+    .form-row { grid-template-columns: 1fr; }
+
+    .item-row {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "item    item"
+            "qty     rate"
+            "total   remove";
+        gap: 5px;
+    }
+
+    .item-row .grp-item  { grid-area: item; }
+    .item-row .grp-qty   { grid-area: qty; }
+    .item-row .grp-rate  { grid-area: rate; }
+    .item-row .grp-total { grid-area: total; }
+    .item-row .remove-item-btn {
+        grid-area: remove;
+        justify-self: end;
+        align-self: end;
+    }
+
+    .grand-total-value { font-size: 22px; }
+
+    .actions-row { flex-direction: column; }
+    .actions-row .btn-primary,
+    .btn-whatsapp { flex: unset; width: 100%; }
+}

@@ -1,0 +1,542 @@
+/* ─────────────────────────────────────────────
+   WASHI — Expense Page
+   ───────────────────────────────────────────── */
+
+.month-indicator {
+    border-bottom: 1px solid var(--rule-mid);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.mi-label {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--olive);
+}
+
+.mi-value {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--ink);
+    margin-left: 8px;
+}
+
+/* ─── Form & History Sections ─────────────── */
+.form-section {
+    padding-bottom: 20px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--rule-mid);
+}
+
+.history-section {
+    padding-bottom: 20px;
+    margin-bottom: 16px;
+}
+
+/* ─── Optional Hint ───────────────────────── */
+.optional-hint {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    margin-left: 4px;
+    text-transform: lowercase;
+}
+
+/* ─── Select & Textarea overrides ────────── */
+select {
+    width: 100%;
+    padding: 10px 28px 10px 10px;
+    font-size: 16px;
+    font-family: var(--mono);
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    background: var(--cream-mid);
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color var(--transition);
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231C1C1E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 14px;
+    min-height: 42px;
+}
+
+select:focus { outline: none; border-color: var(--ink); }
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    font-family: var(--mono);
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    background: var(--cream-mid);
+    color: var(--ink);
+    resize: vertical;
+    transition: border-color var(--transition);
+}
+
+textarea:focus { outline: none; border-color: var(--ink); }
+
+/* ─── Radio Group (legacy) ────────────────── */
+.radio-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+/* ─── Paid From Checkbox Group ────────────── */
+.paid-from-group {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.paid-from-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+}
+
+.paid-from-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--ink);
+    flex-shrink: 0;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 10px;
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    transition: all 0.15s;
+    background: transparent;
+}
+
+.radio-label input[type="radio"],
+.radio-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--ink);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.radio-label-bank:has(input:checked) {
+    border-color: rgba(124, 140, 94, 0.40);
+    color: var(--olive);
+    background: var(--olive-light);
+}
+
+.radio-label-ap-cash:has(input:checked) {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: var(--cream-dark);
+}
+
+.radio-label-self:has(input:checked) {
+    border-color: var(--rule-strong);
+    color: var(--ink);
+    background: var(--cream-mid);
+}
+
+/* ─── History Header ──────────────────────── */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--ink);
+}
+
+.total-expense {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--red);
+    letter-spacing: -0.02em;
+}
+
+/* ─── Expense List ────────────────────────── */
+.expense-list { display: flex; flex-direction: column; }
+
+.expense-item {
+    padding: 11px 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.expense-item:first-child { border-top: 1px solid var(--rule-mid); }
+
+/* ─── Expense Header ──────────────────────── */
+.expense-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+
+.expense-date {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.expense-amount {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+/* ─── Expense Details ─────────────────────── */
+.expense-details {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 6px;
+}
+
+.expense-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px dotted var(--rule-mid);
+}
+
+.expense-label {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.expense-value {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+.expense-paid-bank   { color: var(--olive); }
+.expense-paid-ap-cash { color: var(--ink-soft); }
+.expense-paid-self   { color: var(--ink-faint); }
+
+/* ─── Reimbursed Badge ────────────────────── */
+.reimbursed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #16a34a;
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 9px 3px 6px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.reimbursed-badge svg {
+    width: 13px;
+    height: 13px;
+    fill: #fff;
+    flex-shrink: 0;
+}
+
+.expense-item--reimbursed {
+    background: rgba(22, 163, 74, 0.05);
+    border-left: 3px solid #16a34a;
+    padding-left: 10px;
+}
+
+/* legacy inline icon kept for compatibility */
+.reimbursed-icon {
+    display: inline-block;
+    margin-left: 6px;
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--olive);
+    border: 1px solid rgba(124, 140, 94, 0.35);
+    padding: 1px 5px;
+    border-radius: 1px;
+    vertical-align: middle;
+}
+
+/* ─── Reimburse Button ────────────────────── */
+.reimburse-btn {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--olive);
+    border: 1px solid rgba(124, 140, 94, 0.35);
+    background: transparent;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 1px;
+    margin-top: 5px;
+    transition: all 0.15s;
+}
+
+.reimburse-btn:hover { background: var(--olive-light); border-color: var(--olive); }
+
+/* ─── Delete Button ───────────────────────── */
+.delete-btn {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--red);
+    border: 1px solid rgba(192, 57, 43, 0.25);
+    background: transparent;
+    padding: 4px 8px;
+    cursor: pointer;
+    border-radius: 1px;
+    margin-top: 5px;
+    transition: all 0.15s;
+}
+
+.delete-btn:hover { background: var(--red-light); border-color: var(--red); }
+
+/* ─── Receipt Capture ─────────────────────── */
+.receipt-capture-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.receipt-capture-btn {
+    display: inline-block;
+    padding: 8px 12px;
+    border: 1px dashed var(--rule-strong);
+    color: var(--ink-faint);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.receipt-capture-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+.receipt-clear-btn {
+    display: inline-block;
+    padding: 8px 12px;
+    border: 1px dashed rgba(192, 57, 43, 0.30);
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 1px;
+    background: transparent;
+    transition: all 0.15s;
+}
+
+.receipt-clear-btn:hover { background: var(--red-light); }
+
+.receipt-clear-btn.hidden,
+.receipt-preview.hidden { display: none; }
+
+/* ─── Receipt Preview ─────────────────────── */
+.receipt-preview {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.receipt-preview-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.receipt-preview-item { position: relative; display: inline-block; }
+
+.receipt-preview-item img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border: 1px solid var(--rule-mid);
+    border-radius: 1px;
+    cursor: zoom-in;
+}
+
+.remove-one-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-family: var(--mono);
+}
+
+.remove-one-btn:hover { background: var(--red); }
+
+.receipt-preview-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+}
+
+.receipt-size-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+}
+
+/* ─── Receipt Thumbs ──────────────────────── */
+.receipt-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.receipt-thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+}
+
+.receipt-thumb-link {
+    display: inline-flex;
+    text-decoration: none;
+    border-radius: 1px;
+    padding: 1px;
+    transition: opacity 0.15s;
+}
+
+.receipt-thumb-link:hover { opacity: 0.75; }
+
+.receipt-thumb {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border: 1px solid var(--rule-mid);
+    border-radius: 1px;
+    cursor: pointer;
+}
+
+.receipt-thumb-link:hover .receipt-thumb { border-color: var(--ink); }
+
+.receipt-open-hint {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--olive);
+    white-space: nowrap;
+}
+
+/* ─── Receipt Lightbox ────────────────────── */
+.receipt-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 28, 30, 0.94);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.receipt-lightbox.hidden { display: none; }
+
+.receipt-lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 2px;
+    display: block;
+}
+
+.receipt-lightbox-close {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--cream);
+    background: rgba(245, 240, 232, 0.10);
+    border: 1px solid rgba(245, 240, 232, 0.25);
+    padding: 7px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all var(--transition);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.receipt-lightbox-close:hover {
+    border-color: var(--cream);
+    background: rgba(245, 240, 232, 0.20);
+}
+
+/* ─── Empty & Loading States ──────────────── */
+.empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+@media (max-width: 768px) {
+    .expense-detail-row { flex-direction: column; gap: 2px; padding: 4px 0; }
+}

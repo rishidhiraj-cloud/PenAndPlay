@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expenses - Pen & Play Club</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="expense-style.css">
+</head>
+<body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Expense Tracker</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="Logo.png" alt="Shop Logo">
+                </div>
+            </div>
+        </header>
+
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html" data-num="01">New Entry</a>
+                <a href="history.html" data-num="02">History</a>
+                <a href="expense.html" data-num="03">Expenses</a>
+                <a href="statement.html" data-num="04">Statement</a>
+                <a href="storage.html" data-num="05">Manage Storage</a>
+                <a href="outofstock.html" data-num="06">Out of Stock</a>
+                <a href="passport_photo_generator.html" data-num="07">Passport Photo</a>
+                <a href="collage.html" data-num="08">Collage</a>
+                <a href="generate_bill.html" data-num="09">Generate Bill</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙 Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
+            <div class="back-to-dashboard">
+                <a href="index.html">« Back To Dashboard</a>
+            </div>
+
+            <!-- Month Indicator -->
+            <div class="month-indicator"><span class="mi-label">Viewing Month:</span> <span id="currentMonthLabel" class="mi-value">Loading...</span></div>
+
+            <!-- Expense Entry Form -->
+            <div class="form-section">
+                <h2>Add Expense</h2>
+                <form id="expenseForm">
+                    <!-- Expense Date -->
+                    <div class="form-group">
+                        <label for="expenseDate">Expense Date</label>
+                        <input type="date"
+                               id="expenseDate"
+                               name="expenseDate"
+                               required>
+                    </div>
+
+                    <!-- Expense By -->
+                    <div class="form-group">
+                        <label for="expenseBy">Expense By</label>
+                        <select id="expenseBy"
+                                name="expenseBy"
+                                required>
+                            <option value="">Select Person</option>
+                            <option value="Abhishek">Abhishek</option>
+                            <option value="Neha">Neha</option>
+                            <option value="Priyanka">Priyanka</option>
+                            <option value="Dhiraj">Dhiraj</option>
+                        </select>
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="form-group">
+                        <label for="amount">Amount</label>
+                        <input type="number"
+                               id="amount"
+                               name="amount"
+                               placeholder="0.00"
+                               step="0.01"
+                               min="0"
+                               inputmode="decimal"
+                               required>
+                    </div>
+
+                    <!-- Paid From -->
+                    <div class="form-group">
+                        <label>Paid From</label>
+                        <div class="paid-from-group">
+                            <label class="paid-from-item">
+                                <input type="checkbox" id="paidFromBank" name="paidFrom" value="Bank">
+                                Bank
+                            </label>
+                            <label class="paid-from-item">
+                                <input type="checkbox" id="paidFromApCash" name="paidFrom" value="AP Cash">
+                                AP Cash
+                            </label>
+                            <label class="paid-from-item">
+                                <input type="checkbox" id="paidFromSelf" name="paidFrom" value="Self">
+                                Self
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description"
+                                  name="description"
+                                  rows="3"
+                                  placeholder="Enter expense details..."></textarea>
+                    </div>
+
+                    <!-- Receipt Photo -->
+                    <div class="form-group">
+                        <label>Receipt Photo <span class="optional-hint">(optional)</span></label>
+                        <div class="receipt-capture-row">
+                            <label for="receiptFile" class="receipt-capture-btn" id="receiptCaptureBtn">
+                                📷 Add Receipt Photo(s)
+                            </label>
+                            <input type="file" id="receiptFile" accept="image/*" multiple hidden>
+                            <button type="button" id="receiptClearBtn" class="receipt-clear-btn hidden">✕ Remove All</button>
+                        </div>
+                        <div id="receiptPreview" class="receipt-preview hidden">
+                            <div id="receiptPreviewGrid" class="receipt-preview-grid"></div>
+                            <div class="receipt-preview-meta">
+                                <span id="receiptSizeLabel"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        Save Expense
+                    </button>
+                </form>
+
+                <!-- Status Message -->
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+
+            <!-- Expense History -->
+            <div class="history-section">
+                <div class="history-header">
+                    <h2>Expense History</h2>
+                    <span class="total-expense" id="totalExpense">₹0.00</span>
+                </div>
+
+                <!-- Filter -->
+                <div class="form-group">
+                    <label for="filterExpenseBy">Filter by Expense By</label>
+                    <select id="filterExpenseBy" name="filterExpenseBy">
+                        <option value="">All</option>
+                        <option value="Abhishek">Abhishek</option>
+                        <option value="Neha">Neha</option>
+                        <option value="Priyanka">Priyanka</option>
+                        <option value="Dhiraj">Dhiraj</option>
+                    </select>
+                </div>
+
+                <div id="expenseHistory" class="expense-list">
+                    <div class="loading-spinner">Loading expenses...</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Receipt Lightbox -->
+        <div id="receiptLightbox" class="receipt-lightbox hidden">
+            <button class="receipt-lightbox-close" id="receiptLightboxClose" aria-label="Close">✕</button>
+            <img id="receiptLightboxImg" alt="Receipt">
+        </div>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <script src="expense.js?v=20260514-receipts-4-anchor"></script>
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

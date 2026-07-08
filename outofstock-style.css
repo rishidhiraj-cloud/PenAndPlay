@@ -1,0 +1,229 @@
+/* ─────────────────────────────────────────────
+   WASHI — Out of Stock Page
+   ───────────────────────────────────────────── */
+
+.hidden { display: none !important; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.form-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--rule-mid);
+}
+
+.form-section:last-child { border-bottom: none; }
+
+/* ─── Count Badge ─────────────────────────── */
+.count-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--red);
+    background: var(--red-light);
+    border: 1px solid rgba(192, 57, 43, 0.22);
+    padding: 1px 7px;
+    border-radius: 1px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* ─── Pill Radio Group ────────────────────── */
+.pill-radio-group {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.pill-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    transition: all 0.15s;
+    user-select: none;
+    background: transparent;
+}
+
+.pill-radio-label:has(input:checked) {
+    border-color: var(--ink);
+    color: var(--cream);
+    background: var(--ink);
+}
+
+.pill-radio-label input[type="radio"] { display: none; }
+
+/* ─── Items Section Header ────────────────── */
+.items-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.items-section-header h2 {
+    margin-bottom: 0;
+}
+
+.oos-whatsapp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(37, 211, 102, 0.08);
+    border: 1px solid rgba(37, 211, 102, 0.4);
+    border-radius: 6px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.oos-whatsapp-btn:hover {
+    background: rgba(37, 211, 102, 0.18);
+    border-color: #25d366;
+}
+
+.oos-whatsapp-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: #25d366;
+    display: block;
+}
+
+/* ─── OOS Item Rows ───────────────────────── */
+.oos-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.oos-item-row:first-child { border-top: 1px solid var(--rule-mid); }
+.oos-item-row:last-child { border-bottom: none; }
+
+.oos-item-left {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+}
+
+.oos-item-name {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-style: italic;
+    color: var(--ink);
+}
+
+.oos-item-name.replenished-text {
+    text-decoration: line-through;
+    color: var(--ink-faint);
+}
+
+.oos-item-by {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+/* ─── OOS Badges ──────────────────────────── */
+.oos-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 1px;
+    white-space: nowrap;
+}
+
+.badge-qty {
+    background: var(--cream-mid);
+    color: var(--ink-faint);
+}
+
+.badge-blue,
+.badge-green,
+.badge-orange {
+    background: var(--olive-light);
+    color: var(--olive);
+}
+
+/* ─── OOS Item Actions ────────────────────── */
+.oos-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.oos-icon-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: transparent;
+    border: 1px solid;
+    border-radius: 1px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.oos-btn-replenish {
+    color: var(--olive);
+    border-color: rgba(124, 140, 94, 0.35);
+}
+
+.oos-btn-replenish:hover {
+    background: var(--olive-light);
+    border-color: var(--olive);
+}
+
+.oos-btn-delete {
+    color: rgba(192, 57, 43, 0.45);
+    border-color: rgba(192, 57, 43, 0.18);
+}
+
+.oos-btn-delete:hover {
+    color: var(--red);
+    border-color: var(--red);
+    background: var(--red-light);
+}
+
+.oos-icon-btn:active { opacity: 0.75; }
+
+/* ─── Replenished Label ───────────────────── */
+.replenished-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--olive);
+    padding: 3px 7px;
+    border: 1px solid rgba(124, 140, 94, 0.35);
+    border-radius: 1px;
+    display: inline-flex;
+    align-items: center;
+    background: var(--olive-light);
+}

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Daily Cash Register</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard-style.css">
+</head>
+<body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Dashboard</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="Logo.png" alt="Shop Logo">
+                </div>
+            </div>
+        </header>
+
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html" data-num="01">New Entry</a>
+                <a href="history.html" data-num="02">History</a>
+                <a href="expense.html" data-num="03">Expenses</a>
+                <a href="statement.html" data-num="04">Statement</a>
+                <a href="storage.html" data-num="05">Manage Storage</a>
+                <a href="outofstock.html" data-num="06">Out of Stock</a>
+                <a href="passport_photo_generator.html" data-num="07">Passport Photo</a>
+                <a href="collage.html" data-num="08">Collage</a>
+                <a href="generate_bill.html" data-num="09">Generate Bill</a>
+                <button id="settingsBtn" class="settings-btn">Settings</button>
+                <button id="darkModeToggle" class="dark-mode-toggle">Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
+
+            <!-- Month Selector -->
+            <div class="month-selector">
+                <button id="prevMonth" class="month-btn">◀</button>
+                <div id="currentMonthDisplay" class="month-display">Loading...</div>
+                <button id="nextMonth" class="month-btn">▶</button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon">💰</div>
+                    <div class="card-content">
+                        <div class="card-label">Total Income This Month</div>
+                        <div class="card-value" id="totalIncomeThisMonth">₹0.00</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-content">
+                        <div class="card-label">Till Date Income Last Month <span id="lastMonthLabel"></span></div>
+                        <div class="card-value" id="tillDateLastMonth">₹0.00</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-icon">📈</div>
+                    <div class="card-content">
+                        <div class="card-label">Till Date Income 2 Months Before <span id="twoMonthsBeforeLabel"></span></div>
+                        <div class="card-value" id="tillDate2MonthsBefore">₹0.00</div>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-content">
+                        <div class="card-label">Growth vs Last Month</div>
+                        <div class="card-value" id="vsLastMonth">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="chart-container">
+                <h2>Daily Income Comparison</h2>
+                <p class="chart-subtitle">Current month vs Previous month</p>
+                <canvas id="comparisonChart"></canvas>
+            </div>
+
+            <!-- Monthly Income Trend -->
+            <div class="chart-container" id="monthlyIncomeWidget">
+                <h2>Monthly Income Trend</h2>
+                <p class="chart-subtitle">Year-over-year comparison (Feb to Jan)</p>
+                <canvas id="monthlyIncomeChart"></canvas>
+            </div>
+
+            <!-- Monthly Average Daily Sale -->
+            <div class="chart-container" id="monthlyAvgWidget">
+                <h2>Monthly Avg Daily Sale</h2>
+                <p class="chart-subtitle">Total sale ÷ days with entries (Feb to Jan)</p>
+                <canvas id="monthlyAvgChart"></canvas>
+            </div>
+
+            <!-- Peak Business Days -->
+            <div class="details-section peak-days-section" id="peakDaysWidget">
+                <h2>🏆 Peak Business Days</h2>
+                <div id="peakDays" class="peak-days">
+                    <div class="loading-spinner">Loading data...</div>
+                </div>
+            </div>
+
+            <!-- Current Month Details -->
+            <div class="details-section" id="dailyBreakdownWidget">
+                <h2>This Month's Daily Breakdown</h2>
+                <div id="dailyBreakdown" class="daily-breakdown">
+                    <div class="loading-spinner">Loading data...</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Dashboard Settings</h2>
+                    <button class="close-modal" id="closeSettings">✕</button>
+                </div>
+                <div class="modal-body">
+                    <h3>Show/Hide Widgets</h3>
+                    <div class="widget-toggles">
+                        <label class="toggle-item">
+                            <input type="checkbox" id="toggleSummaryCards" checked>
+                            <span>Summary Cards</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="toggleChart" checked>
+                            <span>Income Comparison Chart</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="toggleMonthlyIncome" checked>
+                            <span>Monthly Income Trend</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="toggleMonthlyAvg" checked>
+                            <span>Monthly Avg Daily Sale</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="togglePeakDays" checked>
+                            <span>Peak Business Days</span>
+                        </label>
+                        <label class="toggle-item">
+                            <input type="checkbox" id="toggleDailyBreakdown" checked>
+                            <span>Daily Breakdown</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="daily-report.js"></script>
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

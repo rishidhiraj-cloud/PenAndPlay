@@ -1,0 +1,473 @@
+/* ─────────────────────────────────────────────
+   WASHI — Dashboard
+   ───────────────────────────────────────────── */
+
+.nav-links {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    flex-wrap: nowrap;
+    justify-content: center;
+}
+
+.nav-links a {
+    padding: 9px 12px;
+    background: transparent;
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    color: var(--ink-faint);
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: all var(--transition);
+}
+
+.nav-links a:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+}
+
+/* ─── Month Selector ──────────────────────── */
+.month-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--rule-mid);
+    padding-bottom: 14px;
+}
+
+.month-btn {
+    background: transparent;
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    color: var(--ink-faint);
+    width: 32px;
+    height: 32px;
+    font-family: var(--mono);
+    font-size: 15px;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.month-btn:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+}
+
+.month-btn:active {
+    background: var(--ink);
+    color: var(--cream);
+}
+
+.month-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+}
+
+.month-btn:disabled:hover {
+    border-color: var(--rule-mid);
+    color: var(--ink-faint);
+    background: transparent;
+}
+
+.month-display {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--ink);
+    min-width: 140px;
+    text-align: center;
+    letter-spacing: 0.01em;
+}
+
+@media (min-width: 768px) {
+    .month-display { font-size: 22px; min-width: 180px; }
+}
+
+/* ─── Summary Cards ───────────────────────── */
+.summary-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    margin-bottom: 20px;
+    background: var(--rule-mid);
+    border: 1px solid var(--rule-mid);
+}
+
+.summary-card {
+    background: var(--cream);
+    padding: 13px 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: background var(--transition);
+}
+
+.summary-card:hover { background: var(--cream-mid); }
+
+.card-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 2px;
+    opacity: 0.55;
+}
+
+.card-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.card-label {
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.card-value {
+    font-family: var(--mono);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.card-value.positive { color: var(--red); }
+.card-value.negative { color: var(--olive); }
+
+/* Growth card flips meaning: positive = green, negative = red */
+#vsLastMonth.positive { color: var(--olive); }
+#vsLastMonth.negative { color: var(--red); }
+
+/* ─── Chart Container ─────────────────────── */
+.chart-container {
+    background: var(--cream-mid);
+    border: 1px solid var(--rule-mid);
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.chart-container h2 {
+    font-family: var(--mono);
+    font-size: 8px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 4px 0;
+}
+
+.chart-subtitle {
+    font-family: var(--mono);
+    font-size: 6px;
+    letter-spacing: 0.14em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin: 0 0 12px 0;
+    opacity: 0.6;
+}
+
+#comparisonChart,
+#monthlyIncomeChart,
+#monthlyAvgChart {
+    width: 100%;
+    height: auto;
+}
+
+/* ─── Details Section ─────────────────────── */
+.details-section {
+    background: var(--cream);
+    border: 1px solid var(--rule-mid);
+    border-top: 1.5px solid var(--ink);
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.details-section h2 {
+    font-family: var(--mono);
+    font-size: 8px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 14px 0;
+}
+
+/* ─── Peak Days ───────────────────────────── */
+.peak-days { display: flex; flex-direction: column; }
+
+.peak-day-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.peak-day-rank {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--ink-faint);
+    min-width: 18px;
+    flex-shrink: 0;
+}
+
+.peak-day-info { flex: 1; min-width: 0; }
+
+.peak-day-date {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.peak-day-weekday {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+}
+
+.peak-day-amount {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--blue);
+    flex-shrink: 0;
+}
+
+/* ─── Daily Breakdown ─────────────────────── */
+.daily-breakdown { display: flex; flex-direction: column; }
+
+.daily-item {
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.daily-item:last-child { border-bottom: none; }
+
+.daily-item > div { flex: 1; min-width: 0; }
+
+.daily-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.daily-date {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.daily-total {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: -0.01em;
+    flex-shrink: 0;
+}
+
+.daily-total--up   { color: #76ab12; }
+.daily-total--down { color: var(--red);   }
+
+.daily-change {
+    font-family: var(--mono);
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.daily-change--up   { color: #76ab12; }
+.daily-change--down { color: var(--red); }
+
+.daily-amount {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--ink-faint);
+    flex-shrink: 0;
+}
+
+.daily-details {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    width: 100%;
+}
+
+.daily-detail-item { display: flex; flex-direction: column; gap: 2px; font-family: var(--mono); flex: 1; }
+
+.daily-detail-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+}
+
+.daily-detail-item span:not(.daily-detail-label) {
+    font-size: 10px;
+}
+
+@media (max-width: 480px) {
+    .daily-item { flex-direction: column; align-items: flex-start; }
+}
+
+/* ─── Empty State ─────────────────────────── */
+.no-entries {
+    font-family: var(--mono);
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    text-align: center;
+    padding: 32px 20px;
+}
+
+/* ─── Widget Hidden ───────────────────────── */
+.widget-hidden { display: none !important; }
+
+/* ─── Page Loader (dashboard override) ───── */
+.page-loader {
+    position: fixed;
+    inset: 0;
+    background: var(--cream);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.page-loader.hidden { display: none; }
+
+/* ─── Modal ───────────────────────────────── */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 28, 30, 0.70);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.modal.hidden { display: none; }
+
+.modal-content {
+    background: var(--cream);
+    border: 1px solid var(--rule-strong);
+    width: 90%;
+    max-width: 460px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--rule-mid);
+}
+
+.modal-header h2 {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+    font-style: italic;
+}
+
+.close-modal {
+    background: transparent;
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+
+.close-modal:hover { border-color: var(--ink); color: var(--ink); }
+
+.modal-body { padding: 20px; }
+
+.modal-body h3 {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 16px 0;
+}
+
+/* ─── Widget Toggles ──────────────────────── */
+.widget-toggles { display: flex; flex-direction: column; gap: 2px; }
+
+.toggle-item {
+    background: var(--cream);
+    border: 1px solid var(--rule);
+    border-radius: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.toggle-item:hover { background: var(--cream-mid); }
+
+.toggle-item input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+    accent-color: var(--ink);
+    flex-shrink: 0;
+}
+
+.toggle-item span {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+.settings-btn,
+.dark-mode-toggle { /* handled by style.css */ }

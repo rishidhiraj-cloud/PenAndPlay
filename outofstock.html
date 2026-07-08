@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Out of Stock - Pen & Play Club</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="outofstock-style.css">
+</head>
+<body>
+    <div id="pageLoader" class="page-loader hidden">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Out of Stock</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="Logo.png" alt="Shop Logo">
+                </div>
+            </div>
+        </header>
+
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html" data-num="01">New Entry</a>
+                <a href="history.html" data-num="02">History</a>
+                <a href="expense.html" data-num="03">Expenses</a>
+                <a href="statement.html" data-num="04">Statement</a>
+                <a href="storage.html" data-num="05">Manage Storage</a>
+                <a href="outofstock.html" data-num="06">Out of Stock</a>
+                <a href="passport_photo_generator.html" data-num="07">Passport Photo</a>
+                <a href="collage.html" data-num="08">Collage</a>
+                <a href="generate_bill.html" data-num="09">Generate Bill</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙 Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
+            <div class="back-to-dashboard">
+                <a href="index.html">« Back To Dashboard</a>
+            </div>
+
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-category="all">All</button>
+                <button class="tab-btn" data-category="Stationery">Stationery</button>
+                <button class="tab-btn" data-category="Toys">Toys</button>
+                <button class="tab-btn" data-category="Sports">Sports</button>
+            </div>
+
+            <div class="form-section">
+                <h2>Add Item to Replenish</h2>
+
+                <div class="form-group">
+                    <label>Category</label>
+                    <div class="pill-radio-group">
+                        <label class="pill-radio-label">
+                            <input type="radio" name="itemCategory" value="Stationery">
+                            <span>Stationery</span>
+                        </label>
+                        <label class="pill-radio-label">
+                            <input type="radio" name="itemCategory" value="Toys">
+                            <span>Toys</span>
+                        </label>
+                        <label class="pill-radio-label">
+                            <input type="radio" name="itemCategory" value="Sports">
+                            <span>Sports</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Suggested By</label>
+                    <div class="pill-radio-group">
+                        <label class="pill-radio-label">
+                            <input type="radio" name="suggestedBy" value="Neha">
+                            <span>Neha</span>
+                        </label>
+                        <label class="pill-radio-label">
+                            <input type="radio" name="suggestedBy" value="Priyanka">
+                            <span>Priyanka</span>
+                        </label>
+                        <label class="pill-radio-label">
+                            <input type="radio" name="suggestedBy" value="Abhishek">
+                            <span>Abhishek</span>
+                        </label>
+                        <label class="pill-radio-label">
+                            <input type="radio" name="suggestedBy" value="Dhiraj">
+                            <span>Dhiraj</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" placeholder="Enter item name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="itemQuantity">Quantity <span class="optional-hint">(optional)</span></label>
+                    <input type="text" id="itemQuantity" placeholder="e.g. 2 boxes">
+                </div>
+
+                <button class="btn-primary" id="addItemBtn" onclick="addItem()">Add Item</button>
+
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+
+            <div class="form-section items-section" id="itemsSection">
+                <div class="items-section-header">
+                    <h2>Items to Replenish <span class="count-badge" id="countBadge">0</span></h2>
+                    <button class="oos-whatsapp-btn" onclick="sendReplenishWhatsApp()" title="Share replenish list on WhatsApp">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div id="itemsList">
+                    <div class="loading-spinner">Loading items...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <script src="outofstock.js"></script>
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>
