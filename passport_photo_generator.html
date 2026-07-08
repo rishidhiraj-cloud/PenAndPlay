@@ -1258,6 +1258,43 @@
           if (e.target === passportLogModal) closePassportLogModal();
         });
       }
+      // Delete a processed image (Dhiraj-only; button is only rendered
+      // for Dhiraj, but the check here is defense-in-depth).
+      if (passportLogList) {
+        passportLogList.addEventListener('click', async (e) => {
+          const btn = e.target.closest('.passport-log-delete');
+          if (!btn) return;
+          if (!window.washiAuth || window.washiAuth.getUsername() !== 'Dhiraj') return;
+
+          const id = btn.dataset.id;
+          const photoUrl = btn.dataset.photoUrl;
+          if (!confirm('Delete this processed image? This cannot be undone.')) return;
+
+          btn.disabled = true;
+          try {
+            if (photoUrl) {
+              const fileName = photoUrl.split('/passport-photos/').pop();
+              if (fileName) {
+                const { error: rmErr } = await supabaseClient.storage.from('passport-photos').remove([fileName]);
+                if (rmErr) console.warn('Storage delete error:', rmErr);
+              }
+            }
+            const { error: delErr } = await supabaseClient.from(COUNTER_TABLE).delete().eq('id', id);
+            if (delErr) throw delErr;
+
+            const item = btn.closest('.passport-log-item');
+            if (item) item.remove();
+            if (!passportLogList.querySelector('.passport-log-item')) {
+              passportLogList.innerHTML = '<div class="passport-log-empty">No photos generated yet.</div>';
+            }
+            renderCounts();
+          } catch (err) {
+            console.warn('Delete failed:', err);
+            btn.disabled = false;
+            alert('Could not delete this image. Please try again.');
+          }
+        });
+      }
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && passportLogModal && !passportLogModal.classList.contains('hidden')) {
           closePassportLogModal();
