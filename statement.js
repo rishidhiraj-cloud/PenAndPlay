@@ -182,7 +182,7 @@ async function fetchAdjustments(account, startStr, endStr) {
     return (data || []).map(e => ({
         date: e.entry_date,
         sortKey: e.entry_date + ' 00:00:00',
-        type: (e.type || '').trim().toLowerCase(),
+        type: (e.type || '').trim().toLowerCase(), // entered by hand, no validation — a real prod row had "Credit" (capital C); normalize so downstream === 'credit' checks still hold
         description: e.description || 'Adjustment',
         amount: parseFloat(e.amount) || 0
     }));
