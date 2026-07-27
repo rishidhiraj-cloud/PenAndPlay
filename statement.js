@@ -163,6 +163,31 @@ async function fetchDebits(account, startIso, nextStartIso) {
         });
 }
 
+// ----- Pull manual adjustments (credit or debit) for a given range -----
+// Rows are entered directly in Supabase's table editor (no app UI).
+async function fetchAdjustments(account, startStr, endStr) {
+    const { data, error } = await supabaseClient
+        .from('ledger_adjustments')
+        .select('*')
+        .eq('account', account)
+        .gte('entry_date', startStr)
+        .lte('entry_date', endStr)
+        .order('entry_date', { ascending: true });
+
+    if (error) {
+        console.error('❌ Error fetching adjustments:', error);
+        return [];
+    }
+
+    return (data || []).map(e => ({
+        date: e.entry_date,
+        sortKey: e.entry_date + ' 00:00:00',
+        type: (e.type || '').trim().toLowerCase(),
+        description: e.description || 'Adjustment',
+        amount: parseFloat(e.amount) || 0
+    }));
+}
+
 // ----- Compute opening balance for a given month by walking from the seed -----
 async function computeOpeningBalance(account, selectedMonth) {
     const seedStart = new Date(SEED_YEAR, SEED_MONTH_INDEX, 1);
@@ -180,12 +205,14 @@ async function computeOpeningBalance(account, selectedMonth) {
 
     while (cursor < selectedStart) {
         const { startStr, endStr, startIso, nextStartIso } = monthBounds(cursor);
-        const [credits, debits] = await Promise.all([
+        const [credits, debits, adjustments] = await Promise.all([
             fetchCredits(account, startStr, endStr),
-            fetchDebits(account, startIso, nextStartIso)
+            fetchDebits(account, startIso, nextStartIso),
+            fetchAdjustments(account, startStr, endStr)
         ]);
-        const totalCredit = credits.reduce((s, r) => s + r.amount, 0);
-        const totalDebit  = debits.reduce((s, r) => s + r.amount, 0);
+        const allRows = [...credits, ...debits, ...adjustments];
+        const totalCredit = allRows.filter(r => r.type === 'credit').reduce((s, r) => s + r.amount, 0);
+        const totalDebit  = allRows.filter(r => r.type === 'debit').reduce((s, r) => s + r.amount, 0);
         balance = balance + totalCredit - totalDebit;
         cursor.setMonth(cursor.getMonth() + 1);
     }
@@ -207,14 +234,15 @@ async function renderStatement(account) {
         const selectedMonth = getSelectedMonth();
         const { startStr, endStr, startIso, nextStartIso } = monthBounds(selectedMonth);
 
-        const [openingBalance, credits, debits] = await Promise.all([
+        const [openingBalance, credits, debits, adjustments] = await Promise.all([
             computeOpeningBalance(account, selectedMonth),
             fetchCredits(account, startStr, endStr),
-            fetchDebits(account, startIso, nextStartIso)
+            fetchDebits(account, startIso, nextStartIso),
+            fetchAdjustments(account, startStr, endStr)
         ]);
 
         // Combine and sort: by date ascending, credits before debits on same date.
-        const txns = [...credits, ...debits].sort((a, b) => {
+        const txns = [...credits, ...debits, ...adjustments].sort((a, b) => {
             if (a.sortKey < b.sortKey) return -1;
             if (a.sortKey > b.sortKey) return  1;
             if (a.type === b.type) return 0;
