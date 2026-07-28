@@ -61,8 +61,8 @@ textarea {
 
 textarea:focus { outline: none; border-color: var(--ink); }
 
-/* ─── Account Radio Group ─────────────────── */
-.account-radio-group {
+/* ─── Account Checkbox Group (single-select, enforced in JS) ── */
+.paid-from-group {
     display: flex;
     flex-direction: row;
     gap: 20px;
@@ -70,7 +70,7 @@ textarea:focus { outline: none; border-color: var(--ink); }
     align-items: center;
 }
 
-.account-radio-item {
+.paid-from-item {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -80,7 +80,7 @@ textarea:focus { outline: none; border-color: var(--ink); }
     cursor: pointer;
 }
 
-.account-radio-item input[type="radio"] {
+.paid-from-item input[type="checkbox"] {
     width: 18px;
     height: 18px;
     cursor: pointer;

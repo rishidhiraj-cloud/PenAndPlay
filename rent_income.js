@@ -70,6 +70,17 @@ function init() {
     // Form submission
     form.addEventListener('submit', handleSubmit);
 
+    // Enforce single-select behaviour on Account checkboxes
+    document.querySelectorAll('input[name="rentAccount"]').forEach(cb => {
+        cb.addEventListener('change', function () {
+            if (this.checked) {
+                document.querySelectorAll('input[name="rentAccount"]').forEach(other => {
+                    if (other !== this) other.checked = false;
+                });
+            }
+        });
+    });
+
     // Load rent income history
     loadRentIncomeHistory();
 
@@ -86,7 +97,7 @@ async function handleSubmit(e) {
 
     try {
         const entryDate = rentDateInput.value;
-        const account = document.querySelector('input[name="rentAccount"]:checked')?.value;
+        const account = document.querySelector('input[name="rentAccount"][type="checkbox"]:checked')?.value;
         const amount = parseFloat(rentAmountInput.value.replace(/,/g, '')) || 0;
         const remarks = rentRemarksInput.value.trim();
 
