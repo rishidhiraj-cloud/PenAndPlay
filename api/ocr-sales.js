@@ -75,7 +75,8 @@ async function extractLinesFromImage(dataUrl) {
             return [];
         }
 
-        const text = json.content && json.content[0] && json.content[0].text;
+        const textBlock = Array.isArray(json.content) ? json.content.find(block => block && block.type === 'text') : null;
+        const text = textBlock && textBlock.text;
         return parseExtractedLines(text);
     } catch (err) {
         console.error('❌ Error calling Anthropic API:', err);
