@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rent Income - Pen & Play Club</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="rent_income-style.css">
+</head>
+<body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Rent Income</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="Logo.png" alt="Shop Logo">
+                </div>
+            </div>
+        </header>
+
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html" data-num="01">New Entry</a>
+                <a href="history.html" data-num="02">History</a>
+                <a href="expense.html" data-num="03">Expenses</a>
+                <a href="rent_income.html" data-num="04">Rent Income</a>
+                <a href="statement.html" data-num="05">Statement</a>
+                <a href="storage.html" data-num="06">Manage Storage</a>
+                <a href="outofstock.html" data-num="07">Out of Stock</a>
+                <a href="passport_photo_generator.html" data-num="08">Passport Photo</a>
+                <a href="collage.html" data-num="09">Collage</a>
+                <a href="generate_bill.html" data-num="10">Generate Bill</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙 Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
+            <div class="back-to-dashboard">
+                <a href="index.html">« Back To Dashboard</a>
+            </div>
+
+            <!-- Month Indicator -->
+            <div class="month-indicator"><span class="mi-label">Viewing Month:</span> <span id="currentMonthLabel" class="mi-value">Loading...</span></div>
+
+            <!-- Rent Income Entry Form -->
+            <div class="form-section">
+                <h2>Add Rent Income</h2>
+                <form id="rentIncomeForm">
+                    <!-- Date -->
+                    <div class="form-group">
+                        <label for="rentDate">Date</label>
+                        <input type="date"
+                               id="rentDate"
+                               name="rentDate"
+                               required>
+                    </div>
+
+                    <!-- Account -->
+                    <div class="form-group">
+                        <label>Account</label>
+                        <div class="account-radio-group">
+                            <label class="account-radio-item">
+                                <input type="radio" id="rentAccountBoB" name="rentAccount" value="BoB" required>
+                                BoB
+                            </label>
+                            <label class="account-radio-item">
+                                <input type="radio" id="rentAccountApCash" name="rentAccount" value="AP Cash">
+                                AP Cash
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="form-group">
+                        <label for="rentAmount">Amount</label>
+                        <input type="number"
+                               id="rentAmount"
+                               name="rentAmount"
+                               placeholder="0.00"
+                               step="0.01"
+                               min="0.01"
+                               inputmode="decimal"
+                               required>
+                    </div>
+
+                    <!-- Remarks -->
+                    <div class="form-group">
+                        <label for="rentRemarks">Remarks <span class="optional-hint">(optional)</span></label>
+                        <textarea id="rentRemarks"
+                                  name="rentRemarks"
+                                  rows="3"
+                                  placeholder="Enter remarks..."></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary" id="rentSubmitBtn">
+                        Save Rent Income
+                    </button>
+                </form>
+
+                <!-- Status Message -->
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+
+            <!-- Rent Income History -->
+            <div class="history-section">
+                <div class="history-header">
+                    <h2>Rent Income History</h2>
+                    <span class="total-rent-income" id="totalRentIncome">₹0.00</span>
+                </div>
+
+                <div id="rentIncomeHistory" class="rent-income-list">
+                    <div class="loading-spinner">Loading rent income...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <script src="rent_income.js"></script>
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

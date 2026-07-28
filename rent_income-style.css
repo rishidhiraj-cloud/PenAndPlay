@@ -1,0 +1,170 @@
+/* ─────────────────────────────────────────────
+   WASHI — Rent Income Page
+   ───────────────────────────────────────────── */
+
+.month-indicator {
+    border-bottom: 1px solid var(--rule-mid);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.mi-label {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--olive);
+}
+
+.mi-value {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--ink);
+    margin-left: 8px;
+}
+
+/* ─── Form & History Sections ─────────────── */
+.form-section {
+    padding-bottom: 20px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--rule-mid);
+}
+
+.history-section {
+    padding-bottom: 20px;
+    margin-bottom: 16px;
+}
+
+.optional-hint {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+    margin-left: 4px;
+    text-transform: lowercase;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    font-family: var(--mono);
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    background: var(--cream-mid);
+    color: var(--ink);
+    resize: vertical;
+    transition: border-color var(--transition);
+}
+
+textarea:focus { outline: none; border-color: var(--ink); }
+
+/* ─── Account Radio Group ─────────────────── */
+.account-radio-group {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.account-radio-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+}
+
+.account-radio-item input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--ink);
+    flex-shrink: 0;
+}
+
+/* ─── History Header ──────────────────────── */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--ink);
+}
+
+.total-rent-income {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--olive);
+    letter-spacing: -0.02em;
+}
+
+/* ─── Rent Income List ────────────────────── */
+.rent-income-list { display: flex; flex-direction: column; }
+
+.rent-item {
+    padding: 11px 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.rent-item:first-child { border-top: 1px solid var(--rule-mid); }
+
+.rent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+
+.rent-date {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.rent-amount {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.rent-details {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 6px;
+}
+
+.rent-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px dotted var(--rule-mid);
+}
+
+.rent-label {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.rent-value {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+@media (max-width: 768px) {
+    .rent-detail-row { flex-direction: column; gap: 2px; padding: 4px 0; }
+}
