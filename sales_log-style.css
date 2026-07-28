@@ -1,0 +1,291 @@
+/* ─────────────────────────────────────────────
+   WASHI — Sales Log Page
+   ───────────────────────────────────────────── */
+
+.month-indicator {
+    border-bottom: 1px solid var(--rule-mid);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.mi-label {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--olive);
+}
+
+.mi-value {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--ink);
+    margin-left: 8px;
+}
+
+/* ─── Form & History Sections ─────────────── */
+.form-section {
+    padding-bottom: 20px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--rule-mid);
+}
+
+.history-section {
+    padding-bottom: 20px;
+    margin-bottom: 16px;
+}
+
+/* ─── Review Section ──────────────────────── */
+.review-section.hidden { display: none; }
+
+.review-section h3 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-style: italic;
+    color: var(--ink);
+    margin: 16px 0 10px;
+}
+
+.review-list { display: flex; flex-direction: column; gap: 8px; }
+
+.review-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.review-item-input {
+    flex: 2;
+    padding: 8px 10px;
+    font-size: 15px;
+    font-family: var(--mono);
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    background: var(--cream-mid);
+    color: var(--ink);
+}
+
+.review-amount-input {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 15px;
+    font-family: var(--mono);
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    background: var(--cream-mid);
+    color: var(--ink);
+}
+
+.review-item-input:focus,
+.review-amount-input:focus { outline: none; border-color: var(--ink); }
+
+.review-remove-btn {
+    background: transparent;
+    border: 1px solid rgba(192, 57, 43, 0.30);
+    color: var(--red);
+    width: 32px;
+    height: 32px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: all 0.15s;
+}
+
+.review-remove-btn:hover { background: var(--red-light); border-color: var(--red); }
+
+.review-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.add-row-btn {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--olive);
+    border: 1px dashed rgba(124, 140, 94, 0.40);
+    background: transparent;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+}
+
+.add-row-btn:hover { background: var(--olive-light); border-color: var(--olive); }
+
+/* ─── History Header ──────────────────────── */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--ink);
+}
+
+.total-sales-log {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--olive);
+    letter-spacing: -0.02em;
+}
+
+/* ─── Sales Log List ──────────────────────── */
+.sales-log-list { display: flex; flex-direction: column; }
+
+.sales-item {
+    padding: 11px 0;
+    border-bottom: 1px solid var(--rule);
+}
+
+.sales-item:first-child { border-top: 1px solid var(--rule-mid); }
+
+.sales-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+}
+
+.sales-date {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.sales-amount {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.sales-details {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 6px;
+}
+
+.sales-detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px dotted var(--rule-mid);
+}
+
+.sales-label {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.sales-value {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+.sales-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.edit-btn {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--olive);
+    border: 1px solid rgba(124, 140, 94, 0.35);
+    background: transparent;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.15s;
+}
+
+.edit-btn:hover { background: var(--olive-light); border-color: var(--olive); }
+
+.delete-btn {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--red);
+    border: 1px solid rgba(192, 57, 43, 0.25);
+    background: transparent;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.15s;
+}
+
+.delete-btn:hover { background: var(--red-light); border-color: var(--red); }
+
+.sales-edit-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 8px 0;
+}
+
+.edit-date-input,
+.edit-item-input,
+.edit-amount-input {
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: var(--mono);
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
+    background: var(--cream-mid);
+    color: var(--ink);
+}
+
+.edit-item-input { flex: 2; min-width: 120px; }
+.edit-amount-input { flex: 1; min-width: 90px; }
+
+.save-edit-btn,
+.cancel-edit-btn {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.15s;
+}
+
+.save-edit-btn {
+    color: var(--olive);
+    border: 1px solid rgba(124, 140, 94, 0.35);
+    background: transparent;
+}
+
+.save-edit-btn:hover { background: var(--olive-light); }
+
+.cancel-edit-btn {
+    color: var(--ink-faint);
+    border: 1px solid var(--rule-mid);
+    background: transparent;
+}
+
+.cancel-edit-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+@media (max-width: 768px) {
+    .sales-detail-row { flex-direction: column; gap: 2px; padding: 4px 0; }
+    .review-row { flex-wrap: wrap; }
+}
