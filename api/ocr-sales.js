@@ -44,7 +44,7 @@ async function extractLinesFromImage(dataUrl) {
     const parsedImage = parseDataUrl(dataUrl);
     if (!parsedImage) {
         console.error('❌ Invalid image data URL received');
-        return [];
+        return { ok: false, lines: [] };
     }
 
     try {
@@ -72,15 +72,16 @@ async function extractLinesFromImage(dataUrl) {
 
         if (!response.ok) {
             console.error('❌ Anthropic API error:', json);
-            return [];
+            return { ok: false, lines: [] };
         }
 
+        // Claude may return non-text content blocks (e.g. "thinking") before the text block — selecting content[0] directly silently returned zero lines for every call in production until this was caught via real-photo testing.
         const textBlock = Array.isArray(json.content) ? json.content.find(block => block && block.type === 'text') : null;
         const text = textBlock && textBlock.text;
-        return parseExtractedLines(text);
+        return { ok: true, lines: parseExtractedLines(text) };
     } catch (err) {
         console.error('❌ Error calling Anthropic API:', err);
-        return [];
+        return { ok: false, lines: [] };
     }
 }
 
@@ -103,8 +104,14 @@ module.exports = async function handler(req, res) {
     }
 
     const results = await Promise.all(images.map(extractLinesFromImage));
-    const lines = results.flat();
 
+    const anySucceeded = results.some(r => r.ok);
+    if (!anySucceeded) {
+        res.status(502).json({ error: 'Could not read any of the uploaded photos — the OCR service failed for every image. Check server logs; this is not a "no sale lines found" result.' });
+        return;
+    }
+
+    const lines = results.flatMap(r => r.lines);
     res.status(200).json({ lines });
 };
 
