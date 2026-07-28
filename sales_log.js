@@ -296,13 +296,20 @@ async function loadSalesLogHistory() {
     }
 }
 
-// Display Sales Log entries with Edit/Delete actions
+// Display Sales Log history — one row per date, with a View button for that day's items.
+// Entries are permanent once saved: no edit or delete.
 function displaySalesLog(entries) {
     const total = entries.reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
     totalSalesLogEl.textContent = `₹${formatIndianNumber(total)}`;
 
-    const entriesHTML = entries.map(entry => {
-        const date = new Date(entry.entry_date).toLocaleDateString('en-US', {
+    const byDate = new Map();
+    entries.forEach(entry => {
+        if (!byDate.has(entry.entry_date)) byDate.set(entry.entry_date, []);
+        byDate.get(entry.entry_date).push(entry);
+    });
+
+    const dayRowsHTML = Array.from(byDate.entries()).map(([entryDate, dayEntries]) => {
+        const date = new Date(entryDate).toLocaleDateString('en-US', {
             weekday: 'short',
             year: 'numeric',
             month: 'short',
@@ -310,95 +317,59 @@ function displaySalesLog(entries) {
         });
 
         return `
-            <div class="sales-item" data-id="${entry.id}">
-                <div class="sales-header">
-                    <div class="sales-date">${date}</div>
-                    <div class="sales-amount">₹${formatIndianNumber(entry.amount)}</div>
-                </div>
-                <div class="sales-details">
-                    <div class="sales-detail-row">
-                        <span class="sales-label">Item:</span>
-                        <span class="sales-value">${escapeHtml(entry.item)}</span>
-                    </div>
-                </div>
-                <div class="sales-actions">
-                    <button type="button" class="edit-btn" data-id="${entry.id}">Edit</button>
-                    <button type="button" class="delete-btn" data-id="${entry.id}">Delete</button>
-                </div>
+            <div class="sales-day-row">
+                <div class="sales-day-date">${date}</div>
+                <div class="sales-day-count">Items Sold: ${dayEntries.length}</div>
+                <button type="button" class="view-day-btn" data-date="${entryDate}">View</button>
             </div>
         `;
     }).join('');
 
-    salesLogHistoryEl.innerHTML = entriesHTML;
+    salesLogHistoryEl.innerHTML = dayRowsHTML;
 
-    salesLogHistoryEl.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', () => startEditRow(btn.dataset.id, entries));
-    });
-    salesLogHistoryEl.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => handleDeleteRow(btn.dataset.id));
+    salesLogHistoryEl.querySelectorAll('.view-day-btn').forEach(btn => {
+        btn.addEventListener('click', () => openDayModal(btn.dataset.date, byDate.get(btn.dataset.date)));
     });
 }
 
-function startEditRow(id, entries) {
-    const entry = entries.find(e => String(e.id) === String(id));
-    if (!entry) return;
+// ----- Day View Modal -----
+const dayViewModal = document.getElementById('dayViewModal');
+const dayViewTitle = document.getElementById('dayViewTitle');
+const dayViewList = document.getElementById('dayViewList');
+const dayViewClose = document.getElementById('dayViewClose');
 
-    const container = salesLogHistoryEl.querySelector(`.sales-item[data-id="${id}"]`);
-    if (!container) return;
+function openDayModal(entryDate, dayEntries) {
+    const date = new Date(entryDate).toLocaleDateString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+    dayViewTitle.textContent = date;
 
-    container.innerHTML = `
-        <div class="sales-edit-row">
-            <input type="date" class="edit-date-input" value="${entry.entry_date}">
-            <input type="text" class="edit-item-input" value="${escapeHtml(entry.item)}" placeholder="Item">
-            <input type="number" class="edit-amount-input" value="${entry.amount}" step="0.01" min="0.01" placeholder="Amount">
-            <button type="button" class="save-edit-btn" data-id="${id}">Save</button>
-            <button type="button" class="cancel-edit-btn">Cancel</button>
+    dayViewList.innerHTML = dayEntries.map(entry => `
+        <div class="day-view-item">
+            <span class="day-view-item-name">${escapeHtml(entry.item)}</span>
+            <span class="day-view-item-amount">₹${formatIndianNumber(entry.amount)}</span>
         </div>
-    `;
+    `).join('');
 
-    container.querySelector('.save-edit-btn').addEventListener('click', () => saveEditRow(id, container));
-    container.querySelector('.cancel-edit-btn').addEventListener('click', () => loadSalesLogHistory());
+    dayViewModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 }
 
-async function saveEditRow(id, container) {
-    const entryDate = container.querySelector('.edit-date-input').value;
-    const item = container.querySelector('.edit-item-input').value.trim();
-    const amount = parseFloat(container.querySelector('.edit-amount-input').value) || 0;
-
-    if (!entryDate || !item || amount <= 0) {
-        alert('Please fill in a valid date, item, and amount greater than 0.');
-        return;
-    }
-
-    try {
-        const { error } = await supabaseClient
-            .from('sales_log')
-            .update({ entry_date: entryDate, item, amount })
-            .eq('id', id);
-
-        if (error) throw error;
-
-        await loadSalesLogHistory();
-    } catch (err) {
-        console.error('❌ Error updating sales log entry:', err);
-        alert('Failed to save: ' + err.message);
-    }
+function closeDayModal() {
+    dayViewModal.classList.add('hidden');
+    document.body.style.overflow = '';
 }
 
-async function handleDeleteRow(id) {
-    if (!confirm('Delete this sale entry?')) return;
-
-    try {
-        const { error } = await supabaseClient.from('sales_log').delete().eq('id', id);
-
-        if (error) throw error;
-
-        await loadSalesLogHistory();
-    } catch (err) {
-        console.error('❌ Error deleting sales log entry:', err);
-        alert('Failed to delete: ' + err.message);
-    }
-}
+dayViewClose.addEventListener('click', closeDayModal);
+dayViewModal.addEventListener('click', (e) => {
+    if (e.target === dayViewModal) closeDayModal();
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDayModal();
+});
 
 function displayNoSalesLog() {
     totalSalesLogEl.textContent = '₹0.00';

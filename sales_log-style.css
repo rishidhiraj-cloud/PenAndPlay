@@ -137,155 +137,130 @@
     letter-spacing: -0.02em;
 }
 
-/* ─── Sales Log List ──────────────────────── */
+/* ─── Sales Log List (one row per date) ───── */
 .sales-log-list { display: flex; flex-direction: column; }
 
-.sales-item {
+.sales-day-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
     padding: 11px 0;
     border-bottom: 1px solid var(--rule);
 }
 
-.sales-item:first-child { border-top: 1px solid var(--rule-mid); }
+.sales-day-row:first-child { border-top: 1px solid var(--rule-mid); }
 
-.sales-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 6px;
-}
-
-.sales-date {
+.sales-day-date {
     font-family: var(--mono);
     font-size: 15px;
     font-weight: 600;
     color: var(--ink);
+    flex: 1;
 }
 
-.sales-amount {
+.sales-day-count {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-soft);
+}
+
+.view-day-btn {
     font-family: var(--mono);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--ink);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--olive);
+    border: 1px solid rgba(124, 140, 94, 0.35);
+    background: transparent;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.15s;
+    flex-shrink: 0;
 }
 
-.sales-details {
+.view-day-btn:hover { background: var(--olive-light); border-color: var(--olive); }
+
+/* ─── Day View Modal ───────────────────────── */
+.day-view-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 28, 30, 0.60);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.day-view-modal.hidden { display: none; }
+
+.day-view-card {
+    width: 100%;
+    max-width: 420px;
+    max-height: 80vh;
+    background: var(--cream);
+    border: 1px solid var(--rule-mid);
+    border-radius: 2px;
     display: flex;
     flex-direction: column;
-    margin-bottom: 6px;
+    overflow: hidden;
 }
 
-.sales-detail-row {
+.day-view-header {
     display: flex;
     justify-content: space-between;
-    padding: 3px 0;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1.5px solid var(--ink);
+}
+
+.day-view-header h3 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-style: italic;
+    color: var(--ink);
+    margin: 0;
+}
+
+.day-view-close {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    color: var(--ink-faint);
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.day-view-close:hover { color: var(--ink); }
+
+.day-view-list {
+    overflow-y: auto;
+    padding: 8px 16px 16px;
+}
+
+.day-view-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
     border-bottom: 1px dotted var(--rule-mid);
 }
 
-.sales-label {
-    font-family: var(--mono);
-    font-size: 15px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-}
-
-.sales-value {
+.day-view-item-name {
     font-family: var(--serif);
     font-size: 16px;
     font-style: italic;
     color: var(--ink-soft);
 }
 
-.sales-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 5px;
-}
-
-.edit-btn {
+.day-view-item-amount {
     font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--olive);
-    border: 1px solid rgba(124, 140, 94, 0.35);
-    background: transparent;
-    padding: 4px 10px;
-    cursor: pointer;
-    border-radius: 1px;
-    transition: all 0.15s;
-}
-
-.edit-btn:hover { background: var(--olive-light); border-color: var(--olive); }
-
-.delete-btn {
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--red);
-    border: 1px solid rgba(192, 57, 43, 0.25);
-    background: transparent;
-    padding: 4px 10px;
-    cursor: pointer;
-    border-radius: 1px;
-    transition: all 0.15s;
-}
-
-.delete-btn:hover { background: var(--red-light); border-color: var(--red); }
-
-.sales-edit-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: 8px 0;
-}
-
-.edit-date-input,
-.edit-item-input,
-.edit-amount-input {
-    padding: 8px 10px;
-    font-size: 14px;
-    font-family: var(--mono);
-    border: 1px solid var(--rule-mid);
-    border-radius: 2px;
-    background: var(--cream-mid);
+    font-size: 15px;
+    font-weight: 600;
     color: var(--ink);
 }
 
-.edit-item-input { flex: 2; min-width: 120px; }
-.edit-amount-input { flex: 1; min-width: 90px; }
-
-.save-edit-btn,
-.cancel-edit-btn {
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 1px;
-    transition: all 0.15s;
-}
-
-.save-edit-btn {
-    color: var(--olive);
-    border: 1px solid rgba(124, 140, 94, 0.35);
-    background: transparent;
-}
-
-.save-edit-btn:hover { background: var(--olive-light); }
-
-.cancel-edit-btn {
-    color: var(--ink-faint);
-    border: 1px solid var(--rule-mid);
-    background: transparent;
-}
-
-.cancel-edit-btn:hover { border-color: var(--ink); color: var(--ink); }
-
 @media (max-width: 768px) {
-    .sales-detail-row { flex-direction: column; gap: 2px; padding: 4px 0; }
     .review-row { flex-wrap: wrap; }
 }
