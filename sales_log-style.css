@@ -129,14 +129,6 @@
     border-bottom: 1.5px solid var(--ink);
 }
 
-.total-sales-log {
-    font-family: var(--mono);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--olive);
-    letter-spacing: -0.02em;
-}
-
 /* ─── Sales Log List (one row per date) ───── */
 .sales-log-list { display: flex; flex-direction: column; }
 

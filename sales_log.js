@@ -48,7 +48,6 @@ const salesLogHistoryEl = document.getElementById('salesLogHistory');
 const currentMonthLabelEl = document.getElementById('currentMonthLabel');
 const pageLoader = document.getElementById('pageLoader');
 const darkModeToggle = document.getElementById('darkModeToggle');
-const totalSalesLogEl = document.getElementById('totalSalesLog');
 
 // In-memory review state: array of { item, amount }
 let extractedLines = [];
@@ -284,7 +283,6 @@ async function loadSalesLogHistory() {
         }
     } catch (err) {
         console.error('❌ Exception loading sales log:', err);
-        totalSalesLogEl.textContent = '₹0.00';
         salesLogHistoryEl.innerHTML = `
             <div class="empty-state">
                 <p style="color: #721c24;">Error loading sales log: ${escapeHtml(err.message)}</p>
@@ -299,9 +297,6 @@ async function loadSalesLogHistory() {
 // Display Sales Log history — one row per date, with a View button for that day's items.
 // Entries are permanent once saved: no edit or delete.
 function displaySalesLog(entries) {
-    const total = entries.reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
-    totalSalesLogEl.textContent = `₹${formatIndianNumber(total)}`;
-
     const byDate = new Map();
     entries.forEach(entry => {
         if (!byDate.has(entry.entry_date)) byDate.set(entry.entry_date, []);
@@ -372,7 +367,6 @@ document.addEventListener('keydown', (e) => {
 });
 
 function displayNoSalesLog() {
-    totalSalesLogEl.textContent = '₹0.00';
     salesLogHistoryEl.innerHTML = `
         <div class="empty-state">
             <p>No sales recorded yet.</p>
