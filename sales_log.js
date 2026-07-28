@@ -250,7 +250,7 @@ async function handleSaveSalesLog() {
     }
 }
 
-// ----- Load Sales Log History (read-only render — Task 4 adds edit/delete) -----
+// ----- Load Sales Log History -----
 async function loadSalesLogHistory() {
     try {
         pageLoader.classList.remove('hidden');
@@ -296,7 +296,7 @@ async function loadSalesLogHistory() {
     }
 }
 
-// Display Sales Log entries (read-only for this task; Task 4 adds Edit/Delete buttons here)
+// Display Sales Log entries with Edit/Delete actions
 function displaySalesLog(entries) {
     const total = entries.reduce((sum, entry) => sum + parseFloat(entry.amount), 0);
     totalSalesLogEl.textContent = `₹${formatIndianNumber(total)}`;
@@ -321,11 +321,83 @@ function displaySalesLog(entries) {
                         <span class="sales-value">${escapeHtml(entry.item)}</span>
                     </div>
                 </div>
+                <div class="sales-actions">
+                    <button type="button" class="edit-btn" data-id="${entry.id}">Edit</button>
+                    <button type="button" class="delete-btn" data-id="${entry.id}">Delete</button>
+                </div>
             </div>
         `;
     }).join('');
 
     salesLogHistoryEl.innerHTML = entriesHTML;
+
+    salesLogHistoryEl.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => startEditRow(btn.dataset.id, entries));
+    });
+    salesLogHistoryEl.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => handleDeleteRow(btn.dataset.id));
+    });
+}
+
+function startEditRow(id, entries) {
+    const entry = entries.find(e => String(e.id) === String(id));
+    if (!entry) return;
+
+    const container = salesLogHistoryEl.querySelector(`.sales-item[data-id="${id}"]`);
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="sales-edit-row">
+            <input type="date" class="edit-date-input" value="${entry.entry_date}">
+            <input type="text" class="edit-item-input" value="${escapeHtml(entry.item)}" placeholder="Item">
+            <input type="number" class="edit-amount-input" value="${entry.amount}" step="0.01" min="0.01" placeholder="Amount">
+            <button type="button" class="save-edit-btn" data-id="${id}">Save</button>
+            <button type="button" class="cancel-edit-btn">Cancel</button>
+        </div>
+    `;
+
+    container.querySelector('.save-edit-btn').addEventListener('click', () => saveEditRow(id, container));
+    container.querySelector('.cancel-edit-btn').addEventListener('click', () => loadSalesLogHistory());
+}
+
+async function saveEditRow(id, container) {
+    const entryDate = container.querySelector('.edit-date-input').value;
+    const item = container.querySelector('.edit-item-input').value.trim();
+    const amount = parseFloat(container.querySelector('.edit-amount-input').value) || 0;
+
+    if (!entryDate || !item || amount <= 0) {
+        alert('Please fill in a valid date, item, and amount greater than 0.');
+        return;
+    }
+
+    try {
+        const { error } = await supabaseClient
+            .from('sales_log')
+            .update({ entry_date: entryDate, item, amount })
+            .eq('id', id);
+
+        if (error) throw error;
+
+        await loadSalesLogHistory();
+    } catch (err) {
+        console.error('❌ Error updating sales log entry:', err);
+        alert('Failed to save: ' + err.message);
+    }
+}
+
+async function handleDeleteRow(id) {
+    if (!confirm('Delete this sale entry?')) return;
+
+    try {
+        const { error } = await supabaseClient.from('sales_log').delete().eq('id', id);
+
+        if (error) throw error;
+
+        await loadSalesLogHistory();
+    } catch (err) {
+        console.error('❌ Error deleting sales log entry:', err);
+        alert('Failed to delete: ' + err.message);
+    }
 }
 
 function displayNoSalesLog() {
