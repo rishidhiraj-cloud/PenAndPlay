@@ -408,8 +408,75 @@ function initPeriodToggle() {
     });
 }
 
-// Ask in Hinglish — inert for now, Task 3 replaces this handler with the real one.
-askForm.addEventListener('submit', (e) => { e.preventDefault(); });
+const askInput = document.getElementById('askInput');
+const askSendBtn = document.getElementById('askSendBtn');
+const askAnswerEl = document.getElementById('askAnswer');
+
+function currentPeriodLabel() {
+    return currentPeriod === 'viewing-month' ? periodContextEl.textContent : 'Till Date';
+}
+
+function buildAskContext() {
+    if (!currentStats) return null;
+    return {
+        period: currentPeriodLabel(),
+        totalItemsSold: currentStats.totalItemsSold,
+        distinctItems: currentStats.distinctItems,
+        topByRevenue: currentStats.byRevenue.slice(0, 10).map(c => ({ display: c.display, revenue: c.revenue, count: c.count })),
+        topByQuantity: currentStats.byQuantity.slice(0, 10).map(c => ({ display: c.display, count: c.count, revenue: c.revenue })),
+        bottomItems: currentStats.bottomItems.slice(0, 10).map(c => ({ display: c.display, count: c.count })),
+        dailyCounts: currentStats.dailyCounts
+    };
+}
+
+function renderAskAnswer(question, answerText, isError) {
+    askAnswerEl.innerHTML = `
+        <span class="ask-q">${escapeHtml(question)}</span>
+        ${escapeHtml(answerText)}
+    `;
+    askAnswerEl.classList.remove('hidden');
+    askAnswerEl.classList.toggle('is-error', !!isError);
+}
+
+async function handleAskSales(e) {
+    e.preventDefault();
+
+    const question = askInput.value.trim();
+    if (!question) return;
+
+    const context = buildAskContext();
+    if (!context) {
+        renderAskAnswer(question, 'Data abhi load ho rahi hai, thoda ruk kar phir try karein.', true);
+        return;
+    }
+
+    askSendBtn.disabled = true;
+    askSendBtn.textContent = 'Poochh rahe…';
+
+    try {
+        const response = await fetch('/api/ask-sales-insights', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, context })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Request failed');
+        }
+
+        renderAskAnswer(question, result.answer, false);
+    } catch (err) {
+        console.error('❌ Ask error:', err);
+        renderAskAnswer(question, 'Maaf kijiye, jawaab nahi mil paaya: ' + err.message, true);
+    } finally {
+        askSendBtn.disabled = false;
+        askSendBtn.textContent = 'Poochho';
+    }
+}
+
+askForm.addEventListener('submit', handleAskSales);
 
 // Dark Mode
 function initDarkMode() {
