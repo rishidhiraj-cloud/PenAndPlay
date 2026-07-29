@@ -2,6 +2,8 @@
    WASHI — Analyse Sales Page
    ───────────────────────────────────────────── */
 
+#loadErrorMsg.hidden { display: none; }
+
 /* ─── Period Toggle ────────────────────────── */
 .period-toggle {
     display: flex;

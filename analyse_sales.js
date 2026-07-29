@@ -149,7 +149,8 @@ function clusterItems(rows) {
     norms.forEach(n => layer1Root.set(n, find(n)));
 
     SYNONYM_GROUPS.forEach(group => {
-        const present = group.filter(g => parent.has(g));
+        const groupCompacts = group.map(compactItem);
+        const present = norms.filter(n => groupCompacts.includes(compactItem(n)));
         for (let k = 1; k < present.length; k++) union(present[k], present[0]);
     });
 
