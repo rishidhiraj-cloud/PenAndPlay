@@ -210,10 +210,9 @@ const kpiAvgPerDayEl = document.getElementById('kpiAvgPerDay');
 const kpiDaysCapturedEl = document.getElementById('kpiDaysCaptured');
 
 const bottomTableBodyEl = document.getElementById('bottomTableBody');
-const autoMergeListEl = document.getElementById('autoMergeList');
-const manualMergeListEl = document.getElementById('manualMergeList');
 
 const askForm = document.getElementById('askForm');
+const askChips = document.querySelectorAll('.ask-chip');
 
 let currentPeriod = 'till-date';
 let currentStats = null;
@@ -343,32 +342,6 @@ function renderBottomTable(bottomItems) {
     `).join('');
 }
 
-function mergeRowHtml(c) {
-    const variantText = c.variants.length > 2
-        ? `${escapeHtml(c.variants[0])}, +${c.variants.length - 1} more`
-        : c.variants.map(escapeHtml).join(', ');
-    return `
-        <div class="merge-row">
-            <span class="merge-names">${escapeHtml(c.display)}<span class="plus">+</span>${variantText}</span>
-            <span class="merge-qty">${c.count}×</span>
-        </div>
-    `;
-}
-
-function renderMergePanels(clusters) {
-    const merged = clusters.filter(c => c.variants.length > 0);
-    const auto = merged.filter(c => !c.manual).sort((a, b) => b.count - a.count);
-    const manual = merged.filter(c => c.manual).sort((a, b) => b.count - a.count);
-
-    autoMergeListEl.innerHTML = auto.length > 0
-        ? auto.map(mergeRowHtml).join('')
-        : '<div class="empty-state">No spelling variants found in this period.</div>';
-
-    manualMergeListEl.innerHTML = manual.length > 0
-        ? manual.map(mergeRowHtml).join('')
-        : '<div class="empty-state">No confirmed synonym merges applied in this period.</div>';
-}
-
 function updatePeriodContext() {
     if (currentPeriod === 'viewing-month') {
         const selectedMonth = getSelectedMonth();
@@ -393,7 +366,6 @@ async function loadAndRender() {
         topRevenueChart = renderTopChart('topRevenueCanvas', topRevenueChart, currentStats.byRevenue, getCssVar('--olive'), 'revenue', v => '₹' + formatIndianNumber(v));
         topQuantityChart = renderTopChart('topQuantityCanvas', topQuantityChart, currentStats.byQuantity, getCssVar('--blue'), 'count', v => v + '×');
         renderBottomTable(currentStats.bottomItems);
-        renderMergePanels(clusters);
     } catch (err) {
         console.error('❌ Error loading sales insights:', err);
         loadErrorMsgEl.textContent = 'Error loading sales data: ' + err.message;
@@ -483,6 +455,13 @@ async function handleAskSales(e) {
 }
 
 askForm.addEventListener('submit', handleAskSales);
+
+askChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+        askInput.value = chip.textContent;
+        askForm.requestSubmit();
+    });
+});
 
 // Dark Mode
 function initDarkMode() {

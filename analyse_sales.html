@@ -131,34 +131,9 @@
                 </div>
             </section>
 
-            <!-- Auto-merged panel -->
-            <section>
-                <div class="callout">
-                    <div class="callout-head">
-                        <span class="callout-flag">Auto-merged</span>
-                        <span class="callout-title">Spelling &amp; typo matches</span>
-                    </div>
-                    <p class="section-sub" style="margin-bottom:0;">Caught automatically — same text once trimmed, plural vs singular, spacing-only differences, or a close typo match:</p>
-                    <div class="merge-list" id="autoMergeList"></div>
-                </div>
-            </section>
-
-            <!-- Manual synonym panel -->
-            <section>
-                <div class="callout callout-olive">
-                    <div class="callout-head">
-                        <span class="callout-flag callout-flag-neutral">You confirmed</span>
-                        <span class="callout-title">Same item, different words</span>
-                    </div>
-                    <p class="section-sub" style="margin-bottom:0;">Different words for the same real item — text-similarity alone can't catch these, so they're a maintained list:</p>
-                    <div class="merge-list" id="manualMergeList"></div>
-                    <p class="callout-note">Multi-item diary lines (e.g. "Study Table, Car") are always excluded from automatic merging, so a word inside one never gets pulled into an unrelated single-item cluster like "Car."</p>
-                </div>
-            </section>
-
             <!-- Ask in Hinglish -->
             <section class="ask-section">
-                <h2>Ask in Hinglish</h2>
+                <h2>Ask in Hinglish (Powered by AI)</h2>
                 <p class="section-sub">Type a question about your sales the way you'd actually ask it</p>
                 <form id="askForm" class="ask-box">
                     <div class="ask-input-row">
@@ -166,6 +141,11 @@
                         <button type="submit" id="askSendBtn" class="ask-send">Poochho</button>
                     </div>
                 </form>
+                <div class="ask-chips">
+                    <button type="button" class="ask-chip">Sabse zyada bikne wala item?</button>
+                    <button type="button" class="ask-chip">Pen kitni baar becha?</button>
+                    <button type="button" class="ask-chip">Konsa din sabse busy tha?</button>
+                </div>
                 <div id="askAnswer" class="ask-answer hidden"></div>
             </section>
         </main>
