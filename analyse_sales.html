@@ -59,6 +59,24 @@
                 <a href="index.html">« Back To Dashboard</a>
             </div>
 
+            <!-- Ask in Hinglish -->
+            <section class="ask-section">
+                <h2>Ask in Hinglish <span class="ask-ai-label">(Powered by AI)</span></h2>
+                <p class="section-sub">Type a question about your sales the way you'd actually ask it</p>
+                <form id="askForm" class="ask-box">
+                    <div class="ask-input-row">
+                        <input type="text" id="askInput" class="ask-input" placeholder="Sabse zyada kya bikta hai?" autocomplete="off">
+                        <button type="submit" id="askSendBtn" class="ask-send">Poochho</button>
+                    </div>
+                </form>
+                <div class="ask-chips">
+                    <button type="button" class="ask-chip">Sabse zyada bikne wala item?</button>
+                    <button type="button" class="ask-chip">Pen kitni baar becha?</button>
+                    <button type="button" class="ask-chip">Konsa din sabse busy tha?</button>
+                </div>
+                <div id="askAnswer" class="ask-answer hidden"></div>
+            </section>
+
             <!-- Period Toggle -->
             <div class="period-toggle">
                 <button type="button" class="period-btn active" data-period="till-date" id="periodTillDateBtn">Till Date</button>
@@ -129,24 +147,6 @@
                         <tbody id="bottomTableBody"></tbody>
                     </table>
                 </div>
-            </section>
-
-            <!-- Ask in Hinglish -->
-            <section class="ask-section">
-                <h2>Ask in Hinglish (Powered by AI)</h2>
-                <p class="section-sub">Type a question about your sales the way you'd actually ask it</p>
-                <form id="askForm" class="ask-box">
-                    <div class="ask-input-row">
-                        <input type="text" id="askInput" class="ask-input" placeholder="Sabse zyada kya bikta hai?" autocomplete="off">
-                        <button type="submit" id="askSendBtn" class="ask-send">Poochho</button>
-                    </div>
-                </form>
-                <div class="ask-chips">
-                    <button type="button" class="ask-chip">Sabse zyada bikne wala item?</button>
-                    <button type="button" class="ask-chip">Pen kitni baar becha?</button>
-                    <button type="button" class="ask-chip">Konsa din sabse busy tha?</button>
-                </div>
-                <div id="askAnswer" class="ask-answer hidden"></div>
             </section>
         </main>
     </div>
