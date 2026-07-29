@@ -1,0 +1,250 @@
+/* ─────────────────────────────────────────────
+   WASHI — Analyse Sales Page
+   ───────────────────────────────────────────── */
+
+/* ─── Period Toggle ────────────────────────── */
+.period-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.period-btn {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--cream-mid);
+    border: 1px solid var(--rule-mid);
+    padding: 7px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.period-btn.active {
+    color: var(--cream);
+    background: var(--olive);
+    border-color: var(--olive);
+}
+
+.period-btn:hover:not(.active) { border-color: var(--olive); color: var(--olive); }
+
+.period-context {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin: 6px 0 18px;
+}
+
+/* ─── Sections ─────────────────────────────── */
+section {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--rule);
+}
+section:last-of-type { border-bottom: none; }
+
+h2 {
+    font-family: var(--serif);
+    font-size: 19px;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--ink);
+    margin: 0 0 4px;
+}
+
+.section-sub {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+    letter-spacing: 0.01em;
+}
+
+/* ─── KPI tiles ────────────────────────────── */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rule-mid);
+    border: 1px solid var(--rule-mid);
+}
+
+.kpi-tile { background: var(--cream); padding: 16px 14px; }
+
+.kpi-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 6px;
+}
+
+.kpi-value {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+}
+
+.kpi-value .was { font-size: 11px; font-weight: 400; color: var(--ink-faint); display: block; margin-top: 2px; }
+
+/* ─── Charts ───────────────────────────────── */
+.chart-container { position: relative; height: 220px; margin-top: 4px; }
+.chart-container.tall { height: 300px; }
+
+/* ─── Table ────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+
+table.plain { width: 100%; border-collapse: collapse; }
+
+table.plain th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: left;
+    padding: 0 8px 8px 0;
+    border-bottom: 1.5px solid var(--ink);
+    font-weight: 500;
+}
+table.plain th.num { text-align: right; padding-right: 0; }
+
+table.plain td {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    padding: 7px 8px 7px 0;
+    border-bottom: 1px dotted var(--rule-mid);
+    color: var(--ink-soft);
+}
+table.plain td.num {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-style: normal;
+    text-align: right;
+    color: var(--ink);
+    padding-right: 0;
+}
+table.plain tr:last-child td { border-bottom: none; }
+
+/* ─── Merge callouts ───────────────────────── */
+.callout {
+    border: 1px solid var(--rule-strong);
+    background: var(--cream-mid);
+    padding: 16px;
+    border-radius: 2px;
+}
+.callout-olive { border-color: rgba(124, 140, 94, 0.40); background: var(--olive-light); }
+
+.callout-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
+
+.callout-flag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--olive);
+    border: 1px solid rgba(124, 140, 94, 0.40);
+    padding: 2px 7px;
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+.callout-flag-neutral { color: var(--ink); border-color: var(--rule-strong); }
+
+.callout-title { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--ink); }
+
+.merge-list { display: flex; flex-direction: column; gap: 0; margin-top: 10px; }
+
+.merge-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 0;
+    border-top: 1px dotted var(--rule-mid);
+}
+.merge-row:first-child { padding-top: 0; border-top: none; }
+
+.merge-names { font-family: var(--mono); font-size: 12.5px; color: var(--ink-soft); }
+.merge-names .plus { color: var(--ink-faint); margin: 0 4px; }
+
+.merge-qty {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    text-align: right;
+}
+
+.callout-note {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    margin-top: 12px;
+    line-height: 1.6;
+}
+
+/* ─── Ask in Hinglish ──────────────────────── */
+.ask-box {
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    background: var(--cream-mid);
+    overflow: hidden;
+}
+
+.ask-input-row { display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
+
+.ask-input {
+    flex: 1;
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink);
+    background: transparent;
+    border: none;
+}
+.ask-input:focus { outline: none; }
+.ask-input::placeholder { color: var(--ink-faint); }
+
+.ask-send {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: var(--olive);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 1px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+}
+.ask-send:disabled { opacity: 0.6; cursor: default; }
+
+.ask-answer {
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    background: var(--cream-mid);
+    border-left: 2px solid var(--olive);
+    padding: 10px 12px;
+    border-radius: 0 2px 2px 0;
+}
+.ask-answer.hidden { display: none; }
+.ask-answer .ask-q { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--ink); display: block; margin-bottom: 6px; }
+.ask-answer.is-error { border-left-color: var(--red); color: var(--red); }
+
+@media (max-width: 768px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+}

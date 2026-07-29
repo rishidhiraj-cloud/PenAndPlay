@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse Sales - Pen & Play Club</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="analyse_sales-style.css">
+</head>
+<body>
+    <!-- Loader -->
+    <div id="pageLoader" class="page-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="burger-menu-container">
+                    <div class="burger-icon" id="burgerIcon">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+                <div class="header-text">
+                    <h1>Pen & Play Club</h1>
+                    <p class="subtitle">Analyse Sales</p>
+                </div>
+                <div class="header-logo-right">
+                    <img src="Logo.png" alt="Shop Logo">
+                </div>
+            </div>
+        </header>
+
+        <div class="burger-overlay" id="burgerOverlay"></div>
+        <div class="burger-menu" id="burgerMenu">
+            <nav>
+                <a href="entry.html" data-num="01">New Entry</a>
+                <a href="history.html" data-num="02">History</a>
+                <a href="expense.html" data-num="03">Expenses</a>
+                <a href="rent_income.html" data-num="04">Rent Income</a>
+                <a href="statement.html" data-num="05">Statement</a>
+                <a href="storage.html" data-num="06">Manage Storage</a>
+                <a href="outofstock.html" data-num="07">Out of Stock</a>
+                <a href="passport_photo_generator.html" data-num="08">Passport Photo</a>
+                <a href="collage.html" data-num="09">Collage</a>
+                <a href="generate_bill.html" data-num="10">Generate Bill</a>
+                <a href="sales_log.html" data-num="11">Sales Log</a>
+                <button id="darkModeToggle" class="dark-mode-toggle-btn">🌙 Dark Mode</button>
+            </nav>
+        </div>
+
+        <main>
+            <div class="back-to-dashboard">
+                <a href="index.html">« Back To Dashboard</a>
+            </div>
+
+            <!-- Period Toggle -->
+            <div class="period-toggle">
+                <button type="button" class="period-btn active" data-period="till-date" id="periodTillDateBtn">Till Date</button>
+                <button type="button" class="period-btn" data-period="viewing-month" id="periodViewingMonthBtn">Viewing Month</button>
+            </div>
+            <p class="period-context" id="periodContext">Loading…</p>
+
+            <p class="empty-state hidden" id="loadErrorMsg"></p>
+
+            <!-- KPI tiles -->
+            <section>
+                <div class="kpi-grid">
+                    <div class="kpi-tile">
+                        <p class="kpi-label">Items Sold</p>
+                        <p class="kpi-value" id="kpiItemsSold">—</p>
+                    </div>
+                    <div class="kpi-tile">
+                        <p class="kpi-label">Distinct Items</p>
+                        <p class="kpi-value" id="kpiDistinctItems">—<span class="was" id="kpiDistinctItemsSub"></span></p>
+                    </div>
+                    <div class="kpi-tile">
+                        <p class="kpi-label">Avg Items / Day</p>
+                        <p class="kpi-value" id="kpiAvgPerDay">—</p>
+                    </div>
+                    <div class="kpi-tile">
+                        <p class="kpi-label">Days Captured</p>
+                        <p class="kpi-value" id="kpiDaysCaptured">—</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Daily trend -->
+            <section>
+                <h2>Daily Items Sold</h2>
+                <p class="section-sub">Number of items sold per captured day</p>
+                <div class="chart-container">
+                    <canvas id="dailyTrendCanvas"></canvas>
+                </div>
+            </section>
+
+            <!-- Top 10 by revenue -->
+            <section>
+                <h2>Top 10 Selling Items (By Revenue)</h2>
+                <p class="section-sub">The only revenue-based view on this page — everything else is quantity-based</p>
+                <div class="chart-container tall">
+                    <canvas id="topRevenueCanvas"></canvas>
+                </div>
+            </section>
+
+            <!-- Top 10 by quantity -->
+            <section>
+                <h2>Top 10 Selling Items (By Quantity)</h2>
+                <p class="section-sub">Sold the most times — not always the same items as by revenue</p>
+                <div class="chart-container tall">
+                    <canvas id="topQuantityCanvas"></canvas>
+                </div>
+            </section>
+
+            <!-- Bottom 10 -->
+            <section>
+                <h2>Bottom 10 Selling Items</h2>
+                <p class="section-sub">Lowest quantity in the period — one-off or slow-moving items</p>
+                <div class="table-wrap">
+                    <table class="plain" id="bottomTable">
+                        <thead>
+                            <tr><th>Item</th><th class="num">Times Sold</th></tr>
+                        </thead>
+                        <tbody id="bottomTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Auto-merged panel -->
+            <section>
+                <div class="callout">
+                    <div class="callout-head">
+                        <span class="callout-flag">Auto-merged</span>
+                        <span class="callout-title">Spelling &amp; typo matches</span>
+                    </div>
+                    <p class="section-sub" style="margin-bottom:0;">Caught automatically — same text once trimmed, plural vs singular, spacing-only differences, or a close typo match:</p>
+                    <div class="merge-list" id="autoMergeList"></div>
+                </div>
+            </section>
+
+            <!-- Manual synonym panel -->
+            <section>
+                <div class="callout callout-olive">
+                    <div class="callout-head">
+                        <span class="callout-flag callout-flag-neutral">You confirmed</span>
+                        <span class="callout-title">Same item, different words</span>
+                    </div>
+                    <p class="section-sub" style="margin-bottom:0;">Different words for the same real item — text-similarity alone can't catch these, so they're a maintained list:</p>
+                    <div class="merge-list" id="manualMergeList"></div>
+                    <p class="callout-note">Multi-item diary lines (e.g. "Study Table, Car") are always excluded from automatic merging, so a word inside one never gets pulled into an unrelated single-item cluster like "Car."</p>
+                </div>
+            </section>
+
+            <!-- Ask in Hinglish -->
+            <section class="ask-section">
+                <h2>Ask in Hinglish</h2>
+                <p class="section-sub">Type a question about your sales the way you'd actually ask it</p>
+                <form id="askForm" class="ask-box">
+                    <div class="ask-input-row">
+                        <input type="text" id="askInput" class="ask-input" placeholder="Sabse zyada kya bikta hai?" autocomplete="off">
+                        <button type="submit" id="askSendBtn" class="ask-send">Poochho</button>
+                    </div>
+                </form>
+                <div id="askAnswer" class="ask-answer hidden"></div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="auth.js"></script>
+    <script src="analyse_sales.js"></script>
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+</body>
+</html>

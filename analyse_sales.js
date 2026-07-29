@@ -1,0 +1,453 @@
+// Supabase Configuration
+const SUPABASE_URL = 'https://sckgsgakyyosgjxoctlb.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNja2dzZ2FreXlvc2dqeG9jdGxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4OTIwNDEsImV4cCI6MjA4NDQ2ODA0MX0.DUVClZFzC4oEcBK_3MarnMa0tq2XXhIKsSsDyq8vExM';
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+console.log('✅ Analyse Sales.js loaded successfully');
+
+// ----- Formatting helpers -----
+function formatIndianNumber(num) {
+    const n = parseFloat(num || 0).toFixed(2);
+    const parts = n.split('.');
+    const integerPart = parts[0];
+    const decimalPart = parts[1];
+    let lastThree = integerPart.substring(integerPart.length - 3);
+    const otherNumbers = integerPart.substring(0, integerPart.length - 3);
+    if (otherNumbers !== '') lastThree = ',' + lastThree;
+    const formatted = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+    return formatted + '.' + decimalPart;
+}
+
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getCssVar(name) {
+    return getComputedStyle(document.body).getPropertyValue(name).trim();
+}
+
+function hexToRgba(hex, alpha) {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function getSelectedMonth() {
+    const savedMonth = localStorage.getItem('selectedMonth');
+    if (savedMonth) return new Date(savedMonth);
+    return new Date();
+}
+
+// ----- Item-merging algorithm (see design spec for validation history) -----
+function normalizeItem(s) {
+    s = s.trim().toLowerCase();
+    s = s.replace(/[.,/]/g, '');
+    s = s.replace(/\s+/g, ' ');
+    return s;
+}
+
+function compactItem(s) {
+    return s.replace(/\s+/g, '');
+}
+
+function singularItem(s) {
+    if (s.length > 3 && s.endsWith('s') && !s.endsWith('ss')) return s.slice(0, -1);
+    return s;
+}
+
+const SYNONYM_GROUPS = [
+    ['print', 'p out'],
+    ['rapping', 'packing', 'gift packing'],
+    ['stationery', 'stat'],
+];
+
+// Ratcliff/Obershelp similarity ratio — matches Python's difflib.SequenceMatcher.ratio()
+function similarityRatio(a, b) {
+    function findLongestMatch(aStr, bStr) {
+        let best = { aStart: 0, bStart: 0, size: 0 };
+        for (let i = 0; i < aStr.length; i++) {
+            for (let j = 0; j < bStr.length; j++) {
+                let k = 0;
+                while (i + k < aStr.length && j + k < bStr.length && aStr[i + k] === bStr[j + k]) k++;
+                if (k > best.size) best = { aStart: i, bStart: j, size: k };
+            }
+        }
+        return best;
+    }
+    function matchBlocks(aStr, bStr) {
+        const match = findLongestMatch(aStr, bStr);
+        if (match.size === 0) return 0;
+        let total = match.size;
+        if (match.aStart > 0 && match.bStart > 0) {
+            total += matchBlocks(aStr.slice(0, match.aStart), bStr.slice(0, match.bStart));
+        }
+        if (match.aStart + match.size < aStr.length && match.bStart + match.size < bStr.length) {
+            total += matchBlocks(aStr.slice(match.aStart + match.size), bStr.slice(match.bStart + match.size));
+        }
+        return total;
+    }
+    if (a.length === 0 && b.length === 0) return 1;
+    const m = matchBlocks(a, b);
+    return (2 * m) / (a.length + b.length);
+}
+
+// rows: sales_log rows for the current period.
+// Returns: [{ display, count, revenue, variants: string[], manual: boolean }]
+function clusterItems(rows) {
+    const rawByNorm = new Map();
+    rows.forEach(r => {
+        const norm = normalizeItem(r.item);
+        if (!rawByNorm.has(norm)) rawByNorm.set(norm, new Set());
+        rawByNorm.get(norm).add(r.item.trim());
+    });
+
+    const norms = Array.from(rawByNorm.keys());
+    const parent = new Map(norms.map(n => [n, n]));
+    function find(x) {
+        while (parent.get(x) !== x) {
+            parent.set(x, parent.get(parent.get(x)));
+            x = parent.get(x);
+        }
+        return x;
+    }
+    function union(a, b) {
+        const ra = find(a), rb = find(b);
+        if (ra !== rb) parent.set(ra, rb);
+    }
+
+    const compoundOnly = new Set();
+    norms.forEach(n => {
+        const raws = Array.from(rawByNorm.get(n));
+        if (raws.every(r => r.includes(','))) compoundOnly.add(n);
+    });
+
+    for (let i = 0; i < norms.length; i++) {
+        for (let j = i + 1; j < norms.length; j++) {
+            const a = norms[i], b = norms[j];
+            if (compoundOnly.has(a) || compoundOnly.has(b)) continue;
+            if (a === b) { union(a, b); continue; }
+            if (singularItem(a) === singularItem(b)) { union(a, b); continue; }
+            if (compactItem(a) === compactItem(b)) { union(a, b); continue; }
+            if (Math.min(a.length, b.length) >= 5 && similarityRatio(a, b) >= 0.86) {
+                union(a, b);
+            }
+        }
+    }
+
+    // Snapshot Layer-1-only roots before the synonym pass, so we can tell
+    // afterward which final clusters exist ONLY because of a manual merge.
+    const layer1Root = new Map();
+    norms.forEach(n => layer1Root.set(n, find(n)));
+
+    SYNONYM_GROUPS.forEach(group => {
+        const present = group.filter(g => parent.has(g));
+        for (let k = 1; k < present.length; k++) union(present[k], present[0]);
+    });
+
+    const finalRootToLayer1Roots = new Map();
+    norms.forEach(n => {
+        const finalRoot = find(n);
+        if (!finalRootToLayer1Roots.has(finalRoot)) finalRootToLayer1Roots.set(finalRoot, new Set());
+        finalRootToLayer1Roots.get(finalRoot).add(layer1Root.get(n));
+    });
+    const manualRoots = new Set();
+    finalRootToLayer1Roots.forEach((l1roots, finalRoot) => {
+        if (l1roots.size > 1) manualRoots.add(finalRoot);
+    });
+
+    const clusters = new Map();
+    rows.forEach(r => {
+        const root = find(normalizeItem(r.item));
+        if (!clusters.has(root)) clusters.set(root, []);
+        clusters.get(root).push(r);
+    });
+
+    const result = [];
+    clusters.forEach((clusterRows, root) => {
+        const rawCounts = new Map();
+        clusterRows.forEach(r => {
+            const raw = r.item.trim();
+            rawCounts.set(raw, (rawCounts.get(raw) || 0) + 1);
+        });
+        let display = '', maxCount = -1;
+        rawCounts.forEach((count, raw) => { if (count > maxCount) { maxCount = count; display = raw; } });
+        const variants = Array.from(rawCounts.keys()).filter(r => r !== display);
+        const revenue = clusterRows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+        result.push({ display, count: clusterRows.length, revenue, variants, manual: manualRoots.has(root) });
+    });
+
+    return result;
+}
+
+// ----- DOM -----
+const periodTillDateBtn = document.getElementById('periodTillDateBtn');
+const periodViewingMonthBtn = document.getElementById('periodViewingMonthBtn');
+const periodContextEl = document.getElementById('periodContext');
+const loadErrorMsgEl = document.getElementById('loadErrorMsg');
+const pageLoader = document.getElementById('pageLoader');
+const darkModeToggle = document.getElementById('darkModeToggle');
+
+const kpiItemsSoldEl = document.getElementById('kpiItemsSold');
+const kpiDistinctItemsEl = document.getElementById('kpiDistinctItems');
+const kpiDistinctItemsSubEl = document.getElementById('kpiDistinctItemsSub');
+const kpiAvgPerDayEl = document.getElementById('kpiAvgPerDay');
+const kpiDaysCapturedEl = document.getElementById('kpiDaysCaptured');
+
+const bottomTableBodyEl = document.getElementById('bottomTableBody');
+const autoMergeListEl = document.getElementById('autoMergeList');
+const manualMergeListEl = document.getElementById('manualMergeList');
+
+const askForm = document.getElementById('askForm');
+
+let currentPeriod = 'till-date';
+let currentStats = null;
+let dailyTrendChart = null;
+let topRevenueChart = null;
+let topQuantityChart = null;
+
+// ----- Data fetch -----
+async function fetchSalesData(period) {
+    let query = supabaseClient.from('sales_log').select('*').order('entry_date', { ascending: true });
+    if (period === 'viewing-month') {
+        const selectedMonth = getSelectedMonth();
+        const year = selectedMonth.getFullYear();
+        const monthNum = String(selectedMonth.getMonth() + 1).padStart(2, '0');
+        const startDate = `${year}-${monthNum}-01`;
+        const lastDay = new Date(year, selectedMonth.getMonth() + 1, 0).getDate();
+        const endDate = `${year}-${monthNum}-${lastDay}`;
+        query = query.gte('entry_date', startDate).lte('entry_date', endDate);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+}
+
+// ----- Stats -----
+function computeStats(rows, clusters) {
+    const totalItemsSold = rows.length;
+    const rawDistinct = new Set(rows.map(r => normalizeItem(r.item))).size;
+    const distinctItems = clusters.length;
+
+    const dailyMap = new Map();
+    rows.forEach(r => {
+        dailyMap.set(r.entry_date, (dailyMap.get(r.entry_date) || 0) + 1);
+    });
+    const dailyCounts = Array.from(dailyMap.entries())
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+    const daysCaptured = dailyCounts.length;
+    const avgPerDay = daysCaptured > 0 ? Math.round(totalItemsSold / daysCaptured) : 0;
+
+    const byRevenue = clusters.slice().sort((a, b) => b.revenue - a.revenue);
+    const byQuantity = clusters.slice().sort((a, b) => b.count - a.count);
+    const bottomItems = clusters.slice().sort((a, b) => a.count - b.count).slice(0, 10);
+
+    return { totalItemsSold, rawDistinct, distinctItems, dailyCounts, daysCaptured, avgPerDay, byRevenue, byQuantity, bottomItems };
+}
+
+// ----- Rendering -----
+function renderKpis(stats) {
+    kpiItemsSoldEl.textContent = stats.totalItemsSold;
+    kpiDistinctItemsEl.textContent = stats.distinctItems;
+    kpiDistinctItemsSubEl.textContent = `${stats.rawDistinct} as written, merged`;
+    kpiAvgPerDayEl.textContent = stats.avgPerDay;
+    kpiDaysCapturedEl.textContent = stats.daysCaptured;
+}
+
+function renderDailyTrendChart(dailyCounts) {
+    const canvas = document.getElementById('dailyTrendCanvas');
+    const olive = getCssVar('--olive');
+    if (dailyTrendChart) dailyTrendChart.destroy();
+    dailyTrendChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: dailyCounts.map(d => new Date(d.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })),
+            datasets: [{
+                label: 'Items Sold',
+                data: dailyCounts.map(d => d.count),
+                borderColor: olive,
+                backgroundColor: hexToRgba(olive, 0.18),
+                fill: true,
+                tension: 0.25,
+                pointRadius: 3,
+                pointBackgroundColor: olive
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: getCssVar('--rule') }, ticks: { color: getCssVar('--ink-faint') } },
+                x: { grid: { display: false }, ticks: { color: getCssVar('--ink-faint') } }
+            }
+        }
+    });
+}
+
+function renderTopChart(canvasId, existingChart, clusters, color, valueKey, formatValue) {
+    if (existingChart) existingChart.destroy();
+    const canvas = document.getElementById(canvasId);
+    // Reversed so #1 (first in the already-sorted-descending array) renders at the top —
+    // Chart.js horizontal bars (indexAxis: 'y') plot the first label at the bottom otherwise.
+    const ordered = clusters.slice(0, 10).slice().reverse();
+    return new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ordered.map(c => c.display),
+            datasets: [{
+                data: ordered.map(c => c[valueKey]),
+                backgroundColor: color,
+                borderRadius: 3,
+                barThickness: 16
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: (item) => formatValue(item.raw) } }
+            },
+            scales: {
+                x: { beginAtZero: true, grid: { color: getCssVar('--rule') }, ticks: { color: getCssVar('--ink-faint') } },
+                y: { grid: { display: false }, ticks: { color: getCssVar('--ink-soft') } }
+            }
+        }
+    });
+}
+
+function renderBottomTable(bottomItems) {
+    bottomTableBodyEl.innerHTML = bottomItems.map(c => `
+        <tr>
+            <td>${escapeHtml(c.display)}</td>
+            <td class="num">${c.count}×</td>
+        </tr>
+    `).join('');
+}
+
+function mergeRowHtml(c) {
+    const variantText = c.variants.length > 2
+        ? `${escapeHtml(c.variants[0])}, +${c.variants.length - 1} more`
+        : c.variants.map(escapeHtml).join(', ');
+    return `
+        <div class="merge-row">
+            <span class="merge-names">${escapeHtml(c.display)}<span class="plus">+</span>${variantText}</span>
+            <span class="merge-qty">${c.count}×</span>
+        </div>
+    `;
+}
+
+function renderMergePanels(clusters) {
+    const merged = clusters.filter(c => c.variants.length > 0);
+    const auto = merged.filter(c => !c.manual).sort((a, b) => b.count - a.count);
+    const manual = merged.filter(c => c.manual).sort((a, b) => b.count - a.count);
+
+    autoMergeListEl.innerHTML = auto.length > 0
+        ? auto.map(mergeRowHtml).join('')
+        : '<div class="empty-state">No spelling variants found in this period.</div>';
+
+    manualMergeListEl.innerHTML = manual.length > 0
+        ? manual.map(mergeRowHtml).join('')
+        : '<div class="empty-state">No confirmed synonym merges applied in this period.</div>';
+}
+
+function updatePeriodContext() {
+    if (currentPeriod === 'viewing-month') {
+        const selectedMonth = getSelectedMonth();
+        periodContextEl.textContent = selectedMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    } else {
+        periodContextEl.textContent = 'All captured data';
+    }
+}
+
+// ----- Orchestration -----
+async function loadAndRender() {
+    pageLoader.classList.remove('hidden');
+    loadErrorMsgEl.classList.add('hidden');
+    updatePeriodContext();
+    try {
+        const rows = await fetchSalesData(currentPeriod);
+        const clusters = clusterItems(rows);
+        currentStats = computeStats(rows, clusters);
+
+        renderKpis(currentStats);
+        renderDailyTrendChart(currentStats.dailyCounts);
+        topRevenueChart = renderTopChart('topRevenueCanvas', topRevenueChart, currentStats.byRevenue, getCssVar('--olive'), 'revenue', v => '₹' + formatIndianNumber(v));
+        topQuantityChart = renderTopChart('topQuantityCanvas', topQuantityChart, currentStats.byQuantity, getCssVar('--blue'), 'count', v => v + '×');
+        renderBottomTable(currentStats.bottomItems);
+        renderMergePanels(clusters);
+    } catch (err) {
+        console.error('❌ Error loading sales insights:', err);
+        loadErrorMsgEl.textContent = 'Error loading sales data: ' + err.message;
+        loadErrorMsgEl.classList.remove('hidden');
+    } finally {
+        pageLoader.classList.add('hidden');
+    }
+}
+
+function initPeriodToggle() {
+    [periodTillDateBtn, periodViewingMonthBtn].forEach(btn => {
+        btn.addEventListener('click', () => {
+            [periodTillDateBtn, periodViewingMonthBtn].forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentPeriod = btn.dataset.period;
+            loadAndRender();
+        });
+    });
+}
+
+// Ask in Hinglish — inert for now, Task 3 replaces this handler with the real one.
+askForm.addEventListener('submit', (e) => { e.preventDefault(); });
+
+// Dark Mode
+function initDarkMode() {
+    const isDark = localStorage.getItem('darkMode') === 'true';
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.textContent = '☀️ Light Mode';
+    }
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDark);
+    darkModeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+// Burger Menu
+function initBurgerMenu() {
+    const burgerIcon = document.getElementById('burgerIcon');
+    const burgerMenu = document.getElementById('burgerMenu');
+    const burgerOverlay = document.getElementById('burgerOverlay');
+
+    if (burgerIcon && burgerMenu && burgerOverlay) {
+        burgerIcon.addEventListener('click', () => {
+            burgerMenu.classList.toggle('active');
+            burgerOverlay.classList.toggle('active');
+        });
+        burgerOverlay.addEventListener('click', () => {
+            burgerMenu.classList.remove('active');
+            burgerOverlay.classList.remove('active');
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initBurgerMenu();
+    initDarkMode();
+    darkModeToggle.addEventListener('click', toggleDarkMode);
+    initPeriodToggle();
+    loadAndRender();
+});
