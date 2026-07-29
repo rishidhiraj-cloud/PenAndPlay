@@ -3,10 +3,30 @@
    ───────────────────────────────────────────── */
 
 .month-indicator {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
     border-bottom: 1px solid var(--rule-mid);
     padding-bottom: 12px;
     margin-bottom: 16px;
 }
+
+.insights-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--olive);
+    border: 1px solid rgba(124, 140, 94, 0.40);
+    padding: 5px 11px;
+    border-radius: 1px;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+
+.insights-btn:hover { background: var(--olive-light); border-color: var(--olive); }
 
 .mi-label {
     font-family: var(--mono);
