@@ -48,9 +48,19 @@ const salesLogHistoryEl = document.getElementById('salesLogHistory');
 const currentMonthLabelEl = document.getElementById('currentMonthLabel');
 const pageLoader = document.getElementById('pageLoader');
 const darkModeToggle = document.getElementById('darkModeToggle');
+const photoCaptureBtn = document.getElementById('photoCaptureBtn');
+const photoClearBtn = document.getElementById('photoClearBtn');
+const photoPreview = document.getElementById('photoPreview');
+const photoPreviewGrid = document.getElementById('photoPreviewGrid');
+const photoCountLabel = document.getElementById('photoCountLabel');
 
 // In-memory review state: array of { item, amount }
 let extractedLines = [];
+
+// In-memory: File objects accumulated across repeated camera/gallery picks,
+// since each camera invocation only returns one photo — tapping "Add Photo(s)"
+// again appends to this list rather than replacing it.
+let pendingImages = [];
 
 // Get selected month from localStorage or use current month
 function getSelectedMonth() {
@@ -92,6 +102,70 @@ async function compressImageToBase64(file, maxDim = 1600, quality = 0.85) {
     }
 }
 
+// ----- Pending photos: accumulate, preview, remove -----
+function renderPhotoPreviews() {
+    photoPreviewGrid.innerHTML = '';
+    pendingImages.forEach((file, idx) => {
+        const div = document.createElement('div');
+        div.className = 'photo-preview-item';
+
+        const img = document.createElement('img');
+        const url = URL.createObjectURL(file);
+        img.src = url;
+        img.alt = `Photo ${idx + 1}`;
+        img.onload = () => URL.revokeObjectURL(url);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'photo-remove-btn';
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('click', () => removePhotoAt(idx));
+
+        div.appendChild(img);
+        div.appendChild(removeBtn);
+        photoPreviewGrid.appendChild(div);
+    });
+
+    const count = pendingImages.length;
+    photoCountLabel.textContent = count > 0 ? `${count} photo${count > 1 ? 's' : ''} ready` : '';
+
+    if (count > 0) {
+        photoPreview.classList.remove('hidden');
+        photoClearBtn.classList.remove('hidden');
+        photoCaptureBtn.textContent = '📷 Add More Photo(s)';
+    } else {
+        photoPreview.classList.add('hidden');
+        photoClearBtn.classList.add('hidden');
+        photoCaptureBtn.textContent = '📷 Add Photo(s)';
+    }
+}
+
+function removePhotoAt(idx) {
+    pendingImages.splice(idx, 1);
+    salesImagesInput.value = '';
+    renderPhotoPreviews();
+}
+
+function clearPendingPhotos() {
+    pendingImages = [];
+    salesImagesInput.value = '';
+    renderPhotoPreviews();
+}
+
+function onPhotoFilesChosen(files) {
+    if (!files || files.length === 0) return;
+    for (const file of Array.from(files)) {
+        if (!/^image\//.test(file.type)) {
+            alert(`${file.name} is not an image and was skipped.`);
+            continue;
+        }
+        pendingImages.push(file);
+    }
+    // Reset so choosing the same file again later still fires a change event.
+    salesImagesInput.value = '';
+    renderPhotoPreviews();
+}
+
 // Initialize App
 function init() {
     console.log('🚀 Initializing sales log...');
@@ -111,6 +185,8 @@ function init() {
     captureForm.addEventListener('submit', handleExtract);
     addRowBtn.addEventListener('click', addEmptyRow);
     saveSalesBtn.addEventListener('click', handleSaveSalesLog);
+    salesImagesInput.addEventListener('change', (e) => onPhotoFilesChosen(e.target.files));
+    photoClearBtn.addEventListener('click', clearPendingPhotos);
 
     loadSalesLogHistory();
 
@@ -121,9 +197,8 @@ function init() {
 async function handleExtract(e) {
     e.preventDefault();
 
-    const files = salesImagesInput.files;
-    if (!files || files.length === 0) {
-        showStatusMessage('Please select at least one diary page photo.', 'error');
+    if (pendingImages.length === 0) {
+        showStatusMessage('Please add at least one diary page photo.', 'error');
         return;
     }
 
@@ -132,7 +207,7 @@ async function handleExtract(e) {
     hideStatusMessage();
 
     try {
-        const images = await Promise.all(Array.from(files).map(f => compressImageToBase64(f)));
+        const images = await Promise.all(pendingImages.map(f => compressImageToBase64(f)));
 
         const response = await fetch('/api/ocr-sales', {
             method: 'POST',
@@ -237,7 +312,7 @@ async function handleSaveSalesLog() {
         extractedLines = [];
         renderReviewTable();
         reviewSection.classList.add('hidden');
-        salesImagesInput.value = '';
+        clearPendingPhotos();
 
         await loadSalesLogHistory();
     } catch (err) {

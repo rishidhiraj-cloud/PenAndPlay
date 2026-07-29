@@ -37,6 +37,100 @@
     margin-bottom: 16px;
 }
 
+/* ─── Photo Capture (accumulate across repeated picks) ───── */
+.photo-capture-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.photo-capture-btn {
+    display: inline-block;
+    padding: 8px 12px;
+    border: 1px dashed var(--rule-strong);
+    color: var(--ink-faint);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 1px;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.photo-capture-btn:hover { border-color: var(--ink); color: var(--ink); }
+
+.photo-clear-btn {
+    display: inline-block;
+    padding: 8px 12px;
+    border: 1px dashed rgba(192, 57, 43, 0.30);
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 1px;
+    background: transparent;
+    transition: all 0.15s;
+}
+
+.photo-clear-btn:hover { background: var(--red-light); }
+
+.photo-clear-btn.hidden,
+.photo-preview.hidden { display: none; }
+
+.photo-preview {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+.photo-preview-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.photo-preview-item { position: relative; display: inline-block; }
+
+.photo-preview-item img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border: 1px solid var(--rule-mid);
+    border-radius: 1px;
+}
+
+.photo-remove-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--ink);
+    color: var(--cream);
+    border: none;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-family: var(--mono);
+}
+
+.photo-remove-btn:hover { background: var(--red); }
+
+.photo-preview-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-faint);
+}
+
 /* ─── Review Section ──────────────────────── */
 .review-section.hidden { display: none; }
 

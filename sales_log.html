@@ -77,13 +77,20 @@
 
                     <!-- Photos -->
                     <div class="form-group">
-                        <label for="salesImages">Diary Page Photo(s)</label>
-                        <input type="file"
-                               id="salesImages"
-                               name="salesImages"
-                               accept="image/*"
-                               multiple
-                               required>
+                        <label>Diary Page Photo(s)</label>
+                        <div class="photo-capture-row">
+                            <label for="salesImages" class="photo-capture-btn" id="photoCaptureBtn">
+                                📷 Add Photo(s)
+                            </label>
+                            <input type="file" id="salesImages" name="salesImages" accept="image/*" multiple hidden>
+                            <button type="button" id="photoClearBtn" class="photo-clear-btn hidden">✕ Remove All</button>
+                        </div>
+                        <div id="photoPreview" class="photo-preview hidden">
+                            <div id="photoPreviewGrid" class="photo-preview-grid"></div>
+                            <div class="photo-preview-meta">
+                                <span id="photoCountLabel"></span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Extract Button -->
