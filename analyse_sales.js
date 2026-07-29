@@ -148,6 +148,12 @@ function clusterItems(rows) {
     const layer1Root = new Map();
     norms.forEach(n => layer1Root.set(n, find(n)));
 
+    // Match via compactItem, not an exact string/Map-key lookup: normalizeItem
+    // strips periods without inserting a space, so "P.Out" -> "pout" while
+    // "P out"/"P. Out" -> "p out" — an exact match against the literal 'p out'
+    // silently failed to merge "Print"+"P.Out" whenever no space-containing
+    // variant happened to already exist in the data. Comparing compact forms
+    // makes the merge robust to whichever punctuation variant is present.
     SYNONYM_GROUPS.forEach(group => {
         const groupCompacts = group.map(compactItem);
         const present = norms.filter(n => groupCompacts.includes(compactItem(n)));
