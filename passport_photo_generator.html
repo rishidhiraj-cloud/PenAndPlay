@@ -480,6 +480,56 @@
         body.dark-mode .toggle-hint { color: #a0aec0; }
         body.dark-mode .toggle-slider { background: #4a5568; }
 
+        .pp-sliders {
+            margin-top: 14px;
+            padding: 14px 16px 16px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #764ba2;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .pp-slider-row {
+            display: grid;
+            grid-template-columns: 120px 1fr 46px;
+            align-items: center;
+            gap: 10px;
+        }
+        .pp-slider-row label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #4a5568;
+        }
+        .pp-slider {
+            width: 100%;
+            accent-color: #764ba2;
+            cursor: pointer;
+        }
+        .pp-slider-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a202c;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+        .pp-slider-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+        @media (max-width: 420px) {
+            .pp-slider-row { grid-template-columns: 1fr 46px; }
+            .pp-slider-row label { grid-column: 1 / -1; }
+        }
+        body.dark-mode .pp-sliders {
+            background: #374151;
+            border-left-color: #a78bfa;
+        }
+        body.dark-mode .pp-slider-row label { color: #a0aec0; }
+        body.dark-mode .pp-slider-value { color: #e2e8f0; }
+
         .pp-controls {
             display: flex;
             gap: 10px;
@@ -780,6 +830,42 @@
                         <p class="toggle-hint">When ON, the photo is auto-enhanced and the background is replaced with white. When OFF, your photo is used as-is (no enhancement, no background removal).</p>
                     </div>
 
+                    <div class="pp-sliders" id="enhance-sliders">
+                        <div class="pp-slider-row">
+                            <label for="slider-shadowLift">Shadow Lift</label>
+                            <input type="range" id="slider-shadowLift" min="0" max="200" step="1" value="100" class="pp-slider">
+                            <span class="pp-slider-value" id="value-shadowLift">100%</span>
+                        </div>
+                        <div class="pp-slider-row">
+                            <label for="slider-contrast">Contrast</label>
+                            <input type="range" id="slider-contrast" min="0" max="200" step="1" value="100" class="pp-slider">
+                            <span class="pp-slider-value" id="value-contrast">100%</span>
+                        </div>
+                        <div class="pp-slider-row">
+                            <label for="slider-brightness">Brightness</label>
+                            <input type="range" id="slider-brightness" min="0" max="200" step="1" value="100" class="pp-slider">
+                            <span class="pp-slider-value" id="value-brightness">100%</span>
+                        </div>
+                        <div class="pp-slider-row">
+                            <label for="slider-saturation">Saturation</label>
+                            <input type="range" id="slider-saturation" min="0" max="200" step="1" value="100" class="pp-slider">
+                            <span class="pp-slider-value" id="value-saturation">100%</span>
+                        </div>
+                        <div class="pp-slider-row">
+                            <label for="slider-skinSmoothing">Skin Smoothing</label>
+                            <input type="range" id="slider-skinSmoothing" min="0" max="200" step="1" value="100" class="pp-slider">
+                            <span class="pp-slider-value" id="value-skinSmoothing">100%</span>
+                        </div>
+                        <div class="pp-slider-row">
+                            <label for="slider-sharpening">Sharpening</label>
+                            <input type="range" id="slider-sharpening" min="0" max="200" step="1" value="100" class="pp-slider">
+                            <span class="pp-slider-value" id="value-sharpening">100%</span>
+                        </div>
+                        <div class="pp-slider-actions">
+                            <button type="button" id="reset-sliders-btn" class="btn-secondary">Reset to Defaults</button>
+                        </div>
+                    </div>
+
                     <div class="pp-controls">
                         <label for="count">Photos per sheet:</label>
                         <select id="count">
@@ -961,6 +1047,11 @@
         sheetCanvas: null,
         busy: false,
         mpSegmenter: null,
+        // Background-removed-but-not-yet-enhanced photo, cached so the
+        // slider "Apply" button can re-run just the (cheap) enhance() step
+        // without redoing face detection + background removal.
+        preEnhancePhoto: null,
+        lastUsedFaceDetection: true,
       };
 
       if (!state.bgRemovalReady) {
@@ -993,6 +1084,16 @@
       const actions = document.getElementById('actions');
       const printImg = document.getElementById('print-img');
       const enhanceToggle = document.getElementById('enhance-toggle');
+      const enhanceSliders = document.getElementById('enhance-sliders');
+      const resetSlidersBtn = document.getElementById('reset-sliders-btn');
+
+      // Default slider position (100%) for every tunable enhance parameter.
+      // 100% reproduces enhance()'s tuned baseline values exactly.
+      const SLIDER_KEYS = ['shadowLift', 'contrast', 'brightness', 'saturation', 'skinSmoothing', 'sharpening'];
+      const DEFAULT_ENHANCE_PARAMS = {
+        shadowLift: 100, contrast: 100, brightness: 100,
+        saturation: 100, skinSmoothing: 100, sharpening: 100,
+      };
 
       // ============================================================
       // UI helpers
@@ -1035,7 +1136,103 @@
         state.busy = b;
         generateBtn.disabled = b || !state.processedPhoto;
         fileInput.disabled = b;
+        if (resetSlidersBtn) resetSlidersBtn.disabled = b;
+        SLIDER_KEYS.forEach((key) => {
+          const el = document.getElementById('slider-' + key);
+          if (el) el.disabled = b;
+        });
         if (!b) hideProcessing();
+      }
+
+      // ============================================================
+      // Enhance-strength sliders — live preview
+      // ============================================================
+      function getSliderParams() {
+        const out = {};
+        SLIDER_KEYS.forEach((key) => {
+          const el = document.getElementById('slider-' + key);
+          out[key] = el ? parseInt(el.value, 10) : 100;
+        });
+        return out;
+      }
+
+      function setSliderParams(params) {
+        SLIDER_KEYS.forEach((key) => {
+          const el = document.getElementById('slider-' + key);
+          const label = document.getElementById('value-' + key);
+          const v = (params && params[key] != null) ? params[key] : 100;
+          if (el) el.value = v;
+          if (label) label.textContent = v + '%';
+        });
+      }
+
+      function resetSliders() {
+        setSliderParams(DEFAULT_ENHANCE_PARAMS);
+      }
+
+      function updateSlidersVisibility() {
+        if (!enhanceSliders) return;
+        enhanceSliders.classList.toggle('hidden', !(enhanceToggle && enhanceToggle.checked));
+      }
+
+      // Re-running enhance() on every single 'input' event fired while
+      // dragging a slider would pile up faster than the canvas work can
+      // keep up with. Instead: at most one render in flight at a time,
+      // scheduled on the next animation frame; if more slider moves arrive
+      // while a render is running, they collapse into a single follow-up
+      // render using the latest values once the current one finishes. This
+      // keeps dragging responsive regardless of how long enhance() takes on
+      // a given device, and the preview always converges on the slider's
+      // final resting position.
+      let liveRenderPending = false;
+      let liveRenderQueued = false;
+
+      function scheduleLivePreview() {
+        if (!state.preEnhancePhoto || state.busy) return;
+        if (liveRenderPending) {
+          liveRenderQueued = true;
+          return;
+        }
+        liveRenderPending = true;
+        requestAnimationFrame(runLivePreview);
+      }
+
+      function runLivePreview() {
+        try {
+          const params = getSliderParams();
+          const finalPhoto = enhance(state.preEnhancePhoto, params);
+          state.processedPhoto = finalPhoto;
+          showSinglePhotoPreview(finalPhoto, state.lastUsedFaceDetection, true);
+        } catch (err) {
+          console.error('Live preview enhance error:', err);
+        } finally {
+          liveRenderPending = false;
+          if (liveRenderQueued) {
+            liveRenderQueued = false;
+            scheduleLivePreview();
+          }
+        }
+      }
+
+      SLIDER_KEYS.forEach((key) => {
+        const el = document.getElementById('slider-' + key);
+        const label = document.getElementById('value-' + key);
+        if (el && label) {
+          el.addEventListener('input', () => {
+            label.textContent = el.value + '%';
+            scheduleLivePreview();
+          });
+        }
+      });
+
+      if (enhanceToggle) enhanceToggle.addEventListener('change', updateSlidersVisibility);
+      updateSlidersVisibility();
+
+      if (resetSlidersBtn) {
+        resetSlidersBtn.addEventListener('click', () => {
+          resetSliders();
+          scheduleLivePreview();
+        });
       }
 
       // ============================================================
@@ -1381,6 +1578,50 @@
         return state.mpSegmenter;
       }
 
+      // Smooth the raw confidence mask with a small box blur before
+      // upsampling. The segmenter's native resolution is far lower than the
+      // crop canvas, so naive nearest-neighbour upsampling turns per-cell
+      // noise into visible staircase/blocky edges around fine detail like
+      // hair strands. Blurring the low-res mask first, then sampling it
+      // with bilinear interpolation (below), gives a smooth continuous
+      // edge instead of a jagged one.
+      function smoothMask(data, w, h) {
+        const out = new Float32Array(w * h);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            let sum = 0, n = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+              const yy = y + dy;
+              if (yy < 0 || yy >= h) continue;
+              for (let dx = -1; dx <= 1; dx++) {
+                const xx = x + dx;
+                if (xx < 0 || xx >= w) continue;
+                sum += data[yy * w + xx];
+                n++;
+              }
+            }
+            out[y * w + x] = sum / n;
+          }
+        }
+        return out;
+      }
+
+      // Bilinear-sample a w×h float buffer at continuous coordinates.
+      function sampleBilinear(data, w, h, fx, fy) {
+        fx = fx < 0 ? 0 : fx > w - 1 ? w - 1 : fx;
+        fy = fy < 0 ? 0 : fy > h - 1 ? h - 1 : fy;
+        const x0 = Math.floor(fx), y0 = Math.floor(fy);
+        const x1 = Math.min(w - 1, x0 + 1), y1 = Math.min(h - 1, y0 + 1);
+        const tx = fx - x0, ty = fy - y0;
+        const v00 = data[y0 * w + x0];
+        const v10 = data[y0 * w + x1];
+        const v01 = data[y1 * w + x0];
+        const v11 = data[y1 * w + x1];
+        const top = v00 + (v10 - v00) * tx;
+        const bot = v01 + (v11 - v01) * tx;
+        return top + (bot - top) * ty;
+      }
+
       async function mpRemoveBg(canvas) {
         const segmenter = await ensureMpSegmenter();
 
@@ -1394,7 +1635,7 @@
         const mask = masks[0];
         const maskW = mask.width;
         const maskH = mask.height;
-        const maskData = mask.getAsFloat32Array();
+        const maskData = smoothMask(mask.getAsFloat32Array(), maskW, maskH);
 
         const srcCtx = canvas.getContext('2d');
         const srcImg = srcCtx.getImageData(0, 0, canvas.width, canvas.height);
@@ -1404,17 +1645,18 @@
         const ctx = out.getContext('2d');
         const outImg = ctx.createImageData(canvas.width, canvas.height);
 
+        // Map each output pixel to continuous mask coordinates (standard
+        // pixel-center resize mapping) for bilinear sampling.
         const sx = maskW / canvas.width;
         const sy = maskH / canvas.height;
-        const sameSize = (maskW === canvas.width && maskH === canvas.height);
 
         for (let y = 0; y < canvas.height; y++) {
-          const myBase = sameSize ? y * maskW : Math.min(maskH - 1, Math.floor(y * sy)) * maskW;
+          const my = (y + 0.5) * sy - 0.5;
           for (let x = 0; x < canvas.width; x++) {
-            const mIdx = sameSize ? (myBase + x) : (myBase + Math.min(maskW - 1, Math.floor(x * sx)));
+            const mx = (x + 0.5) * sx - 0.5;
             // Selfie segmenter confidence: 1.0 = person, 0.0 = bg.
             // Push edges harder (gamma) so the cutout doesn't look hazy.
-            let c = maskData[mIdx];
+            let c = sampleBilinear(maskData, maskW, maskH, mx, my);
             if (c < 0) c = 0; else if (c > 1) c = 1;
             // Sigmoid-style edge sharpening around 0.5
             c = c < 0.5 ? c * c * 1.5 : 1 - (1 - c) * (1 - c) * 1.5;
@@ -1559,19 +1801,37 @@
       }
 
       /**
-       * Enhanced retouch pipeline.
+       * Enhanced retouch pipeline. Each step's strength is user-tunable via
+       * the 0–200% sliders (100% = baseline below, 0% = no effect, 200% =
+       * twice the baseline's distance from "no effect").
        *  1. Tone-curve LUT — shadow lift + S-curve contrast + brightness boost.
        *     Pure-white background pixels are skipped so the passport bg stays
        *     a clean #FFFFFF after print.
-       *  2. Saturation +8% via canvas filter (healthier skin tone).
+       *  2. Saturation boost via canvas filter (healthier skin tone).
        *  3. Frequency-separation skin softening — medium-radius blur blended
-       *     onto the original at 35% opacity smooths skin texture / mild
-       *     blemishes / fine lines.
-       *  4. Unsharp mask — adds back (sharp − blur) × 0.5 so eyes, lashes,
-       *     mouth, hairline stay crisp despite the smoothing pass.
+       *     onto the original (Skin Smoothing slider controls blend opacity;
+       *     the blur radius itself is a fixed internal detail so it can also
+       *     serve step 4 independently of this slider).
+       *  4. Unsharp mask — adds back (sharp − blur) × sharpening amount so
+       *     eyes, lashes, mouth, hairline stay crisp despite the smoothing.
        *  5. High-quality downscale to the exact 413 × 531 passport size.
+       *
+       * Baseline (100%) values are tuned 10% stronger than the original
+       * pipeline (each dial scaled 10% further from its neutral value) per
+       * a direct "more makeup/touch-up" request.
        */
-      function enhance(canvas) {
+      function enhance(canvas, params) {
+        const p = params || DEFAULT_ENHANCE_PARAMS;
+        const frac = (key) => (p[key] != null ? p[key] : 100) / 100;
+
+        // neutral + (baseline − neutral) × frac — 0% = neutral/off, 100% = baseline, 200% = 2× baseline's offset
+        const gammaExp     = 1 - 0.132 * frac('shadowLift');     // neutral 1.0, baseline 0.868
+        const contrastExp  = 1 + 0.165 * frac('contrast');       // neutral 1.0, baseline 1.165
+        const brightnessMul = 1 + 0.044 * frac('brightness');    // neutral 1.0, baseline 1.044
+        const saturationMul = 1 + 0.088 * frac('saturation');    // neutral 1.0, baseline 1.088
+        const blendOpacity  = 0.385 * frac('skinSmoothing');     // neutral 0,   baseline 0.385
+        const sharpAmount   = 0.55  * frac('sharpening');        // neutral 0,   baseline 0.55
+
         const w = canvas.width;
         const h = canvas.height;
 
@@ -1580,13 +1840,13 @@
         for (let i = 0; i < 256; i++) {
           let v = i / 255;
           // Shadow lift — gamma < 1 raises darks more than highlights
-          v = Math.pow(v, 0.88);
+          v = Math.pow(v, gammaExp);
           // S-curve — punchier mid-tones, prettier contrast
           v = v < 0.5
-            ? 0.5 * Math.pow(2 * v, 1.15)
-            : 1 - 0.5 * Math.pow(2 * (1 - v), 1.15);
+            ? 0.5 * Math.pow(2 * v, contrastExp)
+            : 1 - 0.5 * Math.pow(2 * (1 - v), contrastExp);
           // Overall brightness lift
-          v *= 1.04;
+          v *= brightnessMul;
           if (v > 1) v = 1;
           else if (v < 0) v = 0;
           lut[i] = Math.round(v * 255);
@@ -1596,7 +1856,7 @@
         const c1 = document.createElement('canvas');
         c1.width = w; c1.height = h;
         const ctx1 = c1.getContext('2d');
-        ctx1.filter = 'saturate(1.08)';
+        ctx1.filter = `saturate(${saturationMul})`;
         ctx1.drawImage(canvas, 0, 0);
         ctx1.filter = 'none';
 
@@ -1612,7 +1872,7 @@
         ctx1.putImageData(img1, 0, 0);
 
         // -------- Step 3: medium-radius blur for skin smoothing --------
-        const blurPx = Math.max(1.5, w * 0.0045);  // ~0.45% of width
+        const blurPx = Math.max(1.65, w * 0.00495);  // ~0.495% of width
         const c2 = document.createElement('canvas');
         c2.width = w; c2.height = h;
         const ctx2 = c2.getContext('2d');
@@ -1625,12 +1885,11 @@
         c3.width = w; c3.height = h;
         const ctx3 = c3.getContext('2d');
         ctx3.drawImage(c1, 0, 0);
-        ctx3.globalAlpha = 0.35;
+        ctx3.globalAlpha = blendOpacity;
         ctx3.drawImage(c2, 0, 0);
         ctx3.globalAlpha = 1;
 
         // Unsharp: result += (sharp − blur) × amount, channel-wise
-        const sharpAmount = 0.5;
         const sharpData = ctx1.getImageData(0, 0, w, h).data;
         const blurData  = ctx2.getImageData(0, 0, w, h).data;
         const r3img = ctx3.getImageData(0, 0, w, h);
@@ -1655,11 +1914,14 @@
         ctxF.imageSmoothingQuality = 'high';
         ctxF.drawImage(c3, 0, 0, PHOTO_W_PX, PHOTO_H_PX);
 
-        // Release intermediate canvases (esp. important on iOS)
+        // Release intermediate canvases (esp. important on iOS). Note: the
+        // input `canvas` is deliberately NOT freed here — callers may re-run
+        // enhance() against the same pre-enhance canvas multiple times (the
+        // slider "Apply" button re-renders without redoing background
+        // removal), so ownership of `canvas` stays with the caller.
         c1.width = 0; c1.height = 0;
         c2.width = 0; c2.height = 0;
         c3.width = 0; c3.height = 0;
-        canvas.width = 0; canvas.height = 0;
 
         return final;
       }
@@ -1738,6 +2000,12 @@
         clearStatus();
         state.processedPhoto = null;
         state.sheetCanvas = null;
+        if (state.preEnhancePhoto) {
+          state.preEnhancePhoto.width = 0;
+          state.preEnhancePhoto.height = 0;
+          state.preEnhancePhoto = null;
+        }
+        resetSliders();
         sheetWrap.classList.add('hidden');
         actions.classList.add('hidden');
         resultCard.classList.add('hidden');
@@ -1785,10 +2053,11 @@
             // Yield so the status paints before the heavy WebGL work runs
             await new Promise(r => setTimeout(r, 50));
             const whiteBg = await removeBgAndWhitenize(cropped);
+            state.preEnhancePhoto = whiteBg;
 
             setStatus('Enhancing…');
             await new Promise(r => setTimeout(r, 0));
-            finalPhoto = enhance(whiteBg);
+            finalPhoto = enhance(whiteBg, getSliderParams());
           } else {
             // Enhance OFF — keep the photo exactly as uploaded. We still
             // need the canvas at the final passport pixel size so it tiles
@@ -1808,6 +2077,7 @@
           }
 
           state.processedPhoto = finalPhoto;
+          state.lastUsedFaceDetection = usedFaceDetection;
           showSinglePhotoPreview(finalPhoto, usedFaceDetection, enhanceEnabled);
           setStatus('Photo ready. Choose a layout and click Generate sheet.', 'ok');
           generateBtn.disabled = false;
