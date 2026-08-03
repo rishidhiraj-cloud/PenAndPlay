@@ -59,7 +59,10 @@
                 <div class="back-to-dashboard">
                     <a href="index.html">« Back To Dashboard</a>
                 </div>
-                <button type="button" id="manageGroupsBtn" class="manage-groups-link hidden">⚙ Manage Item Groups</button>
+                <div class="page-actions">
+                    <button type="button" id="manageGroupsBtn" class="manage-groups-link hidden">⚙ Manage Item Groups</button>
+                    <button type="button" id="tagItemsBtn" class="manage-groups-link hidden">🏷 Tag Items</button>
+                </div>
             </div>
 
             <!-- Ask in Hinglish -->
@@ -207,6 +210,33 @@
                     </div>
                     <button type="button" id="createGroupBtn" class="group-btn-primary" disabled>Create Group</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tag Items Modal (Dhiraj-only) -->
+    <div id="tagItemsModal" class="groups-modal hidden">
+        <div class="groups-modal-card">
+            <div class="groups-modal-header">
+                <h3>Tag Items</h3>
+                <button type="button" class="groups-modal-close" id="tagItemsModalClose" aria-label="Close">✕</button>
+            </div>
+            <div class="groups-modal-body">
+                <div class="tag-progress-strip">
+                    <span class="tag-progress-label" id="tagProgressLabel">Loading…</span>
+                    <div class="tag-progress-track"><div class="tag-progress-fill" id="tagProgressFill"></div></div>
+                    <span class="tag-progress-label" id="tagProgressLeftLabel"></span>
+                </div>
+
+                <p class="groups-section-label">Needs Tagging</p>
+                <p class="section-sub">Every item ever sold that doesn't have a category yet — tap a category to assign it</p>
+                <div id="needsTaggingList"></div>
+
+                <hr class="groups-divider">
+
+                <p class="groups-section-label">Already Tagged</p>
+                <p class="section-sub">Tap "Change" to move an item to a different category</p>
+                <div id="alreadyTaggedList"></div>
             </div>
         </div>
     </div>

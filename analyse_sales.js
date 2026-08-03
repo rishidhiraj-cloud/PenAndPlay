@@ -224,6 +224,14 @@ const newGroupPickerList = document.getElementById('newGroupPickerList');
 const newGroupSelectedLabel = document.getElementById('newGroupSelectedLabel');
 const newGroupSelectedChips = document.getElementById('newGroupSelectedChips');
 const createGroupBtn = document.getElementById('createGroupBtn');
+const tagItemsBtn = document.getElementById('tagItemsBtn');
+const tagItemsModal = document.getElementById('tagItemsModal');
+const tagItemsModalClose = document.getElementById('tagItemsModalClose');
+const needsTaggingList = document.getElementById('needsTaggingList');
+const alreadyTaggedList = document.getElementById('alreadyTaggedList');
+const tagProgressLabel = document.getElementById('tagProgressLabel');
+const tagProgressFill = document.getElementById('tagProgressFill');
+const tagProgressLeftLabel = document.getElementById('tagProgressLeftLabel');
 
 let currentPeriod = 'till-date';
 let currentStats = null;
@@ -870,6 +878,155 @@ function initManageGroupsButton() {
     if (createGroupBtn) createGroupBtn.addEventListener('click', handleCreateOrAddGroup);
 }
 
+// ============================================================
+// Tag Items (Dhiraj-only)
+// ============================================================
+
+// All-time clusters (every item ever sold, correctly merged/renamed) —
+// the same clustering pipeline used everywhere else on the page, just
+// run over the full history instead of the currently selected period.
+// This guarantees the tagging list's item identity can never drift from
+// what Insights actually displays.
+async function fetchAllTimeClusters() {
+    const allRows = await fetchSalesData('till-date');
+    return clusterItems(allRows, synonymGroupRows);
+}
+
+function renderTagItemsModal(allTimeClusters) {
+    const needsTagging = allTimeClusters.filter(c => !itemCategories.has(c.display));
+    const alreadyTagged = allTimeClusters.filter(c => itemCategories.has(c.display));
+
+    const total = allTimeClusters.length;
+    const taggedCount = alreadyTagged.length;
+    tagProgressLabel.textContent = `${taggedCount} of ${total} items tagged`;
+    tagProgressFill.style.width = total > 0 ? `${Math.round((taggedCount / total) * 100)}%` : '0%';
+    tagProgressLeftLabel.textContent = `${total - taggedCount} left`;
+
+    needsTaggingList.innerHTML = needsTagging.length
+        ? needsTagging.map(c => `
+            <div class="tag-row">
+                <div class="tag-row-item">
+                    <span class="tag-row-name">${escapeHtml(c.display)}</span>
+                    <span class="tag-row-count">${c.count} sale${c.count === 1 ? '' : 's'} all-time</span>
+                </div>
+                <div class="tag-btn-group">
+                    ${CATEGORIES.map(cat => `<button type="button" class="tag-btn ${cat.toLowerCase()}" data-tag="${escapeHtml(c.display)}" data-category="${cat}">${cat}</button>`).join('')}
+                </div>
+            </div>
+        `).join('')
+        : '<div class="empty-state">Everything is tagged — nice work.</div>';
+
+    alreadyTaggedList.innerHTML = alreadyTagged.length
+        ? alreadyTagged.map(c => {
+            const cat = itemCategories.get(c.display);
+            return `
+                <div class="tagged-row">
+                    <div class="tagged-row-item">
+                        <span class="tagged-row-name">${escapeHtml(c.display)}</span>
+                        <span class="tagged-row-count">${c.count} sale${c.count === 1 ? '' : 's'}</span>
+                    </div>
+                    <div class="tagged-row-actions">
+                        <span class="category-badge ${cat.toLowerCase()}">${escapeHtml(cat)}</span>
+                        <button type="button" class="change-link" data-change="${escapeHtml(c.display)}">Change</button>
+                    </div>
+                </div>
+            `;
+        }).join('')
+        : '<div class="empty-state">Nothing tagged yet.</div>';
+
+    wireTagItemsEvents();
+}
+
+function wireTagItemsEvents() {
+    needsTaggingList.querySelectorAll('[data-tag]').forEach(btn => {
+        btn.addEventListener('click', () => handleTagItem(btn.dataset.tag, btn.dataset.category));
+    });
+    alreadyTaggedList.querySelectorAll('[data-change]').forEach(btn => {
+        btn.addEventListener('click', () => enterChangeMode(btn));
+    });
+}
+
+// Replaces an already-tagged row's badge with the same 4-button picker,
+// inline, so re-tagging uses the identical interaction as first-time
+// tagging rather than a separate flow. Takes the clicked button directly
+// (not a selector lookup by item name) so item names containing special
+// characters never need escaping for a CSS attribute-selector query.
+function enterChangeMode(changeBtn) {
+    const itemName = changeBtn.dataset.change;
+    const row = changeBtn.closest('.tagged-row');
+    if (!row) return;
+    const actions = row.querySelector('.tagged-row-actions');
+    actions.innerHTML = `
+        <div class="tag-btn-group">
+            ${CATEGORIES.map(cat => `<button type="button" class="tag-btn ${cat.toLowerCase()}" data-tag="${escapeHtml(itemName)}" data-category="${cat}">${cat}</button>`).join('')}
+        </div>
+    `;
+    actions.querySelectorAll('[data-tag]').forEach(btn => {
+        btn.addEventListener('click', () => handleTagItem(btn.dataset.tag, btn.dataset.category));
+    });
+}
+
+async function handleTagItem(itemName, category) {
+    try {
+        const { error } = await supabaseClient
+            .from('item_categories')
+            .upsert({ item_name: itemName, category }, { onConflict: 'item_name' });
+        if (error) throw error;
+        await refreshTagItemsAndInsights();
+    } catch (err) {
+        console.error('Error tagging item:', err);
+        alert('Failed to tag item: ' + err.message);
+    }
+}
+
+// Re-fetch categories + all-time clusters, then refresh both the modal's
+// own lists and the underlying Insights page (category charts) so any
+// change is visible immediately without a page reload.
+async function refreshTagItemsAndInsights() {
+    itemCategories = await fetchItemCategories();
+    const allTimeClusters = await fetchAllTimeClusters();
+    renderTagItemsModal(allTimeClusters);
+    await loadAndRender();
+}
+
+async function openTagItemsModal() {
+    tagItemsModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    needsTaggingList.innerHTML = '<div class="loading-spinner">Loading…</div>';
+    alreadyTaggedList.innerHTML = '';
+    try {
+        const allTimeClusters = await fetchAllTimeClusters();
+        renderTagItemsModal(allTimeClusters);
+    } catch (err) {
+        console.error('Error opening tag items modal:', err);
+        needsTaggingList.innerHTML = `<div class="empty-state">Could not load items: ${escapeHtml(err.message)}</div>`;
+    }
+}
+
+function closeTagItemsModal() {
+    tagItemsModal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function initTagItemsButton() {
+    const isDhiraj = window.washiAuth && window.washiAuth.getUsername() === 'Dhiraj';
+    if (isDhiraj && tagItemsBtn) {
+        tagItemsBtn.classList.remove('hidden');
+        tagItemsBtn.addEventListener('click', openTagItemsModal);
+    }
+    if (tagItemsModalClose) tagItemsModalClose.addEventListener('click', closeTagItemsModal);
+    if (tagItemsModal) {
+        tagItemsModal.addEventListener('click', (e) => {
+            if (e.target === tagItemsModal) closeTagItemsModal();
+        });
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && tagItemsModal && !tagItemsModal.classList.contains('hidden')) {
+            closeTagItemsModal();
+        }
+    });
+}
+
 // Dark Mode
 function initDarkMode() {
     const isDark = localStorage.getItem('darkMode') === 'true';
@@ -910,6 +1067,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     darkModeToggle.addEventListener('click', toggleDarkMode);
     initPeriodToggle();
     initManageGroupsButton();
+    initTagItemsButton();
     try {
         synonymGroupRows = await fetchItemSynonymGroups();
     } catch (err) {
