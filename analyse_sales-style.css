@@ -2,6 +2,16 @@
    WASHI — Analyse Sales Page
    ───────────────────────────────────────────── */
 
+/* ─── Category charts: gold accent (page-scoped token) ──── */
+:root {
+    --gold: #B4842E;
+    --gold-light: rgba(180, 132, 46, 0.12);
+}
+body.dark-mode {
+    --gold: #D4A857;
+    --gold-light: rgba(212, 168, 87, 0.14);
+}
+
 #loadErrorMsg.hidden { display: none; }
 
 /* ─── Period Toggle ────────────────────────── */
