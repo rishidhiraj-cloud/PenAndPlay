@@ -64,12 +64,6 @@ function singularItem(s) {
     return s;
 }
 
-const SYNONYM_GROUPS = [
-    ['print', 'p out'],
-    ['rapping', 'packing', 'gift packing'],
-    ['stationery', 'stat'],
-];
-
 // Ratcliff/Obershelp similarity ratio — matches Python's difflib.SequenceMatcher.ratio()
 function similarityRatio(a, b) {
     function findLongestMatch(aStr, bStr) {
@@ -101,8 +95,10 @@ function similarityRatio(a, b) {
 }
 
 // rows: sales_log rows for the current period.
+// synonymGroupRows: raw item_synonym_groups rows ({ canonical_name, variant_spelling }),
+//   fetched once per page load via fetchItemSynonymGroups().
 // Returns: [{ display, count, revenue, variants: string[], manual: boolean }]
-function clusterItems(rows) {
+function clusterItems(rows, synonymGroupRows) {
     const rawByNorm = new Map();
     rows.forEach(r => {
         const norm = normalizeItem(r.item);
@@ -143,32 +139,33 @@ function clusterItems(rows) {
         }
     }
 
-    // Snapshot Layer-1-only roots before the synonym pass, so we can tell
-    // afterward which final clusters exist ONLY because of a manual merge.
-    const layer1Root = new Map();
-    norms.forEach(n => layer1Root.set(n, find(n)));
+    // Group the flat item_synonym_groups rows into { canonical_name -> [variant_spelling, ...] }.
+    const synonymGroups = new Map();
+    (synonymGroupRows || []).forEach(row => {
+        if (!synonymGroups.has(row.canonical_name)) synonymGroups.set(row.canonical_name, []);
+        synonymGroups.get(row.canonical_name).push(row.variant_spelling);
+    });
 
-    // Match via compactItem, not an exact string/Map-key lookup: normalizeItem
-    // strips periods without inserting a space, so "P.Out" -> "pout" while
-    // "P out"/"P. Out" -> "p out" — an exact match against the literal 'p out'
-    // silently failed to merge "Print"+"P.Out" whenever no space-containing
-    // variant happened to already exist in the data. Comparing compact forms
-    // makes the merge robust to whichever punctuation variant is present.
-    SYNONYM_GROUPS.forEach(group => {
-        const groupCompacts = group.map(compactItem);
+    // Match via compactItem(normalizeItem(...)) on BOTH sides, not an exact
+    // string comparison — a stored variant_spelling keeps its natural
+    // casing/punctuation (e.g. "P.Out") for display in the management UI,
+    // so it must be normalized the same way diary text is before comparing.
+    // This is the same fix that was required for the old hardcoded
+    // SYNONYM_GROUPS array (Print/P.Out only merged once compared via
+    // compactItem instead of an exact literal match).
+    //
+    // Each manual group also carries a canonical display-name override
+    // (canonicalOverride), applied after clustering below — this is how a
+    // Dhiraj-managed group controls exactly what name Insights shows,
+    // instead of falling back to whichever raw spelling occurred most.
+    const canonicalOverride = new Map();
+    synonymGroups.forEach((variants, canonicalName) => {
+        const groupCompacts = variants.map(v => compactItem(normalizeItem(v)));
         const present = norms.filter(n => groupCompacts.includes(compactItem(n)));
         for (let k = 1; k < present.length; k++) union(present[k], present[0]);
-    });
-
-    const finalRootToLayer1Roots = new Map();
-    norms.forEach(n => {
-        const finalRoot = find(n);
-        if (!finalRootToLayer1Roots.has(finalRoot)) finalRootToLayer1Roots.set(finalRoot, new Set());
-        finalRootToLayer1Roots.get(finalRoot).add(layer1Root.get(n));
-    });
-    const manualRoots = new Set();
-    finalRootToLayer1Roots.forEach((l1roots, finalRoot) => {
-        if (l1roots.size > 1) manualRoots.add(finalRoot);
+        if (present.length > 0) {
+            canonicalOverride.set(find(present[0]), canonicalName);
+        }
     });
 
     const clusters = new Map();
@@ -187,9 +184,10 @@ function clusterItems(rows) {
         });
         let display = '', maxCount = -1;
         rawCounts.forEach((count, raw) => { if (count > maxCount) { maxCount = count; display = raw; } });
+        if (canonicalOverride.has(root)) display = canonicalOverride.get(root);
         const variants = Array.from(rawCounts.keys()).filter(r => r !== display);
         const revenue = clusterRows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
-        result.push({ display, count: clusterRows.length, revenue, variants, manual: manualRoots.has(root) });
+        result.push({ display, count: clusterRows.length, revenue, variants, manual: canonicalOverride.has(root) });
     });
 
     return result;
@@ -219,6 +217,7 @@ let currentStats = null;
 let dailyTrendChart = null;
 let topRevenueChart = null;
 let topQuantityChart = null;
+let synonymGroupRows = [];
 
 // ----- Data fetch -----
 async function fetchSalesData(period) {
@@ -235,6 +234,33 @@ async function fetchSalesData(period) {
     const { data, error } = await query;
     if (error) throw error;
     return data || [];
+}
+
+// All item_synonym_groups rows, fetched once per page load — the manual
+// merge/rename layer that used to be the hardcoded SYNONYM_GROUPS array.
+async function fetchItemSynonymGroups() {
+    const { data, error } = await supabaseClient
+        .from('item_synonym_groups')
+        .select('*')
+        .order('canonical_name', { ascending: true });
+    if (error) throw error;
+    return data || [];
+}
+
+// All-time (not period-scoped) distinct item spellings with their raw
+// occurrence counts — used by the Manage Item Groups modal's spelling
+// picker and existing-group count subtitles. Independent of the page's
+// Till Date / Viewing Month toggle since group management is a global
+// configuration action, not scoped to whatever period is being viewed.
+async function fetchAllTimeItemCounts() {
+    const { data, error } = await supabaseClient.from('sales_log').select('item');
+    if (error) throw error;
+    const counts = new Map();
+    (data || []).forEach(r => {
+        const raw = r.item.trim();
+        counts.set(raw, (counts.get(raw) || 0) + 1);
+    });
+    return counts;
 }
 
 // ----- Stats -----
@@ -358,7 +384,7 @@ async function loadAndRender() {
     updatePeriodContext();
     try {
         const rows = await fetchSalesData(currentPeriod);
-        const clusters = clusterItems(rows);
+        const clusters = clusterItems(rows, synonymGroupRows);
         currentStats = computeStats(rows, clusters);
 
         renderKpis(currentStats);
@@ -497,10 +523,16 @@ function initBurgerMenu() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initBurgerMenu();
     initDarkMode();
     darkModeToggle.addEventListener('click', toggleDarkMode);
     initPeriodToggle();
+    try {
+        synonymGroupRows = await fetchItemSynonymGroups();
+    } catch (err) {
+        console.error('Failed to load item synonym groups:', err);
+        synonymGroupRows = [];
+    }
     loadAndRender();
 });
