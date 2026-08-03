@@ -370,13 +370,16 @@ async function loadSalesLogHistory() {
 }
 
 // Display Sales Log history — one row per date, with a View button for that day's items.
-// Entries are permanent once saved: no edit or delete.
+// Entries are permanent once saved: no edit, except Dhiraj can delete a
+// whole day's log (all rows for that entry_date) after confirmation.
 function displaySalesLog(entries) {
     const byDate = new Map();
     entries.forEach(entry => {
         if (!byDate.has(entry.entry_date)) byDate.set(entry.entry_date, []);
         byDate.get(entry.entry_date).push(entry);
     });
+
+    const canDelete = window.washiAuth && window.washiAuth.getUsername() === 'Dhiraj';
 
     const dayRowsHTML = Array.from(byDate.entries()).map(([entryDate, dayEntries]) => {
         const date = new Date(entryDate).toLocaleDateString('en-US', {
@@ -391,6 +394,7 @@ function displaySalesLog(entries) {
                 <div class="sales-day-date">${date}</div>
                 <div class="sales-day-count">Items Sold: ${dayEntries.length}</div>
                 <button type="button" class="view-day-btn" data-date="${entryDate}">View</button>
+                ${canDelete ? `<button type="button" class="delete-day-btn" data-date="${entryDate}">Delete</button>` : ''}
             </div>
         `;
     }).join('');
@@ -400,6 +404,35 @@ function displaySalesLog(entries) {
     salesLogHistoryEl.querySelectorAll('.view-day-btn').forEach(btn => {
         btn.addEventListener('click', () => openDayModal(btn.dataset.date, byDate.get(btn.dataset.date)));
     });
+    salesLogHistoryEl.querySelectorAll('.delete-day-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteSalesLogDay(btn.dataset.date, byDate.get(btn.dataset.date).length));
+    });
+}
+
+// Delete an entire day's sales log (Dhiraj-only; the Delete button is only
+// rendered for Dhiraj, but this check is defense-in-depth against someone
+// calling the function directly from the console).
+async function deleteSalesLogDay(entryDate, itemCount) {
+    if (!window.washiAuth || window.washiAuth.getUsername() !== 'Dhiraj') return;
+
+    const dateLabel = new Date(entryDate).toLocaleDateString('en-US', {
+        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'
+    });
+    if (!confirm(`Delete all ${itemCount} item(s) logged for ${dateLabel}? This cannot be undone.`)) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('sales_log')
+            .delete()
+            .eq('entry_date', entryDate);
+
+        if (error) throw error;
+
+        await loadSalesLogHistory();
+    } catch (err) {
+        console.error('Error deleting sales log day:', err);
+        alert('Failed to delete this day\'s log: ' + err.message);
+    }
 }
 
 // ----- Day View Modal -----
