@@ -290,6 +290,18 @@ textarea:focus { outline: none; border-color: var(--ink); }
     vertical-align: middle;
 }
 
+/* ─── Expense Actions Row ─────────────────── */
+.expense-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 5px;
+}
+.expense-actions .reimburse-btn,
+.expense-actions .delete-btn {
+    margin-top: 0;
+}
+
 /* ─── Reimburse Button ────────────────────── */
 .reimburse-btn {
     font-family: var(--mono);

@@ -471,6 +471,8 @@ function displayExpenses(expenses) {
     // Update total expense display
     totalExpenseEl.textContent = `₹${formatIndianNumber(totalExpense)}`;
 
+    const canDelete = window.washiAuth && window.washiAuth.getUsername() === 'Dhiraj';
+
     const expensesHTML = expenses.map(expense => {
         const date = new Date(expense.expense_date).toLocaleDateString('en-US', {
             weekday: 'short',
@@ -485,6 +487,13 @@ function displayExpenses(expenses) {
                 Reimbursed
                </span>`
             : '';
+
+        const showReimburseBtn = expense.paid_from === 'Self' && !expense.reimbursed;
+        const actionsHtml = (showReimburseBtn || canDelete) ? `
+                <div class="expense-actions">
+                    ${showReimburseBtn ? `<button class="reimburse-btn" onclick="markAsReimbursed('${expense.id}')">Mark as Reimbursed</button>` : ''}
+                    ${canDelete ? `<button class="delete-btn" onclick="deleteExpense('${expense.id}')">Delete</button>` : ''}
+                </div>` : '';
 
         return `
             <div class="expense-item${expense.reimbursed ? ' expense-item--reimbursed' : ''}">
@@ -524,9 +533,7 @@ function displayExpenses(expenses) {
                     </div>`;
                     })() : ''}
                 </div>
-                ${expense.paid_from === 'Self' && !expense.reimbursed ? `
-                    <button class="reimburse-btn" onclick="markAsReimbursed('${expense.id}')">Mark as Reimbursed</button>
-                ` : ''}
+                ${actionsHtml}
             </div>
         `;
     }).join('');
@@ -635,6 +642,54 @@ window.markAsReimbursed = async function(expenseId) {
         alert('Failed to mark as reimbursed. Error: ' + err.message + '. Please run the migration SQL in Supabase first.');
     }
 }
+
+// Delete Expense (Dhiraj-only; the Delete button is only rendered for
+// Dhiraj, but this check is defense-in-depth against someone calling the
+// function directly from the console).
+window.deleteExpense = async function(expenseId) {
+    if (!window.washiAuth || window.washiAuth.getUsername() !== 'Dhiraj') return;
+    if (!confirm('Delete this expense? This cannot be undone.')) return;
+
+    console.log('deleteExpense called with ID:', expenseId);
+
+    try {
+        // Best-effort cleanup of any attached receipt image(s) in Storage
+        // before deleting the row, so we know the file name(s) to remove.
+        const { data: expense, error: fetchError } = await supabaseClient
+            .from('expenses')
+            .select('receipt_url')
+            .eq('id', expenseId)
+            .single();
+
+        if (!fetchError && expense && expense.receipt_url) {
+            let urls;
+            try {
+                urls = JSON.parse(expense.receipt_url);
+                if (!Array.isArray(urls)) urls = [expense.receipt_url];
+            } catch {
+                urls = [expense.receipt_url];
+            }
+            const fileNames = urls.map(u => u.split('/receipts/').pop()).filter(Boolean);
+            if (fileNames.length) {
+                const { error: rmErr } = await supabaseClient.storage.from('receipts').remove(fileNames);
+                if (rmErr) console.warn('Receipt cleanup error:', rmErr);
+            }
+        }
+
+        const { error } = await supabaseClient
+            .from('expenses')
+            .delete()
+            .eq('id', expenseId);
+
+        if (error) throw error;
+
+        showStatusMessage('Expense deleted.', 'success');
+        loadExpenseHistory();
+    } catch (err) {
+        console.error('Error deleting expense:', err);
+        alert('Failed to delete expense: ' + err.message);
+    }
+};
 
 // Dark Mode
 function initDarkMode() {
