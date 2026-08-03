@@ -55,17 +55,19 @@ regression:
 
 | canonical_name | variant_spelling |
 |---|---|
-| Print | print |
-| Print | p out |
-| Gift Wrapping | rapping |
-| Gift Wrapping | packing |
-| Gift Wrapping | gift packing |
-| Stationery | stationery |
-| Stationery | stat |
+| Print | Print |
+| Print | P.Out |
+| Gift Wrapping | Rapping |
+| Gift Wrapping | Packing |
+| Gift Wrapping | Gift Packing |
+| Stationery | Stationery |
+| Stationery | Stat. |
 
-(Seed values are lowercase/normalized form, matching how `SYNONYM_GROUPS`
-stored them today — matching in `clusterItems()` is punctuation/case
-insensitive regardless, per the existing `compactItem` comparison.)
+(Seed values keep their natural casing/punctuation — not pre-normalized —
+so they display nicely as chips in the management UI. Matching in
+`clusterItems()` is punctuation/case insensitive regardless, via
+`compactItem(normalizeItem(...))` on both sides, so exact stored casing
+never affects merge behavior, only display.)
 
 ## Integration into `clusterItems()`
 
