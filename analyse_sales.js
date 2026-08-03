@@ -926,7 +926,7 @@ function renderTagItemsModal(allTimeClusters) {
                         <span class="tagged-row-count">${c.count} sale${c.count === 1 ? '' : 's'}</span>
                     </div>
                     <div class="tagged-row-actions">
-                        <span class="category-badge ${cat.toLowerCase()}">${escapeHtml(cat)}</span>
+                        <span class="category-badge ${escapeHtml(cat.toLowerCase())}">${escapeHtml(cat)}</span>
                         <button type="button" class="change-link" data-change="${escapeHtml(c.display)}">Change</button>
                     </div>
                 </div>
