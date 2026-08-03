@@ -212,12 +212,28 @@ const bottomTableBodyEl = document.getElementById('bottomTableBody');
 const askForm = document.getElementById('askForm');
 const askChips = document.querySelectorAll('.ask-chip');
 
+const manageGroupsBtn = document.getElementById('manageGroupsBtn');
+const groupsModal = document.getElementById('groupsModal');
+const groupsModalClose = document.getElementById('groupsModalClose');
+const existingGroupsList = document.getElementById('existingGroupsList');
+const createGroupLabel = document.getElementById('createGroupLabel');
+const cancelAddToGroupBtn = document.getElementById('cancelAddToGroupBtn');
+const newGroupName = document.getElementById('newGroupName');
+const newGroupPickerSearch = document.getElementById('newGroupPickerSearch');
+const newGroupPickerList = document.getElementById('newGroupPickerList');
+const newGroupSelectedLabel = document.getElementById('newGroupSelectedLabel');
+const newGroupSelectedChips = document.getElementById('newGroupSelectedChips');
+const createGroupBtn = document.getElementById('createGroupBtn');
+
 let currentPeriod = 'till-date';
 let currentStats = null;
 let dailyTrendChart = null;
 let topRevenueChart = null;
 let topQuantityChart = null;
 let synonymGroupRows = [];
+let allTimeItemCounts = null;              // Map<rawSpelling, count>, lazily fetched on first modal open
+let addToGroupMode = null;                 // canonical_name string when adding to an existing group, else null
+let selectedNewGroupSpellings = new Set(); // spellings currently selected in the picker
 
 // ----- Data fetch -----
 async function fetchSalesData(period) {
@@ -489,6 +505,306 @@ askChips.forEach(chip => {
     });
 });
 
+// ============================================================
+// Manage Item Groups (Dhiraj-only)
+// ============================================================
+
+// Sum the all-time occurrence count of every raw diary spelling that
+// normalizes to the same form as `variantSpelling` — keeps the modal's
+// counts consistent with clusterItems()'s own matching logic, regardless
+// of exact casing/punctuation differences between a stored variant and
+// however it happens to appear in the diary.
+function countForVariant(variantSpelling) {
+    const target = compactItem(normalizeItem(variantSpelling));
+    let total = 0;
+    allTimeItemCounts.forEach((count, raw) => {
+        if (compactItem(normalizeItem(raw)) === target) total += count;
+    });
+    return total;
+}
+
+// Group the flat synonymGroupRows into { canonical_name -> [row, ...] }
+function groupedSynonymRows() {
+    const map = new Map();
+    synonymGroupRows.forEach(row => {
+        if (!map.has(row.canonical_name)) map.set(row.canonical_name, []);
+        map.get(row.canonical_name).push(row);
+    });
+    return map;
+}
+
+function renderExistingGroups() {
+    const groups = groupedSynonymRows();
+    if (groups.size === 0) {
+        existingGroupsList.innerHTML = '<div class="empty-state">No groups yet — create one below.</div>';
+        return;
+    }
+    const cardsHtml = Array.from(groups.entries()).map(([canonicalName, variantRows]) => {
+        const totalCount = variantRows.reduce((s, v) => s + countForVariant(v.variant_spelling), 0);
+        const chipsHtml = variantRows.map(v => `
+            <span class="chip">
+                ${escapeHtml(v.variant_spelling)} <span class="chip-count">(${countForVariant(v.variant_spelling)})</span>
+                <span class="chip-x" data-remove-row-id="${v.id}" title="Remove this spelling">✕</span>
+            </span>
+        `).join('');
+        return `
+            <div class="group-card">
+                <div class="group-card-top">
+                    <div class="group-name-row">
+                        <span class="group-name">${escapeHtml(canonicalName)}</span>
+                        <span class="group-count">${totalCount} sale${totalCount === 1 ? '' : 's'} across ${variantRows.length} spelling${variantRows.length === 1 ? '' : 's'}</span>
+                    </div>
+                    <div class="group-actions">
+                        <button type="button" class="group-icon-btn" data-rename="${escapeHtml(canonicalName)}">Rename</button>
+                        <button type="button" class="group-icon-btn danger" data-delete-group="${escapeHtml(canonicalName)}">Delete Group</button>
+                    </div>
+                </div>
+                <div class="variant-chips">
+                    ${chipsHtml}
+                    <button type="button" class="chip-add" data-add-to-group="${escapeHtml(canonicalName)}">+ Add spelling</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    existingGroupsList.innerHTML = cardsHtml;
+    wireExistingGroupsEvents();
+}
+
+// Renders the shared spelling picker used by both "Create New Group" and
+// "Add spelling to existing group" mode. Excludes spellings already
+// selected in this session and (in add-to-group mode) spellings already
+// present in the target group.
+function renderSpellingPicker() {
+    const query = normalizeItem(newGroupPickerSearch.value || '');
+    const alreadyInTargetGroup = addToGroupMode
+        ? new Set((groupedSynonymRows().get(addToGroupMode) || []).map(v => compactItem(normalizeItem(v.variant_spelling))))
+        : new Set();
+
+    const entries = Array.from(allTimeItemCounts.entries())
+        .filter(([raw]) => !query || normalizeItem(raw).includes(query))
+        .filter(([raw]) => !alreadyInTargetGroup.has(compactItem(normalizeItem(raw))))
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 50);
+
+    newGroupPickerList.innerHTML = entries.length
+        ? entries.map(([raw, count]) => `
+            <div class="picker-item${selectedNewGroupSpellings.has(raw) ? ' selected' : ''}" data-spelling="${escapeHtml(raw)}">
+                <span class="picker-item-name">${escapeHtml(raw)}</span>
+                <span class="picker-item-count">${count} sale${count === 1 ? '' : 's'}</span>
+            </div>
+        `).join('')
+        : '<div class="picker-item"><span class="picker-item-name">No matches</span></div>';
+
+    newGroupPickerList.querySelectorAll('.picker-item[data-spelling]').forEach(item => {
+        item.addEventListener('click', () => {
+            const spelling = item.dataset.spelling;
+            if (selectedNewGroupSpellings.has(spelling)) selectedNewGroupSpellings.delete(spelling);
+            else selectedNewGroupSpellings.add(spelling);
+            renderSpellingPicker();
+            renderSelectedPreview();
+            updateCreateGroupButtonState();
+        });
+    });
+}
+
+function renderSelectedPreview() {
+    const selected = Array.from(selectedNewGroupSpellings);
+    newGroupSelectedLabel.textContent = `Selected (${selected.length})`;
+    newGroupSelectedChips.innerHTML = selected.map(spelling => `
+        <span class="chip">
+            ${escapeHtml(spelling)} <span class="chip-count">(${countForVariant(spelling)})</span>
+            <span class="chip-x" data-deselect="${escapeHtml(spelling)}">✕</span>
+        </span>
+    `).join('');
+    newGroupSelectedChips.querySelectorAll('.chip-x[data-deselect]').forEach(x => {
+        x.addEventListener('click', () => {
+            selectedNewGroupSpellings.delete(x.dataset.deselect);
+            renderSpellingPicker();
+            renderSelectedPreview();
+            updateCreateGroupButtonState();
+        });
+    });
+}
+
+function updateCreateGroupButtonState() {
+    const hasName = addToGroupMode ? true : newGroupName.value.trim().length > 0;
+    createGroupBtn.disabled = !hasName || selectedNewGroupSpellings.size === 0;
+}
+
+function enterAddToGroupMode(canonicalName) {
+    addToGroupMode = canonicalName;
+    selectedNewGroupSpellings = new Set();
+    createGroupLabel.textContent = `Add Spelling to "${canonicalName}"`;
+    newGroupName.value = canonicalName;
+    newGroupName.disabled = true;
+    cancelAddToGroupBtn.classList.remove('hidden');
+    createGroupBtn.textContent = 'Add Spelling(s)';
+    newGroupPickerSearch.value = '';
+    renderSpellingPicker();
+    renderSelectedPreview();
+    updateCreateGroupButtonState();
+    createGroupLabel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function exitAddToGroupMode() {
+    addToGroupMode = null;
+    selectedNewGroupSpellings = new Set();
+    createGroupLabel.textContent = 'Create New Group';
+    newGroupName.value = '';
+    newGroupName.disabled = false;
+    cancelAddToGroupBtn.classList.add('hidden');
+    createGroupBtn.textContent = 'Create Group';
+    newGroupPickerSearch.value = '';
+    renderSpellingPicker();
+    renderSelectedPreview();
+    updateCreateGroupButtonState();
+}
+
+function wireExistingGroupsEvents() {
+    existingGroupsList.querySelectorAll('[data-rename]').forEach(btn => {
+        btn.addEventListener('click', () => handleRenameGroup(btn.dataset.rename));
+    });
+    existingGroupsList.querySelectorAll('[data-delete-group]').forEach(btn => {
+        btn.addEventListener('click', () => handleDeleteGroup(btn.dataset.deleteGroup));
+    });
+    existingGroupsList.querySelectorAll('[data-remove-row-id]').forEach(x => {
+        x.addEventListener('click', () => handleRemoveVariant(x.dataset.removeRowId));
+    });
+    existingGroupsList.querySelectorAll('[data-add-to-group]').forEach(btn => {
+        btn.addEventListener('click', () => enterAddToGroupMode(btn.dataset.addToGroup));
+    });
+}
+
+function handleRenameGroup(canonicalName) {
+    const newName = prompt('Enter new group name:', canonicalName);
+    if (!newName || newName.trim() === '') return;
+    if (newName.trim() === canonicalName) return;
+    renameGroup(canonicalName, newName.trim());
+}
+
+async function renameGroup(oldName, newName) {
+    try {
+        const { error } = await supabaseClient
+            .from('item_synonym_groups')
+            .update({ canonical_name: newName })
+            .eq('canonical_name', oldName);
+        if (error) throw error;
+        await refreshGroupsAndInsights();
+    } catch (err) {
+        console.error('Error renaming group:', err);
+        alert('Failed to rename group: ' + err.message);
+    }
+}
+
+async function handleDeleteGroup(canonicalName) {
+    if (!confirm(`Delete the "${canonicalName}" group? Its spellings will no longer be merged/renamed. This cannot be undone.`)) return;
+    try {
+        const { error } = await supabaseClient
+            .from('item_synonym_groups')
+            .delete()
+            .eq('canonical_name', canonicalName);
+        if (error) throw error;
+        if (addToGroupMode === canonicalName) exitAddToGroupMode();
+        await refreshGroupsAndInsights();
+    } catch (err) {
+        console.error('Error deleting group:', err);
+        alert('Failed to delete group: ' + err.message);
+    }
+}
+
+async function handleRemoveVariant(rowId) {
+    if (!confirm('Remove this spelling from its group?')) return;
+    try {
+        const { error } = await supabaseClient
+            .from('item_synonym_groups')
+            .delete()
+            .eq('id', rowId);
+        if (error) throw error;
+        await refreshGroupsAndInsights();
+    } catch (err) {
+        console.error('Error removing variant:', err);
+        alert('Failed to remove this spelling: ' + err.message);
+    }
+}
+
+async function handleCreateOrAddGroup() {
+    const canonicalName = addToGroupMode || newGroupName.value.trim();
+    const spellings = Array.from(selectedNewGroupSpellings);
+    if (!canonicalName || spellings.length === 0) return;
+
+    const wasAddMode = !!addToGroupMode;
+    createGroupBtn.disabled = true;
+    createGroupBtn.textContent = 'Saving…';
+
+    try {
+        const rowsToInsert = spellings.map(variant_spelling => ({ canonical_name: canonicalName, variant_spelling }));
+        const { error } = await supabaseClient.from('item_synonym_groups').insert(rowsToInsert);
+        if (error) throw error;
+
+        exitAddToGroupMode();
+        await refreshGroupsAndInsights();
+    } catch (err) {
+        console.error('Error saving group:', err);
+        alert('Failed to save: ' + err.message);
+        createGroupBtn.textContent = wasAddMode ? 'Add Spelling(s)' : 'Create Group';
+        createGroupBtn.disabled = false;
+    }
+}
+
+// Re-fetch synonym groups + all-time counts, then refresh both the modal's
+// own lists and the underlying Insights page (KPIs/charts/table) so any
+// change is visible immediately without a page reload.
+async function refreshGroupsAndInsights() {
+    synonymGroupRows = await fetchItemSynonymGroups();
+    allTimeItemCounts = await fetchAllTimeItemCounts();
+    renderExistingGroups();
+    renderSpellingPicker();
+    renderSelectedPreview();
+    await loadAndRender();
+}
+
+async function openGroupsModal() {
+    groupsModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    existingGroupsList.innerHTML = '<div class="loading-spinner">Loading…</div>';
+    try {
+        if (!allTimeItemCounts) allTimeItemCounts = await fetchAllTimeItemCounts();
+        exitAddToGroupMode();
+        renderExistingGroups();
+    } catch (err) {
+        console.error('Error opening groups modal:', err);
+        existingGroupsList.innerHTML = `<div class="empty-state">Could not load groups: ${escapeHtml(err.message)}</div>`;
+    }
+}
+
+function closeGroupsModal() {
+    groupsModal.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+function initManageGroupsButton() {
+    const isDhiraj = window.washiAuth && window.washiAuth.getUsername() === 'Dhiraj';
+    if (isDhiraj && manageGroupsBtn) {
+        manageGroupsBtn.classList.remove('hidden');
+        manageGroupsBtn.addEventListener('click', openGroupsModal);
+    }
+    if (groupsModalClose) groupsModalClose.addEventListener('click', closeGroupsModal);
+    if (groupsModal) {
+        groupsModal.addEventListener('click', (e) => {
+            if (e.target === groupsModal) closeGroupsModal();
+        });
+    }
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && groupsModal && !groupsModal.classList.contains('hidden')) {
+            closeGroupsModal();
+        }
+    });
+    if (newGroupPickerSearch) newGroupPickerSearch.addEventListener('input', renderSpellingPicker);
+    if (newGroupName) newGroupName.addEventListener('input', updateCreateGroupButtonState);
+    if (cancelAddToGroupBtn) cancelAddToGroupBtn.addEventListener('click', exitAddToGroupMode);
+    if (createGroupBtn) createGroupBtn.addEventListener('click', handleCreateOrAddGroup);
+}
+
 // Dark Mode
 function initDarkMode() {
     const isDark = localStorage.getItem('darkMode') === 'true';
@@ -528,6 +844,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initDarkMode();
     darkModeToggle.addEventListener('click', toggleDarkMode);
     initPeriodToggle();
+    initManageGroupsButton();
     try {
         synonymGroupRows = await fetchItemSynonymGroups();
     } catch (err) {

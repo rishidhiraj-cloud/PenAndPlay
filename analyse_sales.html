@@ -55,8 +55,11 @@
         </div>
 
         <main>
-            <div class="back-to-dashboard">
-                <a href="index.html">« Back To Dashboard</a>
+            <div class="back-to-dashboard-row">
+                <div class="back-to-dashboard">
+                    <a href="index.html">« Back To Dashboard</a>
+                </div>
+                <button type="button" id="manageGroupsBtn" class="manage-groups-link hidden">⚙ Manage Item Groups</button>
             </div>
 
             <!-- Ask in Hinglish -->
@@ -149,6 +152,45 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- Manage Item Groups Modal (Dhiraj-only) -->
+    <div id="groupsModal" class="groups-modal hidden">
+        <div class="groups-modal-card">
+            <div class="groups-modal-header">
+                <h3>Manage Item Groups</h3>
+                <button type="button" class="groups-modal-close" id="groupsModalClose" aria-label="Close">✕</button>
+            </div>
+            <div class="groups-modal-body">
+                <p class="groups-section-label">Existing Groups</p>
+                <div id="existingGroupsList"></div>
+
+                <hr class="groups-divider">
+
+                <p class="groups-section-label" id="createGroupLabel">Create New Group</p>
+                <div class="create-group-form">
+                    <div class="group-form-row group-name-field-row">
+                        <div>
+                            <label class="group-field-label" for="newGroupName">Display name</label>
+                            <input type="text" id="newGroupName" class="group-text-input" placeholder="e.g. Print">
+                        </div>
+                        <button type="button" id="cancelAddToGroupBtn" class="group-icon-btn hidden">Cancel</button>
+                    </div>
+                    <div class="group-form-row">
+                        <label class="group-field-label">Spellings to include</label>
+                        <div class="picker-box">
+                            <input type="text" id="newGroupPickerSearch" class="picker-search" placeholder="Search diary item spellings…">
+                            <div id="newGroupPickerList" class="picker-list"></div>
+                        </div>
+                        <div class="selected-preview">
+                            <label class="group-field-label" id="newGroupSelectedLabel">Selected (0)</label>
+                            <div id="newGroupSelectedChips" class="variant-chips"></div>
+                        </div>
+                    </div>
+                    <button type="button" id="createGroupBtn" class="group-btn-primary" disabled>Create Group</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Supabase SDK -->
