@@ -235,6 +235,11 @@ let allTimeItemCounts = null;              // Map<rawSpelling, count>, lazily fe
 let addToGroupMode = null;                 // canonical_name string when adding to an existing group, else null
 let selectedNewGroupSpellings = new Set(); // spellings currently selected in the picker
 
+const CATEGORIES = ['Stationery', 'Sports', 'Toys', 'Seasonal'];
+let itemCategories = new Map();     // Map<item_name (canonical display), category>
+let categoryQuantityChart = null;
+let categoryRevenueChart = null;
+
 // ----- Data fetch -----
 async function fetchSalesData(period) {
     let query = supabaseClient.from('sales_log').select('*').order('entry_date', { ascending: true });
@@ -277,6 +282,16 @@ async function fetchAllTimeItemCounts() {
         counts.set(raw, (counts.get(raw) || 0) + 1);
     });
     return counts;
+}
+
+// All item_categories rows, fetched once per page load — maps each
+// canonical/merged item name to one of the 4 fixed categories.
+async function fetchItemCategories() {
+    const { data, error } = await supabaseClient.from('item_categories').select('*');
+    if (error) throw error;
+    const map = new Map();
+    (data || []).forEach(r => map.set(r.item_name, r.category));
+    return map;
 }
 
 // ----- Stats -----
@@ -384,6 +399,52 @@ function renderBottomTable(bottomItems) {
     `).join('');
 }
 
+// Groups already-computed clusters by category (falling back to
+// "Uncategorized" for anything not yet tagged), summing quantity and
+// revenue per bucket. Pure re-grouping of data already in memory — no
+// separate fetch, so this respects whatever period is currently loaded.
+function bucketByCategory(clusters, categoryMap) {
+    const buckets = new Map();
+    CATEGORIES.concat(['Uncategorized']).forEach(cat => buckets.set(cat, { count: 0, revenue: 0 }));
+    clusters.forEach(c => {
+        const cat = categoryMap.get(c.display) || 'Uncategorized';
+        const bucket = buckets.get(cat);
+        bucket.count += c.count;
+        bucket.revenue += c.revenue;
+    });
+    return buckets;
+}
+
+function renderCategoryChart(canvasId, existingChart, buckets, valueKey, formatValue) {
+    if (existingChart) existingChart.destroy();
+    const canvas = document.getElementById(canvasId);
+    const labels = CATEGORIES.concat(['Uncategorized']);
+    const colors = [getCssVar('--blue'), getCssVar('--olive'), getCssVar('--red'), getCssVar('--gold'), getCssVar('--ink-faint')];
+    return new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                data: labels.map(l => buckets.get(l)[valueKey]),
+                backgroundColor: colors,
+                borderRadius: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: (item) => formatValue(item.raw) } }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: getCssVar('--rule') }, ticks: { color: getCssVar('--ink-faint') } },
+                x: { grid: { display: false }, ticks: { color: getCssVar('--ink-soft') } }
+            }
+        }
+    });
+}
+
 function updatePeriodContext() {
     if (currentPeriod === 'viewing-month') {
         const selectedMonth = getSelectedMonth();
@@ -408,6 +469,10 @@ async function loadAndRender() {
         topRevenueChart = renderTopChart('topRevenueCanvas', topRevenueChart, currentStats.byRevenue, getCssVar('--olive'), 'revenue', v => '₹' + formatIndianNumber(v));
         topQuantityChart = renderTopChart('topQuantityCanvas', topQuantityChart, currentStats.byQuantity, getCssVar('--blue'), 'count', v => v + '×');
         renderBottomTable(currentStats.bottomItems);
+
+        const categoryBuckets = bucketByCategory(clusters, itemCategories);
+        categoryQuantityChart = renderCategoryChart('categoryQuantityCanvas', categoryQuantityChart, categoryBuckets, 'count', v => v + '×');
+        categoryRevenueChart = renderCategoryChart('categoryRevenueCanvas', categoryRevenueChart, categoryBuckets, 'revenue', v => '₹' + formatIndianNumber(v));
     } catch (err) {
         console.error('❌ Error loading sales insights:', err);
         loadErrorMsgEl.textContent = 'Error loading sales data: ' + err.message;
@@ -850,6 +915,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
         console.error('Failed to load item synonym groups:', err);
         synonymGroupRows = [];
+    }
+    try {
+        itemCategories = await fetchItemCategories();
+    } catch (err) {
+        console.error('Failed to load item categories:', err);
+        itemCategories = new Map();
     }
     loadAndRender();
 });
