@@ -24,6 +24,7 @@
     --olive:         #7C8C5E;
     --olive-light:   rgba(124, 140, 94, 0.12);
     --blue:          #2E6DA4;
+    --blue-light:    rgba(46, 109, 164, 0.10);
     --rule:          rgba(28, 28, 30, 0.10);
     --rule-mid:      rgba(28, 28, 30, 0.18);
     --rule-strong:   rgba(28, 28, 30, 0.28);
@@ -691,6 +692,7 @@ body.dark-mode {
     --olive:       #9BAD78;
     --olive-light: rgba(155, 173, 120, 0.12);
     --blue:        #6BAED6;
+    --blue-light:  rgba(107, 174, 214, 0.12);
     background: var(--cream);
 }
 
