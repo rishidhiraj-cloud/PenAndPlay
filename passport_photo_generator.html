@@ -1071,6 +1071,16 @@
       const A4_W_PX = Math.round(A4_W_MM * MM_TO_PX);        // 2480
       const A4_H_PX = Math.round(A4_H_MM * MM_TO_PX);        // 3508
 
+      // With Name & Date mode reserves this fraction of the photo height
+      // for the white label strip. The face crop/enhance pipeline targets
+      // the shorter remaining height directly (see cropForPassport /
+      // centerCropForPassport / enhance's targetHPx param) so the face
+      // composition never overlaps the label — it's never cropped or
+      // painted over after the fact.
+      const NAME_DATE_BAND_FRACTION = 0.34;
+      const NAME_DATE_BAND_PX = Math.round(PHOTO_H_PX * NAME_DATE_BAND_FRACTION);
+      const NAME_DATE_PHOTO_H_PX = PHOTO_H_PX - NAME_DATE_BAND_PX;
+
       // Layouts: cols, rows, gap (mm). 12 / 20 use a 0.25 mm hairline gap
       // (~3 px @ 300 DPI) so the photos don't visually merge but waste
       // virtually no paper. 36 stays borderless (touching).
@@ -1122,10 +1132,16 @@
         // Original) before any Name & Date stamp, cached so typing in the
         // Name/Date fields can re-stamp instantly without reprocessing.
         preStampPhoto: null,
-        // Mode that produced preStampPhoto. Keep Original's base photo
-        // (no bg removal/enhance) is never compatible with a Name & Date
-        // stamp restamp-in-place — only used to gate restampIfNeeded().
+        // Mode that produced preStampPhoto. All "live update without
+        // reprocessing" logic (slider drags, Name/Date text edits) keys
+        // off this — never off the live mode radio — since it's the only
+        // thing that reflects what target height/crop the cached photo
+        // was actually composed for.
         preStampMode: null,
+        // Height (px) the crop/enhance pipeline targeted for preStampPhoto
+        // — PHOTO_H_PX normally, or the shorter NAME_DATE_PHOTO_H_PX when
+        // preStampMode is 'name-date'.
+        photoTargetH: null,
         lastUsedFaceDetection: true,
       };
 
@@ -1283,16 +1299,15 @@
 
       // Re-stamps the cached pre-stamp photo when Name/Date text changes,
       // without redoing face detection, background removal, or enhance().
-      // Only valid when the cached photo came from a compatible pipeline
-      // (Enhance or With Name & Date — both share the same bg-removal +
-      // enhance steps). Keep Original's plain resize was never through
-      // that pipeline, so it's never eligible for a live restamp — the
-      // user has to re-upload after switching mode, same as switching
-      // away from Keep Original always required before this feature.
+      // Gated on preStampMode (what the cached photo was ACTUALLY composed
+      // for), never on the live mode radio: only a photo processed under
+      // 'name-date' was cropped/enhanced to the shorter NAME_DATE_PHOTO_H_PX
+      // target with room reserved for the label. Restamping any other
+      // photo would paint the label over the face instead of the reserved
+      // blank strip, so the user has to re-upload after switching modes.
       function restampIfNeeded() {
         if (state.busy || !state.preStampPhoto) return;
-        if (state.preStampMode === 'keep-original') return;
-        if (getMode() !== 'name-date') return;
+        if (state.preStampMode !== 'name-date') return;
         const finalPhoto = applyModeExtras(state.preStampPhoto, 'name-date');
         state.processedPhoto = finalPhoto;
         showSinglePhotoPreview(finalPhoto, state.lastUsedFaceDetection, 'name-date');
@@ -1334,10 +1349,19 @@
 
       function runLivePreview() {
         try {
+          // Use preStampMode/photoTargetH (what preEnhancePhoto was
+          // actually cropped for), not the live mode radio — dragging a
+          // slider must reproduce the same composition the photo was
+          // processed with, even if the user has since switched modes
+          // without re-uploading.
+          const mode = state.preStampMode;
+          const targetHPx = state.photoTargetH || PHOTO_H_PX;
           const params = getSliderParams();
-          const enhanced = enhance(state.preEnhancePhoto, params);
+          let enhanced = enhance(state.preEnhancePhoto, params, targetHPx);
+          if (targetHPx !== PHOTO_H_PX) {
+            enhanced = padPhotoToFullHeight(enhanced);
+          }
           state.preStampPhoto = enhanced;
-          const mode = getMode();
           const finalPhoto = applyModeExtras(enhanced, mode);
           state.processedPhoto = finalPhoto;
           showSinglePhotoPreview(finalPhoto, state.lastUsedFaceDetection, mode);
@@ -1869,7 +1893,15 @@
         return detection || null;
       }
 
-      function cropForPassport(srcCanvas, faceData) {
+      // targetHPx: the output height this crop is composed for — PHOTO_H_PX
+      // for a normal full-frame passport photo, or NAME_DATE_PHOTO_H_PX when
+      // the bottom of the frame is reserved for a Name & Date label. Width
+      // stays fixed at PHOTO_W_PX; only the crop's aspect ratio (and thus
+      // how much headroom surrounds the face) changes with a shorter target,
+      // so the same 70%-head-of-frame composition rule just applies to a
+      // shorter frame — the face itself is never squeezed or overlapped.
+      function cropForPassport(srcCanvas, faceData, targetHPx) {
+        targetHPx = targetHPx || PHOTO_H_PX;
         const fb = faceData.detection.box;
         const landmarks = faceData.landmarks;
 
@@ -1886,7 +1918,7 @@
         const headHeight = chinY - headTopY;
 
         const cropH = headHeight / 0.70;
-        const cropW = cropH * (PHOTO_W_MM / PHOTO_H_MM);
+        const cropW = cropH * (PHOTO_W_PX / targetHPx);
 
         let cropY = headTopY - cropH * 0.10;
         let cropX = faceCenterX - cropW / 2;
@@ -1910,7 +1942,7 @@
         const outScale = PRE_BG_SCALE;
         const out = document.createElement('canvas');
         out.width = Math.round(PHOTO_W_PX * outScale);
-        out.height = Math.round(PHOTO_H_PX * outScale);
+        out.height = Math.round(targetHPx * outScale);
         const ctx = out.getContext('2d');
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
@@ -1919,8 +1951,9 @@
         return out;
       }
 
-      function centerCropForPassport(srcCanvas) {
-        const targetAspect = PHOTO_W_MM / PHOTO_H_MM;
+      function centerCropForPassport(srcCanvas, targetHPx) {
+        targetHPx = targetHPx || PHOTO_H_PX;
+        const targetAspect = PHOTO_W_PX / targetHPx;
         const srcAspect = srcCanvas.width / srcCanvas.height;
         let cropW, cropH;
         if (srcAspect > targetAspect) {
@@ -1936,7 +1969,7 @@
         const outScale = PRE_BG_SCALE;
         const out = document.createElement('canvas');
         out.width = Math.round(PHOTO_W_PX * outScale);
-        out.height = Math.round(PHOTO_H_PX * outScale);
+        out.height = Math.round(targetHPx * outScale);
         const ctx = out.getContext('2d');
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
@@ -1947,6 +1980,23 @@
       // ============================================================
       // Name & Date stamp — "With Name & Date" mode
       // ============================================================
+
+      // Places a shorter photo (PHOTO_W_PX × targetHPx) at the top of a
+      // full PHOTO_W_PX × PHOTO_H_PX white canvas, leaving the reserved
+      // band at the bottom blank for stampNameDate() to label.
+      function padPhotoToFullHeight(photoCanvas) {
+        const out = document.createElement('canvas');
+        out.width = PHOTO_W_PX;
+        out.height = PHOTO_H_PX;
+        const ctx = out.getContext('2d');
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, PHOTO_W_PX, PHOTO_H_PX);
+        ctx.drawImage(photoCanvas, 0, 0);
+        photoCanvas.width = 0;
+        photoCanvas.height = 0;
+        return out;
+      }
+
       function todayDateInputValue() {
         const d = new Date();
         const yyyy = d.getFullYear();
@@ -1988,10 +2038,12 @@
 
         // Font sizes are 300% of the original label size (0.032/0.026 of
         // photo height) per an explicit "too small, make it 3x" request.
-        // The band has to grow to match or the bigger text would clip.
+        // bandH matches NAME_DATE_BAND_PX exactly — the crop/enhance
+        // pipeline already reserved this much blank space at the bottom
+        // (see NAME_DATE_PHOTO_H_PX), so this never paints over the face.
         const nameSize = Math.round(h * 0.096);
         const dateSize = Math.round(h * 0.078);
-        const bandH = Math.round(h * 0.34);
+        const bandH = NAME_DATE_BAND_PX;
         const bandY = h - bandH;
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, bandY, w, bandH);
@@ -2043,7 +2095,8 @@
        * pipeline (each dial scaled 10% further from its neutral value) per
        * a direct "more makeup/touch-up" request.
        */
-      function enhance(canvas, params) {
+      function enhance(canvas, params, targetHPx) {
+        targetHPx = targetHPx || PHOTO_H_PX;
         const p = params || DEFAULT_ENHANCE_PARAMS;
         const frac = (key) => (p[key] != null ? p[key] : 100) / 100;
 
@@ -2131,11 +2184,11 @@
         // -------- Step 5: final high-quality downscale to passport size --------
         const final = document.createElement('canvas');
         final.width = PHOTO_W_PX;
-        final.height = PHOTO_H_PX;
+        final.height = targetHPx;
         const ctxF = final.getContext('2d');
         ctxF.imageSmoothingEnabled = true;
         ctxF.imageSmoothingQuality = 'high';
-        ctxF.drawImage(c3, 0, 0, PHOTO_W_PX, PHOTO_H_PX);
+        ctxF.drawImage(c3, 0, 0, PHOTO_W_PX, targetHPx);
 
         // Release intermediate canvases (esp. important on iOS). Note: the
         // input `canvas` is deliberately NOT freed here — callers may re-run
@@ -2248,6 +2301,10 @@
           // for Enhance/With Name & Date, or a plain resize for Keep
           // Original).
           const mode = getMode();
+          // With Name & Date reserves a band at the bottom of the frame —
+          // the whole crop/enhance pipeline targets that shorter height
+          // directly so the face composition never runs into the label.
+          const targetHPx = mode === 'name-date' ? NAME_DATE_PHOTO_H_PX : PHOTO_H_PX;
 
           let finalPhoto;
           let usedFaceDetection = true;
@@ -2258,17 +2315,17 @@
             usedFaceDetection = false;
             setStatus('Resizing photo (no enhancement)…');
             await new Promise(r => setTimeout(r, 0));
-            const cropped = centerCropForPassport(srcCanvas);
+            const cropped = centerCropForPassport(srcCanvas, targetHPx);
             srcCanvas.width = 0;
             srcCanvas.height = 0;
 
             finalPhoto = document.createElement('canvas');
             finalPhoto.width = PHOTO_W_PX;
-            finalPhoto.height = PHOTO_H_PX;
+            finalPhoto.height = targetHPx;
             const ctxF = finalPhoto.getContext('2d');
             ctxF.imageSmoothingEnabled = true;
             ctxF.imageSmoothingQuality = 'high';
-            ctxF.drawImage(cropped, 0, 0, PHOTO_W_PX, PHOTO_H_PX);
+            ctxF.drawImage(cropped, 0, 0, PHOTO_W_PX, targetHPx);
             cropped.width = 0; cropped.height = 0;
           } else {
             await ensureFaceModels();
@@ -2281,10 +2338,10 @@
               usedFaceDetection = false;
               setStatus('No face detected — using center crop fallback…', 'warn');
               await new Promise(r => setTimeout(r, 1200));
-              cropped = centerCropForPassport(srcCanvas);
+              cropped = centerCropForPassport(srcCanvas, targetHPx);
             } else {
               setStatus('Cropping for passport composition…');
-              cropped = cropForPassport(srcCanvas, faceData);
+              cropped = cropForPassport(srcCanvas, faceData, targetHPx);
             }
 
             // Free the full-size source canvas now that we have the crop
@@ -2301,11 +2358,22 @@
 
             setStatus('Enhancing…');
             await new Promise(r => setTimeout(r, 0));
-            finalPhoto = enhance(whiteBg, getSliderParams());
+            finalPhoto = enhance(whiteBg, getSliderParams(), targetHPx);
+          }
+
+          // Pad the (possibly shorter) photo onto a full-height canvas so
+          // downstream code (stamp, single preview, sheet tiling) always
+          // works with a uniform PHOTO_W_PX × PHOTO_H_PX canvas. For
+          // Enhance/Keep Original targetHPx is already PHOTO_H_PX, so this
+          // is a no-op copy; for With Name & Date it adds the blank strip
+          // the stamp will be drawn onto.
+          if (targetHPx !== PHOTO_H_PX) {
+            finalPhoto = padPhotoToFullHeight(finalPhoto);
           }
 
           state.preStampPhoto = finalPhoto;
           state.preStampMode = mode;
+          state.photoTargetH = targetHPx;
           const stamped = applyModeExtras(finalPhoto, mode);
 
           state.processedPhoto = stamped;
