@@ -407,78 +407,123 @@
             pointer-events: none;
         }
 
-        /* Enhance toggle row — controls whether BG removal + retouching run */
-        .pp-toggle-row {
+        /* Mode row — chooses Enhance / Keep Original / With Name & Date */
+        .pp-mode-row {
             margin-top: 16px;
             padding: 14px 16px;
             background: #f7fafc;
             border-radius: 12px;
             border-left: 4px solid #667eea;
         }
-        .toggle-switch {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            user-select: none;
+        .pp-mode-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a202c;
         }
-        .toggle-switch input[type="checkbox"] {
+        .pp-mode-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .pp-mode-option input[type="radio"] {
             position: absolute;
             opacity: 0;
             width: 0;
             height: 0;
         }
-        .toggle-slider {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-            background: #cbd5e0;
-            border-radius: 12px;
-            transition: background 0.25s ease;
-            flex-shrink: 0;
+        .pp-mode-option-label {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            font-size: 13px;
+            font-weight: 700;
+            color: #4a5568;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
         }
-        .toggle-slider::before {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 18px;
-            height: 18px;
-            background: #fff;
-            border-radius: 50%;
-            transition: transform 0.25s ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-        }
-        .toggle-switch input[type="checkbox"]:checked + .toggle-slider {
+        .pp-mode-option input[type="radio"]:checked + .pp-mode-option-label {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-color: transparent;
         }
-        .toggle-switch input[type="checkbox"]:checked + .toggle-slider::before {
-            transform: translateX(20px);
-        }
-        .toggle-switch input[type="checkbox"]:focus-visible + .toggle-slider {
+        .pp-mode-option input[type="radio"]:focus-visible + .pp-mode-option-label {
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.25);
         }
-        .toggle-label-text {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1a202c;
-            text-transform: none;
-            letter-spacing: 0;
-        }
-        .toggle-hint {
+        .pp-mode-hint {
             font-size: 12px;
             color: #4a5568;
-            margin: 6px 0 0;
-            padding-left: 56px;
+            margin: 10px 0 0;
         }
-        body.dark-mode .pp-toggle-row {
+        body.dark-mode .pp-mode-row {
             background: #374151;
             border-left-color: #818cf8;
         }
-        body.dark-mode .toggle-label-text { color: #e2e8f0; }
-        body.dark-mode .toggle-hint { color: #a0aec0; }
-        body.dark-mode .toggle-slider { background: #4a5568; }
+        body.dark-mode .pp-mode-title { color: #e2e8f0; }
+        body.dark-mode .pp-mode-hint { color: #a0aec0; }
+        body.dark-mode .pp-mode-option-label {
+            border-color: #4a5568;
+            color: #a0aec0;
+        }
+
+        /* Name & Date row — shown only in "With Name & Date" mode */
+        .pp-namedate {
+            margin-top: 16px;
+            padding: 14px 16px 16px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border-left: 4px solid #764ba2;
+        }
+        .pp-namedate-row {
+            display: grid;
+            grid-template-columns: 70px 1fr;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .pp-namedate-row:last-of-type { margin-bottom: 0; }
+        .pp-namedate-row label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #4a5568;
+        }
+        .pp-namedate-row input {
+            font: inherit;
+            padding: 9px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: #fff;
+            color: #1a202c;
+            font-size: 14px;
+            width: 100%;
+        }
+        .pp-namedate-row input:focus {
+            outline: none;
+            border-color: #764ba2;
+            box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
+        }
+        .pp-namedate-hint {
+            font-size: 12px;
+            color: #4a5568;
+            margin: 10px 0 0;
+        }
+        @media (max-width: 420px) {
+            .pp-namedate-row { grid-template-columns: 1fr; }
+        }
+        body.dark-mode .pp-namedate {
+            background: #374151;
+            border-left-color: #a78bfa;
+        }
+        body.dark-mode .pp-namedate-row label { color: #a0aec0; }
+        body.dark-mode .pp-namedate-row input {
+            background: #2d3748;
+            border-color: #4a5568;
+            color: #e2e8f0;
+        }
+        body.dark-mode .pp-namedate-hint { color: #a0aec0; }
 
         .pp-sliders {
             margin-top: 14px;
@@ -821,13 +866,35 @@
                         <p class="upload-hint">JPEG, PNG, or WebP • Best results with a clear face shot, head and shoulders visible</p>
                     </div>
 
-                    <div class="pp-toggle-row">
-                        <label class="toggle-switch" for="enhance-toggle">
-                            <input type="checkbox" id="enhance-toggle" checked>
-                            <span class="toggle-slider" aria-hidden="true"></span>
-                            <span class="toggle-label-text">Enhance</span>
-                        </label>
-                        <p class="toggle-hint">When ON, the photo is auto-enhanced and the background is replaced with white. When OFF, your photo is used as-is (no enhancement, no background removal).</p>
+                    <div class="pp-mode-row">
+                        <div class="pp-mode-title">Mode</div>
+                        <div class="pp-mode-options" role="radiogroup" aria-label="Processing mode">
+                            <span class="pp-mode-option">
+                                <input type="radio" name="pp-mode" id="mode-enhance" value="enhance" checked>
+                                <label class="pp-mode-option-label" for="mode-enhance">Enhance</label>
+                            </span>
+                            <span class="pp-mode-option">
+                                <input type="radio" name="pp-mode" id="mode-keep-original" value="keep-original">
+                                <label class="pp-mode-option-label" for="mode-keep-original">Keep Original</label>
+                            </span>
+                            <span class="pp-mode-option">
+                                <input type="radio" name="pp-mode" id="mode-name-date" value="name-date">
+                                <label class="pp-mode-option-label" for="mode-name-date">With Name &amp; Date</label>
+                            </span>
+                        </div>
+                        <p class="pp-mode-hint" id="pp-mode-hint"></p>
+                    </div>
+
+                    <div class="pp-namedate hidden" id="pp-namedate">
+                        <div class="pp-namedate-row">
+                            <label for="namedate-name">Name</label>
+                            <input type="text" id="namedate-name" placeholder="e.g. Rohan Sharma" maxlength="60">
+                        </div>
+                        <div class="pp-namedate-row">
+                            <label for="namedate-date">Date</label>
+                            <input type="date" id="namedate-date">
+                        </div>
+                        <p class="pp-namedate-hint">Printed on a white strip at the bottom of each photo.</p>
                     </div>
 
                     <div class="pp-sliders" id="enhance-sliders">
@@ -1051,6 +1118,14 @@
         // slider "Apply" button can re-run just the (cheap) enhance() step
         // without redoing face detection + background removal.
         preEnhancePhoto: null,
+        // Fully processed photo (enhanced, or plain-resized for Keep
+        // Original) before any Name & Date stamp, cached so typing in the
+        // Name/Date fields can re-stamp instantly without reprocessing.
+        preStampPhoto: null,
+        // Mode that produced preStampPhoto. Keep Original's base photo
+        // (no bg removal/enhance) is never compatible with a Name & Date
+        // stamp restamp-in-place — only used to gate restampIfNeeded().
+        preStampMode: null,
         lastUsedFaceDetection: true,
       };
 
@@ -1083,9 +1158,13 @@
       const sheetCanvasEl = document.getElementById('sheet-canvas');
       const actions = document.getElementById('actions');
       const printImg = document.getElementById('print-img');
-      const enhanceToggle = document.getElementById('enhance-toggle');
+      const modeRadios = document.querySelectorAll('input[name="pp-mode"]');
+      const modeHintEl = document.getElementById('pp-mode-hint');
       const enhanceSliders = document.getElementById('enhance-sliders');
       const resetSlidersBtn = document.getElementById('reset-sliders-btn');
+      const namedateRow = document.getElementById('pp-namedate');
+      const namedateNameInput = document.getElementById('namedate-name');
+      const namedateDateInput = document.getElementById('namedate-date');
 
       // Default slider position (100%) for every tunable enhance parameter.
       // 100% reproduces enhance()'s tuned baseline values exactly.
@@ -1134,7 +1213,7 @@
       }
       function setBusy(b) {
         state.busy = b;
-        generateBtn.disabled = b || !state.processedPhoto;
+        updateGenerateAvailability();
         fileInput.disabled = b;
         if (resetSlidersBtn) resetSlidersBtn.disabled = b;
         SLIDER_KEYS.forEach((key) => {
@@ -1170,9 +1249,65 @@
         setSliderParams(DEFAULT_ENHANCE_PARAMS);
       }
 
-      function updateSlidersVisibility() {
-        if (!enhanceSliders) return;
-        enhanceSliders.classList.toggle('hidden', !(enhanceToggle && enhanceToggle.checked));
+      // ============================================================
+      // Mode selection (Enhance / Keep Original / With Name & Date)
+      // ============================================================
+      function getMode() {
+        const el = document.querySelector('input[name="pp-mode"]:checked');
+        return el ? el.value : 'enhance';
+      }
+
+      const MODE_HINTS = {
+        'enhance': 'Background is replaced with white and the photo is auto-retouched. Adjust strength below.',
+        'keep-original': 'No enhancement, no background removal, no face detection — the photo is simply resized to passport size exactly as uploaded.',
+        'name-date': 'Same as Enhance, plus your Name and Date are printed at the bottom of each photo on a white strip.',
+      };
+
+      function nameDateValid() {
+        if (getMode() !== 'name-date') return true;
+        return !!(namedateNameInput.value.trim() && namedateDateInput.value);
+      }
+
+      function updateGenerateAvailability() {
+        generateBtn.disabled = state.busy || !state.processedPhoto || !nameDateValid();
+      }
+
+      // Applies (or removes) the Name & Date stamp on top of an already
+      // fully-processed photo. Cheap enough to run on every keystroke.
+      function applyModeExtras(photoCanvas, mode) {
+        if (mode === 'name-date') {
+          return stampNameDate(photoCanvas, namedateNameInput.value, namedateDateInput.value);
+        }
+        return photoCanvas;
+      }
+
+      // Re-stamps the cached pre-stamp photo when Name/Date text changes,
+      // without redoing face detection, background removal, or enhance().
+      // Only valid when the cached photo came from a compatible pipeline
+      // (Enhance or With Name & Date — both share the same bg-removal +
+      // enhance steps). Keep Original's plain resize was never through
+      // that pipeline, so it's never eligible for a live restamp — the
+      // user has to re-upload after switching mode, same as switching
+      // away from Keep Original always required before this feature.
+      function restampIfNeeded() {
+        if (state.busy || !state.preStampPhoto) return;
+        if (state.preStampMode === 'keep-original') return;
+        if (getMode() !== 'name-date') return;
+        const finalPhoto = applyModeExtras(state.preStampPhoto, 'name-date');
+        state.processedPhoto = finalPhoto;
+        showSinglePhotoPreview(finalPhoto, state.lastUsedFaceDetection, 'name-date');
+      }
+
+      function updateModeUI() {
+        const mode = getMode();
+        if (modeHintEl) modeHintEl.textContent = MODE_HINTS[mode] || '';
+        if (enhanceSliders) enhanceSliders.classList.toggle('hidden', mode === 'keep-original');
+        if (namedateRow) namedateRow.classList.toggle('hidden', mode !== 'name-date');
+        // Mode changes never retroactively alter an already-processed
+        // photo (consistent with how the old Enhance toggle worked) — a
+        // new upload is needed to apply the newly selected mode. Only
+        // the Name/Date text inputs live-restamp, not the mode switch.
+        updateGenerateAvailability();
       }
 
       // Re-running enhance() on every single 'input' event fired while
@@ -1200,9 +1335,12 @@
       function runLivePreview() {
         try {
           const params = getSliderParams();
-          const finalPhoto = enhance(state.preEnhancePhoto, params);
+          const enhanced = enhance(state.preEnhancePhoto, params);
+          state.preStampPhoto = enhanced;
+          const mode = getMode();
+          const finalPhoto = applyModeExtras(enhanced, mode);
           state.processedPhoto = finalPhoto;
-          showSinglePhotoPreview(finalPhoto, state.lastUsedFaceDetection, true);
+          showSinglePhotoPreview(finalPhoto, state.lastUsedFaceDetection, mode);
         } catch (err) {
           console.error('Live preview enhance error:', err);
         } finally {
@@ -1225,8 +1363,22 @@
         }
       });
 
-      if (enhanceToggle) enhanceToggle.addEventListener('change', updateSlidersVisibility);
-      updateSlidersVisibility();
+      modeRadios.forEach((r) => r.addEventListener('change', updateModeUI));
+      updateModeUI();
+
+      if (namedateNameInput) {
+        namedateNameInput.addEventListener('input', () => {
+          restampIfNeeded();
+          updateGenerateAvailability();
+        });
+      }
+      if (namedateDateInput) {
+        namedateDateInput.value = todayDateInputValue();
+        namedateDateInput.addEventListener('input', () => {
+          restampIfNeeded();
+          updateGenerateAvailability();
+        });
+      }
 
       if (resetSlidersBtn) {
         resetSlidersBtn.addEventListener('click', () => {
@@ -1792,6 +1944,72 @@
         return out;
       }
 
+      // ============================================================
+      // Name & Date stamp — "With Name & Date" mode
+      // ============================================================
+      function todayDateInputValue() {
+        const d = new Date();
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      // Formats a <input type="date"> value ("YYYY-MM-DD") as "15 Jan 2026".
+      // Built from local-time Date parts (not `new Date(isoString)`) so the
+      // displayed day never shifts due to UTC parsing.
+      function formatNameDateDisplay(dateValue) {
+        if (!dateValue) return '';
+        const parts = dateValue.split('-');
+        if (parts.length !== 3) return dateValue;
+        const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        if (isNaN(d.getTime())) return dateValue;
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      }
+
+      // Draws a white strip across the bottom of the passport photo with
+      // Name on the first line and Date on the second, both centered.
+      // Returns a new canvas — never mutates srcCanvas, so it can be
+      // re-run cheaply from the cached pre-stamp photo on every keystroke.
+      function stampNameDate(srcCanvas, name, dateValue) {
+        const w = srcCanvas.width;
+        const h = srcCanvas.height;
+        const out = document.createElement('canvas');
+        out.width = w;
+        out.height = h;
+        const ctx = out.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(srcCanvas, 0, 0);
+
+        const nameText = (name || '').trim();
+        const dateText = formatNameDateDisplay(dateValue);
+        if (!nameText && !dateText) return out;
+
+        const bandH = Math.round(h * 0.16);
+        const bandY = h - bandH;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, bandY, w, bandH);
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#1a202c';
+        const cx = w / 2;
+        const maxTextW = w - 16;
+
+        if (nameText && dateText) {
+          ctx.font = `700 ${Math.round(h * 0.032)}px Arial, sans-serif`;
+          ctx.fillText(nameText, cx, bandY + bandH * 0.38, maxTextW);
+          ctx.font = `500 ${Math.round(h * 0.026)}px Arial, sans-serif`;
+          ctx.fillText(dateText, cx, bandY + bandH * 0.72, maxTextW);
+        } else {
+          ctx.font = `700 ${Math.round(h * 0.032)}px Arial, sans-serif`;
+          ctx.fillText(nameText || dateText, cx, bandY + bandH * 0.55, maxTextW);
+        }
+
+        return out;
+      }
+
       async function removeBgAndWhitenize(canvas) {
         // MediaPipe Selfie Segmentation (WebGL, ~1.4 MB TFLite model) on
         // every device. Drops the old @imgly/ONNX desktop path which was
@@ -2000,6 +2218,8 @@
         clearStatus();
         state.processedPhoto = null;
         state.sheetCanvas = null;
+        state.preStampPhoto = null;
+        state.preStampMode = null;
         if (state.preEnhancePhoto) {
           state.preEnhancePhoto.width = 0;
           state.preEnhancePhoto.height = 0;
@@ -2010,7 +2230,6 @@
         actions.classList.add('hidden');
         resultCard.classList.add('hidden');
         previewRow.classList.remove('hidden');
-        generateBtn.disabled = true;
 
         try {
           setStatus('Reading image…');
@@ -2019,34 +2238,54 @@
           setStatus('Preparing image…');
           const srcCanvas = downscaleToCanvas(img);
 
-          await ensureFaceModels();
-
-          setStatus('Detecting face…');
-          const faceData = await detectFace(srcCanvas);
-
-          let cropped;
-          let usedFaceDetection = true;
-          if (!faceData) {
-            usedFaceDetection = false;
-            setStatus('No face detected — using center crop fallback…', 'warn');
-            await new Promise(r => setTimeout(r, 1200));
-            cropped = centerCropForPassport(srcCanvas);
-          } else {
-            setStatus('Cropping for passport composition…');
-            cropped = cropForPassport(srcCanvas, faceData);
-          }
-
-          // Free the full-size source canvas now that we have the crop
-          srcCanvas.width = 0;
-          srcCanvas.height = 0;
-
-          // Read the toggle once at processing time. If OFF, we skip BG
-          // removal + enhancement entirely and use the photo as-is — only
-          // the passport-size crop and the print-sheet layout still happen.
-          const enhanceEnabled = !!(enhanceToggle && enhanceToggle.checked);
+          // Read the mode once at processing time — it decides the whole
+          // pipeline branch below (face detection + bg removal + enhance
+          // for Enhance/With Name & Date, or a plain resize for Keep
+          // Original).
+          const mode = getMode();
 
           let finalPhoto;
-          if (enhanceEnabled) {
+          let usedFaceDetection = true;
+
+          if (mode === 'keep-original') {
+            // No face detection, no background removal, no enhancement —
+            // just center-crop to the passport aspect ratio and resize.
+            usedFaceDetection = false;
+            setStatus('Resizing photo (no enhancement)…');
+            await new Promise(r => setTimeout(r, 0));
+            const cropped = centerCropForPassport(srcCanvas);
+            srcCanvas.width = 0;
+            srcCanvas.height = 0;
+
+            finalPhoto = document.createElement('canvas');
+            finalPhoto.width = PHOTO_W_PX;
+            finalPhoto.height = PHOTO_H_PX;
+            const ctxF = finalPhoto.getContext('2d');
+            ctxF.imageSmoothingEnabled = true;
+            ctxF.imageSmoothingQuality = 'high';
+            ctxF.drawImage(cropped, 0, 0, PHOTO_W_PX, PHOTO_H_PX);
+            cropped.width = 0; cropped.height = 0;
+          } else {
+            await ensureFaceModels();
+
+            setStatus('Detecting face…');
+            const faceData = await detectFace(srcCanvas);
+
+            let cropped;
+            if (!faceData) {
+              usedFaceDetection = false;
+              setStatus('No face detected — using center crop fallback…', 'warn');
+              await new Promise(r => setTimeout(r, 1200));
+              cropped = centerCropForPassport(srcCanvas);
+            } else {
+              setStatus('Cropping for passport composition…');
+              cropped = cropForPassport(srcCanvas, faceData);
+            }
+
+            // Free the full-size source canvas now that we have the crop
+            srcCanvas.width = 0;
+            srcCanvas.height = 0;
+
             await ensureBgRemoval();
 
             setStatus('Removing background (first run downloads ~1.4 MB)…');
@@ -2058,29 +2297,16 @@
             setStatus('Enhancing…');
             await new Promise(r => setTimeout(r, 0));
             finalPhoto = enhance(whiteBg, getSliderParams());
-          } else {
-            // Enhance OFF — keep the photo exactly as uploaded. We still
-            // need the canvas at the final passport pixel size so it tiles
-            // correctly on the A4 sheet, so do a single high-quality
-            // downscale from the cropped working canvas. No colour, tone,
-            // sharpening, or background changes are applied.
-            setStatus('Preparing photo (no enhancement)…');
-            await new Promise(r => setTimeout(r, 0));
-            finalPhoto = document.createElement('canvas');
-            finalPhoto.width = PHOTO_W_PX;
-            finalPhoto.height = PHOTO_H_PX;
-            const ctxF = finalPhoto.getContext('2d');
-            ctxF.imageSmoothingEnabled = true;
-            ctxF.imageSmoothingQuality = 'high';
-            ctxF.drawImage(cropped, 0, 0, PHOTO_W_PX, PHOTO_H_PX);
-            cropped.width = 0; cropped.height = 0;
           }
 
-          state.processedPhoto = finalPhoto;
+          state.preStampPhoto = finalPhoto;
+          state.preStampMode = mode;
+          const stamped = applyModeExtras(finalPhoto, mode);
+
+          state.processedPhoto = stamped;
           state.lastUsedFaceDetection = usedFaceDetection;
-          showSinglePhotoPreview(finalPhoto, usedFaceDetection, enhanceEnabled);
+          showSinglePhotoPreview(stamped, usedFaceDetection, mode);
           setStatus('Photo ready. Choose a layout and click Generate sheet.', 'ok');
-          generateBtn.disabled = false;
           resultCard.classList.remove('hidden');
         } catch (err) {
           console.error('Pipeline error:', err);
@@ -2096,23 +2322,29 @@
         }
       }
 
-      function showSinglePhotoPreview(photoCanvas, usedFaceDetection, enhanceEnabled) {
+      function showSinglePhotoPreview(photoCanvas, usedFaceDetection, mode) {
         const ctx = photoPreview.getContext('2d');
         ctx.clearRect(0, 0, photoPreview.width, photoPreview.height);
         ctx.drawImage(photoCanvas, 0, 0, photoPreview.width, photoPreview.height);
 
-        const bgInfo = enhanceEnabled
-          ? 'White (auto-removed)'
-          : 'Original (kept as-is)';
-        const enhInfo = enhanceEnabled
-          ? 'Shadow lift, S-curve contrast, skin smoothing, eye/edge sharpening'
-          : 'None — original photo used as-is';
+        const isPlain = mode === 'keep-original';
+        const bgInfo = isPlain ? 'Original (kept as-is)' : 'White (auto-removed)';
+        const enhInfo = isPlain
+          ? 'None — original photo used as-is'
+          : 'Shadow lift, S-curve contrast, skin smoothing, eye/edge sharpening';
+        const compositionInfo = isPlain
+          ? 'Centre crop (no face detection)'
+          : (usedFaceDetection ? 'Face-detected crop' : 'Centre crop (no face detected)');
+        const stampInfo = mode === 'name-date'
+          ? '<div style="margin-bottom: 6px;"><strong>Label:</strong> Name &amp; Date printed at bottom</div>'
+          : '';
 
         photoInfo.innerHTML = `
           <div style="margin-bottom: 6px;"><strong>Size:</strong> 3.5 × 4.5 cm (${PHOTO_W_PX} × ${PHOTO_H_PX} px @ 300 DPI)</div>
           <div style="margin-bottom: 6px;"><strong>Background:</strong> ${bgInfo}</div>
-          <div style="margin-bottom: 6px;"><strong>Composition:</strong> ${usedFaceDetection ? 'Face-detected crop' : 'Centre crop (no face detected)'}</div>
+          <div style="margin-bottom: 6px;"><strong>Composition:</strong> ${compositionInfo}</div>
           <div style="margin-bottom: 6px;"><strong>Enhancement:</strong> ${enhInfo}</div>
+          ${stampInfo}
         `;
       }
 
