@@ -1986,7 +1986,12 @@
         const dateText = formatNameDateDisplay(dateValue);
         if (!nameText && !dateText) return out;
 
-        const bandH = Math.round(h * 0.16);
+        // Font sizes are 300% of the original label size (0.032/0.026 of
+        // photo height) per an explicit "too small, make it 3x" request.
+        // The band has to grow to match or the bigger text would clip.
+        const nameSize = Math.round(h * 0.096);
+        const dateSize = Math.round(h * 0.078);
+        const bandH = Math.round(h * 0.34);
         const bandY = h - bandH;
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, bandY, w, bandH);
@@ -1998,13 +2003,13 @@
         const maxTextW = w - 16;
 
         if (nameText && dateText) {
-          ctx.font = `700 ${Math.round(h * 0.032)}px Arial, sans-serif`;
-          ctx.fillText(nameText, cx, bandY + bandH * 0.38, maxTextW);
-          ctx.font = `500 ${Math.round(h * 0.026)}px Arial, sans-serif`;
+          ctx.font = `700 ${nameSize}px Arial, sans-serif`;
+          ctx.fillText(nameText, cx, bandY + bandH * 0.34, maxTextW);
+          ctx.font = `500 ${dateSize}px Arial, sans-serif`;
           ctx.fillText(dateText, cx, bandY + bandH * 0.72, maxTextW);
         } else {
-          ctx.font = `700 ${Math.round(h * 0.032)}px Arial, sans-serif`;
-          ctx.fillText(nameText || dateText, cx, bandY + bandH * 0.55, maxTextW);
+          ctx.font = `700 ${nameSize}px Arial, sans-serif`;
+          ctx.fillText(nameText || dateText, cx, bandY + bandH * 0.52, maxTextW);
         }
 
         return out;
